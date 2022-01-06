@@ -21,6 +21,7 @@ my $path ;
 my $dateFile;
 my $annee;
 my $type;
+my $tmp;
 
 sub parseFile {
 	$type = shift;
@@ -28,9 +29,15 @@ sub parseFile {
 	$path = shift;
 	my $fileName = shift;
 	$dateFile = shift;
-	$annee = shift;  
+	$annee = shift;
+
+	$tmp = "${path}_tmp";
+	 
 	open CSV, "<$path/$fileName" || die $!;
 
+	unless ( -d $tmp) {
+		mkdir $tmp, 0775;
+	}
 	my $isEtu = $type eq 'ETU';
 	
 	while (<CSV>) {
@@ -79,12 +86,12 @@ sub openFile {
 		print "openfile $codeEtape\n";
 
 		my $diplome = lc($formation->diplome());
-		
+
 		my $fileName = sprintf("%s_%s_%s_%s_%s_%s.csv", $univ , $diplome , $type, $codeEtape, $annee, $dateFile);
 
 		print "\t $fileName\n";
 		my $file = new IO::File;
-		open $file , ">$fileName" || die $!;
+		open $file , ">$tmp/$fileName" || die $!;
 		
 		foreach my $entete (Personne->getEntete($type, $univ, $annee, $diplome, $codeEtape)) {
 			$csv->print($file, $entete);
