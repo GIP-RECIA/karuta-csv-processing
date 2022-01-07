@@ -17,7 +17,7 @@ sub get {
 sub readFile {
 	my $fileName = shift;
 
-	open FORMATION, "<$fileName" || die $!;
+	open (FORMATION, "<$fileName") || die "$fileName $!\n";
 	<FORMATION>; # 1er ligne : nom de colonne
 	while (<FORMATION>) {
 		if ($csv->parse($_) ){

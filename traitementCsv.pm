@@ -26,14 +26,13 @@ my $tmp;
 sub parseFile {
 	$type = shift;
 	$univ = shift;
-	$path = shift;
-	my $fileName = shift;
 	$dateFile = shift;
 	$annee = shift;
-
+	my $fileName = sprintf("%s_%s_%s.csv", $univ->prefix, $dateFile, $type); 
+	$path = $univ->path;
 	$tmp = "${path}_tmp";
 	 
-	open CSV, "<$path/$fileName" || die $!;
+	open (CSV, "<$path/$fileName") || die "$path/$fileName  " . $!;
 
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
@@ -41,6 +40,7 @@ sub parseFile {
 	my $isEtu = $type eq 'ETU';
 	
 	while (<CSV>) {
+
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
 			
@@ -83,17 +83,16 @@ sub openFile {
 		
 		my $codeEtape = $formation->code();
 	
-		print "openfile $codeEtape\n";
 
 		my $diplome = lc($formation->diplome());
 
-		my $fileName = sprintf("%s_%s_%s_%s_%s_%s.csv", $univ , $diplome , $type, $codeEtape, $annee, $dateFile);
+		my $fileName = sprintf("%s_%s_%s_%s_%s_%s.csv", $univ->id , $diplome , $type, $codeEtape, $annee, $dateFile);
 
-		print "\t $fileName\n";
+		print "write file  $fileName\n";
 		my $file = new IO::File;
-		open $file , ">$tmp/$fileName" || die $!;
+		open ($file , ">$tmp/$fileName") || die "$tmp/$fileName " . $!;
 		
-		foreach my $entete (Personne->getEntete($type, $univ, $annee, $diplome, $codeEtape)) {
+		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $diplome, $codeEtape)) {
 			$csv->print($file, $entete);
 			print $file "\n";
 		}
