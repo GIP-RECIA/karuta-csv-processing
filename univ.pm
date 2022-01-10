@@ -12,15 +12,16 @@ sub new {
 	my $self = {
 		id => $id,
 		ftpRep => $ftpRep,
-		path => "$path",
+		path => $path,
 		zipPrefix => $zipFilePrefix,
 		filePrefix => $filePrefix,
+		sepChar => ';'
 	};
-	bless $self, $class;
+#	bless $self, $class;
 	
 	$UNIVS{$id} = $self;
 
-	return $self
+	return bless $self, $class;
 }
 
 sub id {
@@ -47,7 +48,7 @@ sub ftpRep {
 sub prefix {
 	my $self = shift;
 	if (@_ > 0) {
-		$self->{prefix} = shift;
+		$self->{filePrefix} = shift;
 	}
 	return $self->{filePrefix} ;
 }
@@ -66,4 +67,13 @@ sub getById {
 	my $class = shift;
 	return $UNIVS{shift()};
 }
+
+sub sepChar {
+	my $self = shift;
+	if (@_ > 0) {
+		$self->{sepChar} = shift;
+	}
+	return $self->{sepChar} ;
+}
+
 1;

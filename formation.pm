@@ -15,38 +15,57 @@ sub get {
 }
 
 sub readFile {
+	my $path = shift;
 	my $fileName = shift;
+	my $sepChar = shift;
 
-	open (FORMATION, "<$fileName") || die "$fileName $!\n";
+	
+	open (FORMATION, "<$path/$fileName") || die "$path/$fileName " . $! . "\n";
 	<FORMATION>; # 1er ligne : nom de colonne
+
+	$csv->sep_char($sepChar);
+	my $nbline = 1;
 	while (<FORMATION>) {
+		$nbline++;
 		if ($csv->parse($_) ){
 			unless (new Formation($csv->fields())){
-				warn "formation create object error !\n";
+				warn "formation ligne $nbline : create object error !\n";
 			}
 		} else {
-			warn "Line could not be parsed: $_\n";
+			warn "formation ligne  $nbline could not be parsed: \n";
 		} 
 	}
 }
 
 sub new {
-	my ($class, $codeEtap , $libEtap) = @_;
+	my ($class, $codeEtap , $libEtap, $libCourt) = @_;
+	if ($libCourt) {
+		$libCourt =~ s/\W/_/g;
+	} else {
+		$libCourt = $codeEtap;
+	}
 	my $self;
 	if ($libEtap =~ m/^(\S+)\s.+$/) {
 		$self = {
 			code => $codeEtap,
 			lib => $libEtap,
 			diplome => $1,
+			court => $libCourt,
 			files => {}
 		};
-		bless $self, $class;
-		$code2Formation{$self->{code}} = $self;
-		
-		return $self;
+	} else {
+		$self = {
+			code => $codeEtap,
+			lib => $libEtap,
+			diplome => $libEtap,
+			court => $libCourt,
+			files => {}
+		};
+		warn ("erreur libEtape : $libEtap\n");
 	}
-	
-	return 0;
+	bless $self, $class;
+	$code2Formation{$self->{code}} = $self;
+	return $self;
 }
 sub code {
 	my $self = shift;
@@ -60,6 +79,11 @@ sub diplome {
 sub lib {
 	my $self = shift;
 	return $self->{lib};
+}
+
+sub court {
+	my $self = shift;
+	return $self->{court};
 }
 
 sub getFile {

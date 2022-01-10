@@ -55,7 +55,7 @@ sub initRepZip {
 
 sub filtreFile {
 	my ($lastZipByPrefix, $lastDateByPrefix, $file) = @_;
-	if ($file =~ /^(\D+)(\d+)\.zip$/) {
+	if ($file =~ /^(univ-\D+)(\d+)\.zip$/) {
 		print $1 , "\t$2" ,"\n";
 		my $prefix = $1;
 		my $date = $2;
