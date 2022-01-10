@@ -39,8 +39,14 @@ sub initRepZip {
 	#	print "..$file..\n";
 		&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file);
 	}
-	foreach my $file (values %newZipByPrefix) {
+	foreach my $file (values %newZipByPrefix) { # en fait il ne devrait en avoir qu'un zip 
 		ftpGet("$ftpRep/$file", $repZip);
+		if ($file =~ /(\w+).zip/) {
+			my $newRep = "$repZip/".$1;
+			mkdir ("$newRep") || die $!;
+			system ("unzip -d $newRep $repZip/$file" ) ;
+			return $newRep;
+		}
 	}
 }
 
