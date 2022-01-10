@@ -5,12 +5,13 @@ package Univ;
 my %UNIVS;
 
 sub new {
-	my ($class, $id, $path, $filePrefix, $zipfilePrefix) = @_;
+	my ($class, $id, $ftpRep, $path, $filePrefix, $zipfilePrefix) = @_;
 	unless ($zipfilePrefix) {
 		$zipfilePrefix = $filePrefix;
 	}
 	my $self = {
 		id => $id,
+		ftpRep => $ftpRep,
 		path => "$path/$filePrefix",
 		zipPrefix => $zipFilePrefix,
 		filePrefix => $filePrefix,
@@ -34,6 +35,15 @@ sub path {
 	}
 	return $self->{path} ;
 }
+
+sub ftpRep {
+	my $self = shift;
+	if (@_ > 0) {
+		$self->{ftpRep} = shift;
+	}
+	return $self->{ftpRep} ;
+}
+
 sub prefix {
 	my $self = shift;
 	if (@_ > 0) {
