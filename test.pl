@@ -10,18 +10,29 @@ use download;
 use formation;
 use traitementCsv;
 
-my $univ = new Univ('tours', 'Test' , 'univ.tours', 'univ-tours', 'univ-Tours_'); 
+new Univ('tours', 'univ.tours', 'Test', 'univ-tours');
+new Univ('orleans', 'univ.orleans', 'Test', 'univ-Orleans');
 
 my $ftp = '/usr/bin/sftp -b- rca_masterent@pinson.giprecia.net';  
 
 Download::openFtp($ftp);
 
-foreach my $file (Download::ftpRead('univ.tours')) {
-	print "$file \n";
+#foreach my $file (Download::ftpRead('univ.tours')) {
+#	print "$file \n";
+#}
+
+foreach my $univ (Univ::all) {
+	my $newPath = Download::initRepZip($univ->path, $univ->ftpRep);
+	if ($newPath) {
+		$univ->path($newPath);
+		print ("new path = " . $univ->path() . "\n");
+	}
 }
 
-Download::initRepZip('Test', 'univ.tours');
-Download::initRepZip('Test', 'univ.orleans');
+Download::closeFtp();
+
+#Download::initRepZip('Test', 'univ.tours');
+#Download::initRepZip('Test', 'univ.orleans');
 __END__
 
 Formation::readFile("Test/univ-tours/univ-tours_2021-12-07_formations.csv");

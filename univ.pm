@@ -12,7 +12,7 @@ sub new {
 	my $self = {
 		id => $id,
 		ftpRep => $ftpRep,
-		path => "$path/$filePrefix",
+		path => "$path",
 		zipPrefix => $zipFilePrefix,
 		filePrefix => $filePrefix,
 	};

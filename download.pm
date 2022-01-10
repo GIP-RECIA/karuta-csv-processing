@@ -43,11 +43,14 @@ sub initRepZip {
 		ftpGet("$ftpRep/$file", $repZip);
 		if ($file =~ /(\w+).zip/) {
 			my $newRep = "$repZip/".$1;
+			print "mkdir $newRep \n";
 			mkdir ("$newRep") || die $!;
+			print "unzip -d $newRep $repZip/$file \n";
 			system ("unzip -d $newRep $repZip/$file" ) ;
 			return $newRep;
 		}
 	}
+	return 0;
 }
 
 sub filtreFile {
