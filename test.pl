@@ -14,7 +14,7 @@ my $pathRep = 'Test';
 
 my $univ = new Univ('tours', 'univ.tours', 'Test', 'univ-Tours');
 $univ = new Univ('orleans', 'univ.orleans', 'Test', 'univ-Orleans');
- $univ->sepChar(',');
+ # $univ->sepChar(',');
 
 #goto SUITE;
 my $ftp = '/usr/bin/sftp -b- rca_masterent@pinson.giprecia.net';  
@@ -47,6 +47,7 @@ foreach my $univ (Univ::all) {
 			Formation::readFile($newPath, $formationFile, $univ->sepChar());
 			Traitement::parseFile('ETU', $univ ,  $dateFile, '2021');
 			Traitement::parseFile('STAFF', $univ ,  $dateFile, '2021');
+			system ("/usr/bin/zip -r ${newPath}.zip ${newPath}*");
 		}
 	}
 }

@@ -5,7 +5,7 @@ use open qw( :encoding(utf8) :std );
 
 package Formation;
 
-my $csv = Text::CSV->new({ sep_char => ';', binary    => 1, auto_diag => 0});
+my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0});
 my %code2Formation;
 
 
@@ -18,21 +18,23 @@ sub readFile {
 	my $path = shift;
 	my $fileName = shift;
 	my $sepChar = shift;
-
 	
+	print "open  $path/$fileName \n";
+
 	open (FORMATION, "<$path/$fileName") || die "$path/$fileName " . $! . "\n";
 	<FORMATION>; # 1er ligne : nom de colonne
 
-	$csv->sep_char($sepChar);
+	#$csv->sep_char($sepChar);
 	my $nbline = 1;
 	while (<FORMATION>) {
 		$nbline++;
+		s/\"\;\"/\"\,\"/g; #on force les ,
 		if ($csv->parse($_) ){
 			unless (new Formation($csv->fields())){
 				warn "formation ligne $nbline : create object error !\n";
 			}
 		} else {
-			warn "formation ligne  $nbline could not be parsed: \n";
+			warn "formation ligne  $nbline could not be parsed: $_\n";
 		} 
 	}
 }

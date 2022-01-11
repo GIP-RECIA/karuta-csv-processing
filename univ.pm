@@ -15,7 +15,7 @@ sub new {
 		path => $path,
 		zipPrefix => $zipFilePrefix,
 		filePrefix => $filePrefix,
-		sepChar => ';'
+		sepChar => ','
 	};
 #	bless $self, $class;
 	

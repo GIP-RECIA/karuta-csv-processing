@@ -14,7 +14,7 @@ package Traitement;
 
 
 my %code2file;
-my $csv = Text::CSV->new({ sep_char => ';', binary    => 1, auto_diag => 1, always_quote => 1});
+my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 1, always_quote => 1});
 
 my $univ ;
 my $path ;
@@ -32,7 +32,8 @@ sub parseFile {
 	$path = $univ->path;
 	$tmp = "${path}_tmp";
 
-	 $csv->sep_char($univ->sepChar());
+	 #$csv->sep_char($univ->sepChar());
+	 print "open $path/$fileName \n";
 	open (CSV, "<$path/$fileName") || die "$path/$fileName  " . $!;
 
 	unless ( -d $tmp) {
@@ -41,7 +42,7 @@ sub parseFile {
 	my $isEtu = $type eq 'ETU';
 	$_ = <CSV>;
 	while (<CSV>) {
-
+		s/\"\;\"/\"\,\"/g; # on force les ,
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
 			
