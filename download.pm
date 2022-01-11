@@ -28,6 +28,8 @@ sub initRepZip {
 	my %lastZipByPrefix;
 	my %lastDateByPrefix;
 	my %newZipByPrefix;
+
+	
 	opendir (REP, $repZip);
 
 	foreach my $file (readdir(REP) ) {
@@ -35,10 +37,16 @@ sub initRepZip {
 	}
 
 	# lit le repertoire  ftp:
+	my $nbFtpFile = 0;
 	foreach my $file (ftpRead($ftpRep)) {
 	#	print "..$file..\n";
-		&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file);
+		if (&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file)) {
+			if ($nbFtpFile++ > 31) {
+				deleteFtpFile($ftpRep, $file);
+			}
+		}
 	}
+	
 	foreach my $file (values %newZipByPrefix) { # en fait il ne devrait en avoir qu'un zip 
 		ftpGet("$ftpRep/$file", $repZip);
 		if ($file =~ /(\w+).zip/) {
@@ -63,8 +71,10 @@ sub filtreFile {
 		unless ($lastDate && ($date le $lastDate) ) {
 			$$lastDateByPrefix{$prefix} = $date;
 			$$lastZipByPrefix{$prefix} = $file;
-		} 
+		}
+		return 1;
 	}
+	return 0;
 }
 
 sub openFtp {
@@ -106,12 +116,26 @@ sub ftpGet {
 	}
 }
 
+sub deleteFtpFile {
+	my $ftpRep = shift;
+	my $file = shift;
+	if ($file) {
+		print $FTPout "rm $ftpRep/$file\n\n";
+		while (<$FTPin>) {
+			last if /^$ftpPrompt$/;
+			print;
+		}
+	}
+}
+
 sub ftpRead {
 	my $ftpRep = shift;
 	
 	#  on recupere la liste des fichiers.zip
-	print qq{ls *.zip\n};
-	print $FTPout "ls   $ftpRep/*.zip\n\n";
+	# dans l'ordre le plus recent en premier.
+	# attention entraine la suppression des plus vieux (ne pas changer le -t). 
+	print qq{ls -t $ftpRep/*.zip\n};
+	print $FTPout "ls  -t  $ftpRep/*.zip\n\n";
 	$_ = <$FTPin>;
 
 	my @fileList;
