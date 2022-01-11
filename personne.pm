@@ -68,7 +68,7 @@ sub entete {
 	my $cohorte =shift;
 	return (
 		["model_code","dossierModeles","cohorte"],
-		["kapc/etudiants/modeles.batch-creer-etudiants","${diplome}${univ}kapc/etudiants/modeles","${diplome}${univ}kapc/etudiant/${cohorte}_${annee}"],
+		["kapc/etudiants/modeles.batch-creer-etudiants","${diplome}${univ}kapc/etudiants/modeles","${diplome}${univ}kapc/etudiants/${cohorte}_${annee}"],
 		["eppn","nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant"]
 	)
 }
