@@ -42,7 +42,8 @@ sub readFile {
 sub new {
 	my ($class, $codeEtap , $libEtap, $libCourt) = @_;
 	if ($libCourt) {
-		$libCourt =~ s/\W/_/g;
+		$libCourt =~ s/(\W|_)+/_/g;
+
 	} else {
 		$libCourt = $codeEtap;
 	}
