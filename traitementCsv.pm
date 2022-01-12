@@ -22,6 +22,7 @@ my $dateFile;
 my $annee;
 my $type;
 my $tmp;
+my %fileName2file;
 
 sub parseFile {
 	$type = shift;
@@ -55,6 +56,10 @@ sub parseFile {
 			traitement($person);
 		}
 	}
+	foreach my $file (values %fileName2file) {
+		close $file;
+	}
+	%fileName2file =();
 }
 
 sub traitement {
@@ -78,6 +83,8 @@ sub printInFormationFile {
 	}
 }
 
+
+
 sub openFile {
 	my $formation = shift;
 	my $type = shift;
@@ -91,9 +98,15 @@ sub openFile {
 		
 		my $fileName = sprintf("%s_%s_%s_%s_%s_%s.csv", $univ->id , $diplome , $type, $cohorte, $annee, $dateFile);
 
-		
+		my $file = $fileName2file{$fileName};
+		if ($file) {
+			return $file;
+		} else {
+			$file = new IO::File;
+		}
+
 		print "write file  $fileName\n";
-		my $file = new IO::File;
+
 		open ($file , ">$tmp/$fileName") || die "$tmp/$fileName " . $!;
 		
 		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $diplome, $cohorte)) {
@@ -101,6 +114,7 @@ sub openFile {
 			print $file "\n";
 		}
 
+		$fileName2file{$fileName} = $file;
 		return $file;
 	}
 	return 0;
