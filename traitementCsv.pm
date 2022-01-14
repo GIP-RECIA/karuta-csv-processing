@@ -9,6 +9,7 @@ use lib $FindBin::Bin;  		# chercher les libs au meme endroit
 
 use formation;
 use personne;
+use MyLogger;
 
 package Traitement;
 
@@ -34,8 +35,8 @@ sub parseFile {
 	$tmp = "${path}_tmp";
 
 	 #$csv->sep_char($univ->sepChar());
-	 print "open $path/$fileName \n";
-	open (CSV, "<$path/$fileName") || die "$path/$fileName  " . $!;
+	 DEBUG "open $path/$fileName \n";
+	open (CSV, "<$path/$fileName") || FATAL "$path/$fileName  " . $!;
 
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
@@ -105,9 +106,9 @@ sub openFile {
 			$file = new IO::File;
 		}
 
-		print "write file  $fileName\n";
+		DEBUG "write file  $fileName\n";
 
-		open ($file , ">$tmp/$fileName") || die "$tmp/$fileName " . $!;
+		open ($file , ">$tmp/$fileName") || FATAL "$tmp/$fileName " . $!;
 		
 		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $diplome, $cohorte)) {
 			$csv->print($file, $entete);

@@ -52,6 +52,7 @@ sub prefix {
 	}
 	return $self->{filePrefix} ;
 }
+
 sub zipPrefix {
 	my $self = shift;
 	if (@_ > 0) {

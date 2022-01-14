@@ -1,4 +1,5 @@
 use strict;
+use MyLogger;
 
 =begin
 
@@ -19,6 +20,7 @@ my $ftpHomeRep;
 
 my $FTPin;
 my $FTPout;
+my $ftpPid;
 
 sub initRepZip {
 	$repZip = shift;
@@ -51,10 +53,10 @@ sub initRepZip {
 		ftpGet("$ftpRep/$file", $repZip);
 		if ($file =~ /(\w+).zip/) {
 			my $newRep = "$repZip/".$1;
-			print "mkdir $newRep \n";
-			mkdir ("$newRep") || die $!;
-			print "unzip -d $newRep $repZip/$file \n";
-			system ("unzip -d $newRep $repZip/$file" ) ;
+			INFO "mkdir $newRep \n";
+			mkdir ("$newRep") || FATAL $!;
+			INFO "unzip -qq -d  $newRep $repZip/$file \n";
+			system ("unzip -qq -d  $newRep $repZip/$file" ) ;
 			return $newRep;
 		}
 	}
@@ -80,39 +82,45 @@ sub filtreFile {
 sub openFtp {
 	my $ftpCommand = shift;
 	
-	open2($FTPin, $FTPout, $ftpCommand) || die "erreur connexion sftp: $!\n";
-	print $FTPout "\n";
+	$ftpPid = open2($FTPin, $FTPout, $ftpCommand);
+	print $FTPout "\n" ;
 	$ftpPrompt = <$FTPin>;
 	chop $ftpPrompt;
-	
-	print "connection FTP ...\n";
+
+	if ($ftpPrompt) {
+		INFO "connection FTP ok";
+	} else {
+		FATAL "connection FTP Ko";
+	}
 	print $FTPout "pwd\n";
 
 	while (<$FTPin>) {
-#		print ;
+
 		if (m/Remote working directory: (\/.+)$/) {
 			$ftpHomeRep = $1;
 			last;
 		}
 	}
-#	print "ftpHomeRep = $ftpHomeRep \n ";
-#	print "prompt = $ftpPrompt\n";
-	print "\t\t  ok \n";
+	
 }
 
 sub closeFtp {
 	close $FTPin;
 	close $FTPout;
+	DEBUG "wait for close ftp";
+	waitpid $ftpPid, 0;
+	DEBUG "ftp closed";
 }
 
 sub ftpGet {
 	my $file = shift;
 	my $localRep = shift;
-	
+
+	DEBUG " ftp get $file $localRep"; 
 	print $FTPout "get $file $localRep \n\n";
 	while (<$FTPin>) {
 		last if /^$ftpPrompt$/;
-		print ;
+		TRACE $_;
 	}
 }
 
@@ -123,7 +131,7 @@ sub deleteFtpFile {
 		print $FTPout "rm $ftpRep/$file\n\n";
 		while (<$FTPin>) {
 			last if /^$ftpPrompt$/;
-			print;
+			TRACE $_;
 		}
 	}
 }
@@ -134,7 +142,7 @@ sub ftpRead {
 	#  on recupere la liste des fichiers.zip
 	# dans l'ordre le plus recent en premier.
 	# attention entraine la suppression des plus vieux (ne pas changer le -t). 
-	print qq{ls -t $ftpRep/*.zip\n};
+	DEBUG qq{ls -t $ftpRep/*.zip\n};
 	print $FTPout "ls  -t  $ftpRep/*.zip\n\n";
 	$_ = <$FTPin>;
 

@@ -4,11 +4,19 @@ use open qw( :encoding(utf8) :std );
 
 use FindBin;                    
 use lib $FindBin::Bin;  
+use MyLogger;
+MyLogger::file 'workIn.log';
 
 use univ;
 use download;
 use formation;
 use traitementCsv;
+
+MyLogger::file 'workIn.log';
+ INFO "test de info";
+ DEBUG "le debug";
+ WARN "une alerte", " avec plusieurs param";
+ ERROR "une erreur";
 
 my $pathRep = 'Test';
 

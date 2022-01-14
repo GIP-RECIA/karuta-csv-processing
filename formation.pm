@@ -2,6 +2,7 @@ use strict;
 use utf8;
 use Text::CSV; # sudo apt-get install libtext-csv-perl
 use open qw( :encoding(utf8) :std );
+use MyLogger;
 
 package Formation;
 
@@ -19,9 +20,9 @@ sub readFile {
 	my $fileName = shift;
 	my $sepChar = shift;
 	
-	print "open  $path/$fileName \n";
+	DEBUG "open  $path/$fileName \n";
 
-	open (FORMATION, "<$path/$fileName") || die "$path/$fileName " . $! . "\n";
+	open (FORMATION, "<$path/$fileName") || FATAL "$path/$fileName " . $! . "\n";
 	<FORMATION>; # 1er ligne : nom de colonne
 
 	#$csv->sep_char($sepChar);
