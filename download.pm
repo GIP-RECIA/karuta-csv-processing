@@ -56,7 +56,7 @@ sub initRepZip {
 			INFO! "mkdir $newRep \n";
 			mkdir ("$newRep") || FATAL!  $!;
 			INFO! "unzip -qq -d  $newRep $repZip/$file \n";
-			system ("unzip -qq -d  $newRep $repZip/$file" ) ;
+			SYSTEM! ("unzip -qq -d  $newRep $repZip/$file" ) ;
 			return $newRep;
 		}
 	}

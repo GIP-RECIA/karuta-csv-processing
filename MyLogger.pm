@@ -1,3 +1,6 @@
+use IPC::Open3;
+use IO::Select;
+use Symbol 'gensym';
 
 #
 
@@ -93,6 +96,49 @@ sub lastname {
 	return $file ;
 }
 sub traceSystem {
-	print "traceSystem", @_;
+	my $commande = shift;
+	my $COM;
+	my $ERR = Symbol::gensym();
+	my $select = new IO::Select;
+
+	my $pid;
+	eval {
+	  $pid = IPC::Open3::open3(undef, $COM, $ERR, $commande);
+	};
+	die $@ if $@;
+	
+	$select->add($COM, $ERR);
+
+	my $flagC = 1;
+	my $flagE =1;
+	while (my @ready = $select->can_read) {
+		foreach my $fh (@ready) {
+			my $line;
+			my $len = sysread $fh, $line, 4096;
+			if ($len == 0){
+				$select->remove($fh);
+			} else {
+				$line =~ s/\n(.)/\n\t\1/mg;
+				if ($fh == $COM) {
+					if ($flagC) {
+						debug (' system ', $commande);
+						$flagC = 0;
+						$flagE = 1;
+					}
+					trace($line);
+				} elsif ($fh == $ERR) {
+					if ($flagE) {
+						erreur ( 'ERROR',  ' system ', $commande);
+						$flagC = 1;
+						$flagE = 0;
+					}
+					trace($line) ;
+				}
+			}
+		}
+	}
+	waitpid $pid, 0;
+	close $ERR;
+	close $COM;
 }
 1;

@@ -74,7 +74,7 @@ foreach my $univ (Univ::all) {
 			Formation::readFile($newPath, $formationFile, $univ->sepChar());
 			Traitement::parseFile('ETU', $univ ,  $dateFile, $annee);
 			Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee);
-			system ("/usr/bin/zip -qq -r ${newPath}.zip ${newPath}*");
+			SYSTEM! ("/usr/bin/zip -qq -r ${newPath}.zip ${newPath}*");
 		}
 	}
 }

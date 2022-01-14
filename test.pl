@@ -17,4 +17,6 @@ INFO! "test de info";
 
 my $pathRep = 'Test';
 
-SYSTEM!("le loger system est ok\n");
+SYSTEM!("ls -l");
+SYSTEM!("rm -v Test/Orleans_20220107*");
+SYSTEM!("ls -l Test");
