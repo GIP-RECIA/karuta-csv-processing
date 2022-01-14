@@ -25,7 +25,7 @@ MyLogger::file "$workingDir/karuta.log";
 
 my $configFile = "$workingDir/karuta.properties";
 
- INFO "Lecture des properties";
+ INFO! "Lecture des properties";
 open PROPS, "$configFile" or die "$configFile : " . $! . "\n";
 
 my $properties = new Config::Properties();
@@ -34,19 +34,19 @@ $properties->load(*PROPS);
 my $logFile = $properties-> getProperty('log.file');
 
 if ($logFile) {
-	INFO "new logger file : ", $logFile;
+	INFO! "new logger file : ", $logFile;
 	MyLogger::file $logFile;
 }
 
-my $ftpAddr = $properties-> getProperty('ftp.addr') or FATAL "ftp.addr propertie not found" ;
-my $listUniv= $properties-> getProperty('univ.list') or FATAL "univ.list propertie not found" ;
-my $annee= $properties-> getProperty('annee.scolaire') or FATAL "annee.scolaire propertie not found" ;
+my $ftpAddr = $properties-> getProperty('ftp.addr') or FATAL!  "ftp.addr propertie not found" ;
+my $listUniv= $properties-> getProperty('univ.list') or FATAL!  "univ.list propertie not found" ;
+my $annee= $properties-> getProperty('annee.scolaire') or FATAL!  "annee.scolaire propertie not found" ;
 
-	INFO "$listUniv";
+	INFO! "$listUniv";
 foreach my $univ (split(" ", $listUniv) ){
-	INFO "create object univ for $univ" ;
-	my $ftpRep = $properties-> getProperty("${univ}.ftp.rep") or  FATAL "${univ}.ftp.rep propertie not found" ;
-	my $filePrefix = $properties-> getProperty("${univ}.file.prefix") or FATAL "${univ}.file.prefix propertie not found" ;
+	INFO! "create object univ for $univ" ;
+	my $ftpRep = $properties-> getProperty("${univ}.ftp.rep") or  FATAL!  "${univ}.ftp.rep propertie not found" ;
+	my $filePrefix = $properties-> getProperty("${univ}.file.prefix") or FATAL!  "${univ}.file.prefix propertie not found" ;
 	new Univ($univ, $ftpRep, $workingDir, $filePrefix);
 }
 
@@ -58,7 +58,7 @@ foreach my $univ (Univ::all) {
 	my $newPath = Download::initRepZip($univ->path, $univ->ftpRep);
 	if ($newPath) {
 		$univ->path($newPath);
-		DEBUG "new path = " . $univ->path() . "\n";
+		DEBUG! "new path = " . $univ->path() . "\n";
 	} else {
 		# on vide le path pour indiqué qu'il n'y a pas de nouveau fichiers
 		$univ->path("");
@@ -88,7 +88,7 @@ sub findInfoFile {
 			return ($file, $1, $2);
 		}
 	}
-	ERROR "fichier des formations non trouvé dans :$rep\n";
+	ERROR!  "fichier des formations non trouvé dans :$rep\n";
 	closedir REP;
 	return 0;
 }

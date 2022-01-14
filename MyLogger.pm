@@ -5,12 +5,13 @@ package MyLogger;
 use Filter::Simple;
 
 FILTER {
-	s/\sINFO\s/ MyLogger::info __FILE__,' (', __LINE__,'): ', /g;
-	s/\sDEBUG\s/ MyLogger::debug __FILE__,' (', __LINE__,'): ', /g;
-	s/\sWARN\s/ MyLogger::erreur 'WARN: ',  __FILE__,' (', __LINE__,'): ', /g;
-	s/\sERROR\s/ MyLogger::erreur 'ERROR: ', __FILE__,' (', __LINE__,'): ', /g;
-	s/\sFATAL\s/ MyLogger::fatal 'FATAL: die at ', __FILE__,' (', __LINE__,'): ', /g;
-	s/\sTRACE\s/ MyLogger::trace /g; 
+	s/INFO!/MyLogger::info __FILE__,' (', __LINE__,'): ',/g;
+	s/DEBUG!/MyLogger::debug __FILE__,' (', __LINE__,'): ',/g;
+	s/WARN!/MyLogger::erreur 'WARN: ',  __FILE__,' (', __LINE__,'): ',/g;
+	s/ERROR!/MyLogger::erreur 'ERROR: ', __FILE__,' (', __LINE__,'): ',/g;
+	s/FATAL!/MyLogger::fatal 'FATAL: die at ', __FILE__,' (', __LINE__,'): ',/g;
+	s/TRACE!/MyLogger::trace/g;
+	s/SYSTEM!/MyLogger::traceSystem/g;   
 };
 
 my $file;
@@ -86,10 +87,12 @@ sub dateHeure {
 	return sprintf "%d/%02d/%02d %02d:%02d:%02d " , $local[5] + 1900,  $local[4]+1, $local[3], $local[2], $local[1], $local[0];
 }
 
-
 sub lastname {
 	my $file = shift;
 	$file =~ s/^.*\///g;
 	return $file ;
+}
+sub traceSystem {
+	print "traceSystem", @_;
 }
 1;

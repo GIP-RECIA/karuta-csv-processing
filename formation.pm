@@ -20,9 +20,9 @@ sub readFile {
 	my $fileName = shift;
 	my $sepChar = shift;
 	
-	DEBUG "open  $path/$fileName \n";
+	DEBUG! "open  $path/$fileName \n";
 
-	open (FORMATION, "<$path/$fileName") || FATAL "$path/$fileName " . $! . "\n";
+	open (FORMATION, "<$path/$fileName") || FATAL!  "$path/$fileName " . $! . "\n";
 	<FORMATION>; # 1er ligne : nom de colonne
 
 	#$csv->sep_char($sepChar);

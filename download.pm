@@ -53,9 +53,9 @@ sub initRepZip {
 		ftpGet("$ftpRep/$file", $repZip);
 		if ($file =~ /(\w+).zip/) {
 			my $newRep = "$repZip/".$1;
-			INFO "mkdir $newRep \n";
-			mkdir ("$newRep") || FATAL $!;
-			INFO "unzip -qq -d  $newRep $repZip/$file \n";
+			INFO! "mkdir $newRep \n";
+			mkdir ("$newRep") || FATAL!  $!;
+			INFO! "unzip -qq -d  $newRep $repZip/$file \n";
 			system ("unzip -qq -d  $newRep $repZip/$file" ) ;
 			return $newRep;
 		}
@@ -88,9 +88,9 @@ sub openFtp {
 	chop $ftpPrompt;
 
 	if ($ftpPrompt) {
-		INFO "connection FTP ok";
+		INFO! "connection FTP ok";
 	} else {
-		FATAL "connection FTP Ko";
+		FATAL! "connection FTP Ko";
 	}
 	print $FTPout "pwd\n";
 
@@ -107,20 +107,20 @@ sub openFtp {
 sub closeFtp {
 	close $FTPin;
 	close $FTPout;
-	DEBUG "wait for close ftp";
+	DEBUG! "wait for close ftp";
 	waitpid $ftpPid, 0;
-	DEBUG "ftp closed";
+	DEBUG! "ftp closed";
 }
 
 sub ftpGet {
 	my $file = shift;
 	my $localRep = shift;
 
-	DEBUG " ftp get $file $localRep"; 
+	DEBUG! " ftp get $file $localRep"; 
 	print $FTPout "get $file $localRep \n\n";
 	while (<$FTPin>) {
 		last if /^$ftpPrompt$/;
-		TRACE $_;
+		TRACE!  $_;
 	}
 }
 
@@ -131,7 +131,7 @@ sub deleteFtpFile {
 		print $FTPout "rm $ftpRep/$file\n\n";
 		while (<$FTPin>) {
 			last if /^$ftpPrompt$/;
-			TRACE $_;
+			TRACE!  $_;
 		}
 	}
 }
@@ -142,7 +142,7 @@ sub ftpRead {
 	#  on recupere la liste des fichiers.zip
 	# dans l'ordre le plus recent en premier.
 	# attention entraine la suppression des plus vieux (ne pas changer le -t). 
-	DEBUG qq{ls -t $ftpRep/*.zip\n};
+	DEBUG! qq{ls -t $ftpRep/*.zip\n};
 	print $FTPout "ls  -t  $ftpRep/*.zip\n\n";
 	$_ = <$FTPin>;
 
