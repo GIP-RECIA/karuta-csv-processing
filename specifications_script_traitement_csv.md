@@ -18,17 +18,29 @@ Formalisme (liste des colonnes) des fichiers csv:
   ```
   "eppn","nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant","codesEtape"
   
+  
+  
+  
+  
   ```
 * STAFF:
 
   ```
   "eppn","nomFamilleEnseignant","prenomEnseignant","courrielEnseignant","codesEtape"
   
+  
+  
+  
+  
   ```
 * FORMATION:
 
   ```
-  "codeEtape","libelleEtape"
+  "codeEtape","libelleEtape","libelleCourt"
+  
+  
+  
+  
   
   ```
 
@@ -44,9 +56,13 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
 
   ```
   “model_code”,”dossierModeles”,”cohorte”,
-  “kapc/etudiants/modeles.batch-creer-etudiants”,”${diplôme}${univ}kapc/etudiants/modeles”,”${diplôme}${univ}kapc/etudiant/${cohorte}_${année}”
+  “kapc/etudiants/modeles.batch-creer-etudiants”,”${diplôme}${univ}kapc/etudiants/modeles”,”${diplôme}${univ}kapc/etudiants/instances/${cohorte}_${année}”
   “eppn”,”nomFamilleEtudiant”,”prenomEtudiant”,”courrielEtudiant”,”matriculeEtudiant”,
   # lignes désignant les comptes appartenant à la cohorte
+  
+  
+  
+  
   
   
   ```
@@ -54,15 +70,19 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
 
   ```
   “model_code”,”dossierModeles”,”instancesEnseignants”,
-  “kapc/enseignants/modeles.batch-creer-enseignants”,”${diplôme}${univ}kapc/enseignants/modeles”,”${diplôme}${univ}kapc/enseignants/${cohorte}”,
+  “kapc/enseignants/modeles.batch-creer-enseignants”,”${diplôme}${univ}kapc/enseignants/modeles”,”${diplôme}${univ}kapc/enseignants/instances/${cohorte}”,
   “eppn”,”nomFamilleEnseignant”,”prenomEnseignant”,”courrielEnseignant”,
   # lignes désignant les comptes appartenant à la cohorte
   
   
   
+  
+  
+  
+  
   ```
 * pour les variables indiquées dans les fichiers sous forme du pattern ${var} voici les détails (il ne doit y avoir que des caractères et chiffres [A-Z0-9]+, aucun espace ni signe):
-  * *cohorte* est l'acronyme qu'on retrouve dans le fichier FORMATIONS (pour le moment non existant, sera renseigné à la main dans une 3ème colonne)
+  * *cohorte* est l'acronyme qu'on retrouve dans le fichier FORMATIONS dans une 3ème colonne "libelleCourtEtape". Ce champs est à utilisé transformé de la façon suivante: remplacement des caractères non alphanumériques par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques.
   * *diplôme*, correspond au premier mot obtenu par split sur le caractère espace du champ "libelleEtape" du fichier FORMATIONS. Ce terme est à transformer en minuscules. (en attendant mieux)
   * *univ* est le nom court de l'université, soit: `tours`, `blois`, `orleans`, ces termes sont en minuscules.
   * *année*, correspond pour le moment à l'année scolaire 2021, on reverra cela après si on peut traiter correctement ou non à partir d'un des futurs champs afin de connaître uniquement la promotion du diplôme (2021 pour un première année, et 2020 pour un deuxième année par exemple)
@@ -71,6 +91,10 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
 
   ```
    {univ}_{diplôme}_{typePersonne}_{cohorte}_{année}_{date_ISO}.csv
+  
+  
+  
+  
   ```
 
 #### Gestion des différentiels entre deux entrants pour une même univ à des dates différentes:
