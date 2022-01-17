@@ -22,6 +22,7 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
   ```
 * STAFF:
 
@@ -32,11 +33,13 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
   ```
 * FORMATION:
 
   ```
   "codeEtape","libelleEtape","libelleCourt"
+  
   
   
   
@@ -65,14 +68,16 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   
   
   
+  
   ```
 * 1 fichier csv par valeur "codesetape" à partir du fichier STAFF, permettant "d'exploser" la génération des portfolios par codeEtape pour les enseignants selon ces entêtes:
 
   ```
-  “model_code”,”dossierModeles”,”instancesEnseignants”,
-  “kapc/enseignants/modeles.batch-creer-enseignants”,”${diplôme}${univ}kapc/enseignants/modeles”,”${diplôme}${univ}kapc/enseignants/instances/${cohorte}”,
+  “model_code”,”dossierModeles”,”instancesEnseignants”,”cohorte”,
+  “kapc/enseignants/modeles.batch-creer-enseignants”,”${diplôme}${univ}kapc/enseignants/modeles”,”${diplôme}${univ}kapc/enseignants/instances/${cohorte}”,”${diplôme}${univ}kapc-enseignants-${cohorte}”,
   “eppn”,”nomFamilleEnseignant”,”prenomEnseignant”,”courrielEnseignant”,
   # lignes désignant les comptes appartenant à la cohorte
+  
   
   
   
@@ -91,6 +96,7 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
 
   ```
    {univ}_{diplôme}_{typePersonne}_{cohorte}_{année}_{date_ISO}.csv
+  
   
   
   
