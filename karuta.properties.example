@@ -1,0 +1,17 @@
+
+
+
+log.file=Test/test.log
+
+ftp.addr=login@sftpServer.giprecia.net
+
+univ.list=tours orleans
+
+tours.ftp.rep=univ.tours
+tours.file.prefix=univ-Tours
+
+orleans.ftp.rep=univ.orleans
+orleans.file.prefix=univ-Orleans
+
+
+annee.scolaire=2021
