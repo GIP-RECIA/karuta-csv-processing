@@ -118,7 +118,7 @@ sub traceSystem {
 			if ($len == 0){
 				$select->remove($fh);
 			} else {
-				$line =~ s/\n(.)/\n\t\1/mg;
+				$line =~ s/\n(.)/\n\t$1/mg;
 				if ($fh == $COM) {
 					if ($flagC) {
 						debug (' system ', $commande);
