@@ -25,3 +25,8 @@ De la forme login@server.name.
 - *__nomUniv__*.ftp.rep: nom du repertoire dans ftp de l'université *__nomUniv__*
 
 - *__nomUniv__*.file.prefix: prefix des fichiers de l'université *__nomUniv__*
+
+#### Les resultats
+Pour chaque université on récupère du sftp le dernier fichier non déjà présent dans WORKING_DIR.
+Pour chaque fichier récupéré un fichier.zip est créé dans  WORKING_DIR  prefixé par *_nomUniv_* et terminant par la date.
+Il contient les fichiers reçu et les fichiers créés (dans le répertoire *__nomUniv__*_tmp).
