@@ -30,3 +30,5 @@ De la forme login@server.name.
 Pour chaque université on récupère du sftp le dernier fichier non déjà présent dans WORKING_DIR.
 Pour chaque fichier récupéré un fichier.zip est créé dans  WORKING_DIR  prefixé par *_nomUniv_* et terminant par la date.
 Il contient les fichiers reçu et les fichiers créés (dans le répertoire *__nomUniv__*_tmp).
+
+A la racine de l'archive il y a aussi création d'un fichier de log contenant les lignes en entrées rejetées (non conforme).
