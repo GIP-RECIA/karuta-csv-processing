@@ -9,10 +9,23 @@ package Personne;
 sub new {
 	my $class = shift;
 	my @info = @_;
-	my $self = {
-		info => \@info
-	};
-	return bless $self, $class;
+	if (testInfo(@info)) {
+		my $self = {
+			info => \@info
+		};
+		return bless $self, $class;
+	}
+	return 0;
+}
+
+sub testInfo {
+	# le 1er champ eppn
+	foreach my $col (@_) {
+		if ($col =~ m/^\s*$/) {
+			return 0;
+		}
+	}
+	return $_[0] =~ m/^(\w|\.|\@|\-)+$/;
 }
 
 sub setCodesEtape {
@@ -83,8 +96,11 @@ sub new {
 	my $matricule = shift;
 		# liste des infos en sortie dans csv 
 	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule );
-	$self->setCodesEtape(@_);
-	return bless $self, $class;
+	if ($self) {
+		$self->setCodesEtape(@_);
+		return bless $self, $class;
+	}
+	return 0;
 }
 
 sub type {
@@ -118,8 +134,11 @@ sub new {
 	my $courriel = shift;
 		# liste des infos en sortie dans csv 
 	my $self = new Personne( $eppn, $nom, $prenom, $courriel);
-	$self->setCodesEtape(@_);
-	return bless $self, $class;
+	if ($self) {
+		$self->setCodesEtape(@_);
+		return bless $self, $class;
+	}
+	return 0;
 }
 
 sub type {

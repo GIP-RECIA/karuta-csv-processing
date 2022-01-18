@@ -30,14 +30,16 @@ sub parseFile {
 	$univ = shift;
 	$dateFile = shift;
 	$annee = shift;
-	my $fileName = sprintf("%s_%s_%s.csv", $univ->prefix, $dateFile, $type); 
+	my $fileName = sprintf("%s_%s_%s.csv", $univ->prefix, $dateFile, $type);
+	
 	$path = $univ->path;
 	$tmp = "${path}_tmp";
-
+	my $fileNameLog = "${path}.log";
+	
 	 #$csv->sep_char($univ->sepChar());
 	 DEBUG! "open $path/$fileName \n";
 	open (CSV, "<$path/$fileName") || FATAL!  "$path/$fileName  " . $!;
-
+	open (LOG, ">$fileNameLog");
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
 	}
@@ -54,7 +56,11 @@ sub parseFile {
 			} else {
 				$person = new Staff($csv->fields());
 			}
-			traitement($person);
+			if ($person) {
+				traitement($person);
+			} else {
+				print LOG "$fileName rejet : $_\n";
+			}
 		}
 	}
 	foreach my $file (values %fileName2file) {
