@@ -66,15 +66,17 @@ foreach my $univ (Univ::all) {
 }
 
 Download::closeFtp();
+
 foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
-	if ($newPath) {
+	if ($newPath =~ /^$workingDir\/(.+)/) {
+		my $relativePath=$1;
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
 		if ($formationFile) {
 			Formation::readFile($newPath, $formationFile, $univ->sepChar());
 			Traitement::parseFile('ETU', $univ ,  $dateFile, $annee);
 			Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee);
-			SYSTEM! ("/usr/bin/zip -qq -r ${newPath}.zip ${newPath}*");
+			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${relativePath}.zip ${relativePath}*");
 		}
 	}
 }
