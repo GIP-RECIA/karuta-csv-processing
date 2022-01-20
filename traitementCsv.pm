@@ -4,9 +4,6 @@ use Text::CSV; # sudo apt-get install libtext-csv-perl
 use open qw( :encoding(utf8) :std );
 use IO::File;
 
-use FindBin;                    # ou est mon executable
-use lib $FindBin::Bin;  		# chercher les libs au meme endroit
-
 use formation;
 use personne;
 use MyLogger;
