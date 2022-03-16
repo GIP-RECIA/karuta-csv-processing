@@ -52,6 +52,12 @@ foreach my $univ (split(" ", $listUniv) ){
 
 my $ftp = "/usr/bin/sftp -b- $ftpAddr";
 
+
+
+=begin
+	Recuperation des fichiers.zip de chaque univ
+=cut
+
 Download::openFtp($ftp);
 
 foreach my $univ (Univ::all) {
@@ -67,6 +73,12 @@ foreach my $univ (Univ::all) {
 
 Download::closeFtp();
 
+=begin
+ 	Traitement principal
+	pour chaque univ parse les fichiers FORMATION , ETU et STAFF
+	zip le repertoire résultat
+=cut
+
 foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
 	if ($newPath =~ /^$workingDir\/(.+)/) {
@@ -81,6 +93,10 @@ foreach my $univ (Univ::all) {
 	}
 }
 
+
+=begin
+	Recherche du fichier FORMATION en deduit le préfix et la date.
+=cut
 sub findInfoFile {
 	my $rep = shift;
 	opendir REP, $rep;
