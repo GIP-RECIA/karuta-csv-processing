@@ -57,7 +57,8 @@ sub initRepZip {
 	
 	foreach my $file (values %newZipByPrefix) { # en fait il ne devrait en avoir qu'un zip 
 		ftpGet("$ftpRep/$file", $repZip);
-		if ($file =~ /(\w+).zip/) {
+		print " unzip ?? $file\n";
+		if ($file =~ /(univ-)?(.+).zip/) {
 			my $newRep = "$repZip/".$1;
 			INFO! "mkdir $newRep \n";
 			mkdir ("$newRep") || FATAL!  $!;
