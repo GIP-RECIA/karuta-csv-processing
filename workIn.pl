@@ -60,7 +60,7 @@ foreach my $univ (Univ::all) {
 		$univ->path($newPath);
 		DEBUG! "new path = " . $univ->path() . "\n";
 	} else {
-		# on vide le path pour indiqué qu'il n'y a pas de nouveau fichiers
+		# on vide le path pour indiqué qu'il n'y a pas de nouveau fichier
 		$univ->path("");
 	}
 }

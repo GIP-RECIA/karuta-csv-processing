@@ -35,9 +35,9 @@ sub initRepZip {
 	
 	opendir (REP, $repZip);
 
-	print "read local rep $zipPrefix\n";
+	INFO! "lit le répertoire local  $repZip  filtré sur le prefix $zipPrefix\n";
 	foreach my $file (readdir(REP) ) {
-		print "$file ...\n";
+		DEBUG! "test de $file ...\n";
 		if ($file =~ /${zipPrefix}_\d{8}.zip/) {
 			&filtreFile(\%lastZipByPrefix, \%lastDateByPrefix, $file, $zipPrefix);
 		}
@@ -45,9 +45,9 @@ sub initRepZip {
 
 	# lit le repertoire  ftp:
 	my $nbFtpFile = 0;
-	print "read  ftp rep $zipPrefix\n";
+	INFO! "lit le repertoire ftp $ftpRep filtré sur le prefix $zipPrefix\n";
 	foreach my $file (ftpRead($ftpRep, $zipPrefix)) {
-		print "$file..\n";
+		DEBUG! "test de $file..\n";
 		if (&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file, $zipPrefix)) {
 			if ($nbFtpFile++ > 31) {
 				deleteFtpFile($ftpRep, $file);
@@ -57,7 +57,7 @@ sub initRepZip {
 	
 	foreach my $file (values %newZipByPrefix) { # en fait il ne devrait en avoir qu'un zip 
 		ftpGet("$ftpRep/$file", $repZip);
-		print " unzip ?? $file\n";
+		DEBUG! "test $file pour unzip\n";
 		if ($file =~ /(univ-)?(.+).zip/) {
 			my $newRep = "$repZip/".$2;
 			INFO! "mkdir $newRep \n";
@@ -73,7 +73,7 @@ sub initRepZip {
 sub filtreFile {
 	my ($lastZipByPrefix, $lastDateByPrefix, $file, $prefixe) = @_;
 	if ($file =~ /^(${prefixe}_)(\d{8})\.zip$/) {
-		print $1 , "\t$2" ,"\n";
+		DEBUG! "filtre ok:\t", $1 , "\t$2" ,"\n";
 		my $prefix = $1;
 		my $date = $2;
 		my $lastDate = $$lastDateByPrefix{$prefix};
@@ -159,7 +159,7 @@ sub ftpRead {
 	while (<$FTPin>) {
 		last if /^$ftpPrompt$/;
 		if (/((\w|[.-])+.zip)/) {
-		#	print ".$1.\n";
+			TRACE! "$1\n";
 			push @fileList, $1;
 		} 
 	}
