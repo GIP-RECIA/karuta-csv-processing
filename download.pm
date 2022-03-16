@@ -59,7 +59,7 @@ sub initRepZip {
 		ftpGet("$ftpRep/$file", $repZip);
 		print " unzip ?? $file\n";
 		if ($file =~ /(univ-)?(.+).zip/) {
-			my $newRep = "$repZip/".$1;
+			my $newRep = "$repZip/".$2;
 			INFO! "mkdir $newRep \n";
 			mkdir ("$newRep") || FATAL!  $!;
 			INFO! "unzip -qq -d  $newRep $repZip/$file \n";

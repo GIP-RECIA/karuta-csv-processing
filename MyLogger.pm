@@ -8,17 +8,19 @@ package MyLogger;
 use Filter::Simple;
 
 FILTER {
-	s/INFO!/MyLogger::info __FILE__,' (', __LINE__,'): ',/g;
-	s/DEBUG!/MyLogger::debug __FILE__,' (', __LINE__,'): ',/g;
-	s/WARN!/MyLogger::erreur 'WARN: ',  __FILE__,' (', __LINE__,'): ',/g;
-	s/ERROR!/MyLogger::erreur 'ERROR: ', __FILE__,' (', __LINE__,'): ',/g;
 	s/FATAL!/MyLogger::fatal 'FATAL: die at ', __FILE__,' (', __LINE__,'): ',/g;
-	s/TRACE!/MyLogger::trace/g;
+	s/ERROR!/MyLogger::is(1) and MyLogger::erreur 'ERROR: ', __FILE__,' (', __LINE__,'): ',/g;
+	s/WARN!/MyLogger::is(2) and MyLogger::erreur 'WARN: ',  __FILE__,' (', __LINE__,'): ',/g;
+	s/INFO!/MyLogger::is(3) and MyLogger::info __FILE__,' (', __LINE__,'): ',/g;
+	s/DEBUG!/MyLogger::is(4) and MyLogger::debug __FILE__,' (', __LINE__,'): ',/g;
+	s/TRACE!/MyLogger::is(5) and MyLogger::trace/g;
 	s/SYSTEM!/MyLogger::traceSystem/g;   
 };
 
+my $level;
 my $file;
 my $mod;
+
 sub file {
 	if ($file) {
 		close MyLoggerFile;
@@ -28,8 +30,20 @@ sub file {
 	open (MyLoggerFile, ">$file" ) or die $file . " $!" ;
 }
 
-sub mod {
-	$mod = shift;
+
+sub level {
+	if (@_) {
+		$level = shift;
+		if (@_) {
+			$mod = shift;
+		} 
+	} 
+	return $level, $mod;
+}
+
+sub is {
+	my $levelMin = shift;
+	return $levelMin <= $level;
 }
 
 
@@ -37,7 +51,7 @@ sub trace {
 	if ($file ) {
 		print MyLoggerFile "\t", @_;
 	};
-	if ($mod & 2) {
+	if ($mod > 1) {
 		print "\t", @_;
 	}
 }
@@ -49,7 +63,7 @@ sub debug {
 		print MyLoggerFile dateHeure(), 'DEBUG: ', @_;
 	}
 	
-	if ($mod & 2) {
+	if ($mod > 1) {
 		print 'DEBUG: ', @_;
 	}
 	
@@ -60,7 +74,7 @@ sub info {
 	push @_, "\n";
 	if ($file) {
 		print MyLoggerFile dateHeure(), 'INFO: ', @_;
-		if ($mod & 1) {
+		if ($mod > 0) {
 			print 'INFO ', @_;
 		}
 	} else {
@@ -121,18 +135,18 @@ sub traceSystem {
 				$line =~ s/\n(.)/\n\t$1/mg;
 				if ($fh == $COM) {
 					if ($flagC) {
-						debug (' system ', $commande);
+						if ( $level >= 4) { debug (' system ', $commande); }
 						$flagC = 0;
 						$flagE = 1;
 					}
-					trace($line);
+					if ($level >=  4) { trace($line); }
 				} elsif ($fh == $ERR) {
 					if ($flagE) {
-						erreur ( 'ERROR',  ' system ', $commande);
+						if ($level >= 1) { erreur ( 'ERROR',  ' system ', $commande); }
 						$flagC = 1;
 						$flagE = 0;
 					}
-					trace($line) ;
+					if ($level >= 1) { trace($line) };
 				}
 			}
 		}

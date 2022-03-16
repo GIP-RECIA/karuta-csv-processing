@@ -7,7 +7,7 @@ use lib $FindBin::Bin;
 use MyLogger;
 MyLogger::file 'workIn.log';
 
-
+MyLogger::level(1 , 1);
 
 # MyLogger::file 'workIn.log';
 INFO! "test de info";
@@ -18,5 +18,5 @@ INFO! "test de info";
 my $pathRep = 'Test';
 
 SYSTEM!("ls -l");
-SYSTEM!("rm -v Test/Orleans_20220107*");
+#SYSTEM!("rm -v Test/Orleans_20220107*");
 SYSTEM!("ls -l Test");

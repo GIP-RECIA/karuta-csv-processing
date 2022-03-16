@@ -14,7 +14,7 @@ use download;
 use formation;
 use traitementCsv;
 
-MyLogger::mod 3;
+MyLogger::level(4, 2);
 
 my $workingDir = shift;
 
