@@ -37,7 +37,7 @@ sub initRepZip {
 
 	print "read local rep $zipPrefix\n";
 	foreach my $file (readdir(REP) ) {
-		if ($file =~ /${zipPrefix}_????????.zip/) {
+		if ($file =~ /${zipPrefix}_\d{8}.zip/) {
 			&filtreFile(\%lastZipByPrefix, \%lastDateByPrefix, $file);
 		}
 	}
