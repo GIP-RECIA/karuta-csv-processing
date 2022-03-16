@@ -55,7 +55,7 @@ my $ftp = "/usr/bin/sftp -b- $ftpAddr";
 Download::openFtp($ftp);
 
 foreach my $univ (Univ::all) {
-	my $newPath = Download::initRepZip($univ->path, $univ->ftpRep);
+	my $newPath = Download::initRepZip($univ->path, $univ->ftpRep, $univ->zipPrefix);
 	if ($newPath) {
 		$univ->path($newPath);
 		DEBUG! "new path = " . $univ->path() . "\n";
