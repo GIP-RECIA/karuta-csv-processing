@@ -35,9 +35,10 @@ sub initRepZip {
 	
 	opendir (REP, $repZip);
 
-	INFO! "lit le répertoire local  $repZip  filtré sur le prefix $zipPrefix\n";
+	INFO! "Rep local = $repZip, filtre prefix: $zipPrefix\n";
+
 	foreach my $file (readdir(REP) ) {
-		DEBUG! "test de $file ...\n";
+		TRACE! ">\t$file ...\n";
 		if ($file =~ /${zipPrefix}_\d{8}.zip/) {
 			&filtreFile(\%lastZipByPrefix, \%lastDateByPrefix, $file, $zipPrefix);
 		}
@@ -45,9 +46,11 @@ sub initRepZip {
 
 	# lit le repertoire  ftp:
 	my $nbFtpFile = 0;
-	INFO! "lit le repertoire ftp $ftpRep filtré sur le prefix $zipPrefix\n";
+	
+	INFO! "Rep ftp $ftpRep filtre prefix: $zipPrefix\n";
+
 	foreach my $file (ftpRead($ftpRep, $zipPrefix)) {
-		DEBUG! "test de $file..\n";
+		TRACE! "ftp:\t$file ...\n";
 		if (&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file, $zipPrefix)) {
 			if ($nbFtpFile++ > 31) {
 				deleteFtpFile($ftpRep, $file);
@@ -73,7 +76,7 @@ sub initRepZip {
 sub filtreFile {
 	my ($lastZipByPrefix, $lastDateByPrefix, $file, $prefixe) = @_;
 	if ($file =~ /^(${prefixe}_)(\d{8})\.zip$/) {
-		DEBUG! "filtre ok:\t", $1 , "\t$2" ,"\n";
+		TRACE! "\t\tok:\t", $1 , "\t$2" ,"\n";
 		my $prefix = $1;
 		my $date = $2;
 		my $lastDate = $$lastDateByPrefix{$prefix};
