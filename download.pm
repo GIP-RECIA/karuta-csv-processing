@@ -50,7 +50,7 @@ sub initRepZip {
 	INFO! "Rep ftp $ftpRep filtre prefix: $zipPrefix\n";
 
 	foreach my $file (ftpRead($ftpRep, $zipPrefix)) {
-		TRACE! "ftp:\t$file ...\n";
+		TRACE! "test:\t$file ...\n";
 		if (&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file, $zipPrefix)) {
 			if ($nbFtpFile++ > 31) {
 				deleteFtpFile($ftpRep, $file);
@@ -162,7 +162,7 @@ sub ftpRead {
 	while (<$FTPin>) {
 		last if /^$ftpPrompt$/;
 		if (/((\w|[.-])+.zip)/) {
-			TRACE! "$1\n";
+			TRACE! "ftp: $1\n";
 			push @fileList, $1;
 		} 
 	}

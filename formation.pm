@@ -19,12 +19,15 @@ sub readFile {
 	my $path = shift;
 	my $fileName = shift;
 	my $sepChar = shift;
-	
+
+	my $fileNameLog = "${path}.log";
 	DEBUG! "open  $path/$fileName \n";
 
 	open (FORMATION, "<$path/$fileName") || FATAL!  "$path/$fileName " . $! . "\n";
 	<FORMATION>; # 1er ligne : nom de colonne
 
+	open (LOG, ">>$fileNameLog") || FATAL!  "$fileNameLog " . $!;
+	
 	#$csv->sep_char($sepChar);
 	my $nbline = 1;
 	while (<FORMATION>) {
@@ -32,12 +35,15 @@ sub readFile {
 		s/\"\;\"/\"\,\"/g; #on force les ,
 		if ($csv->parse($_) ){
 			unless (new Formation($csv->fields())){
-				warn "formation ligne $nbline : create object error !\n";
+				#WARN! "formation ligne $nbline : create object error !";
+				print LOG "formation $nbline rejet : $_\n";
 			}
 		} else {
-			warn "formation ligne  $nbline could not be parsed: $_\n";
+			WARN! "formation ligne  $nbline could not be parsed: $_";
+			print LOG "formation ($nbline) rejet : $_\n";
 		} 
 	}
+	close LOG;
 }
 
 sub new {
@@ -65,7 +71,8 @@ sub new {
 			court => $libCourt,
 			files => {}
 		};
-		warn ("erreur libEtape : $libEtap\n");
+		WARN! ("$codeEtap erreur libEtape : $libEtap");
+		return 0;
 	}
 	bless $self, $class;
 	$code2Formation{$self->{code}} = $self;

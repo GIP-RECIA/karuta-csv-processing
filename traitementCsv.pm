@@ -36,13 +36,15 @@ sub parseFile {
 	 #$csv->sep_char($univ->sepChar());
 	 DEBUG! "open $path/$fileName \n";
 	open (CSV, "<$path/$fileName") || FATAL!  "$path/$fileName  " . $!;
-	open (LOG, ">$fileNameLog");
+	open (LOG, ">>$fileNameLog");
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
 	}
 	my $isEtu = $type eq 'ETU';
 	$_ = <CSV>;
+	my $nbligne = 1;
 	while (<CSV>) {
+		$nbligne ++;
 		s/\"\;\"/\"\,\"/g; # on force les ,
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
@@ -54,7 +56,9 @@ sub parseFile {
 				$person = new Staff($csv->fields());
 			}
 			if ($person) {
-				traitement($person);
+				if (traitement($person)) {
+					print LOG "dans $fileName ligne $nbligne\n";
+				}
 			} else {
 				print LOG "$fileName rejet : $_\n";
 			}
@@ -64,18 +68,23 @@ sub parseFile {
 		close $file;
 	}
 	%fileName2file =();
+	close LOG;
 }
 
 sub traitement {
 	my $personne = shift;
+	my $nberr = 0;
 	foreach my $code (@{$personne->codesEtape()}) {
 		my $formation = Formation::get($code);
 		if ($formation) {
 			printInFormationFile($formation, $personne);
 		} else {
-			warn ("pas de formation pour ce codeEtap : $code ! \n");
+			WARN! ("pas de formation pour ce codeEtap : $code !");
+			print LOG "code formation erreur: $code ! ";
+			$nberr++;
 		}
 	}
+	return $nberr;
 }
 sub printInFormationFile {
 	my $formation = shift;
