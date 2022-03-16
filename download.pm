@@ -37,6 +37,7 @@ sub initRepZip {
 
 	print "read local rep $zipPrefix\n";
 	foreach my $file (readdir(REP) ) {
+		print "$file ...\n"
 		if ($file =~ /${zipPrefix}_\d{8}.zip/) {
 			&filtreFile(\%lastZipByPrefix, \%lastDateByPrefix, $file);
 		}
@@ -46,7 +47,7 @@ sub initRepZip {
 	my $nbFtpFile = 0;
 	print "read  ftp rep $zipPrefix\n";
 	foreach my $file (ftpRead($ftpRep, $zipPrefix)) {
-	#	print "..$file..\n";
+		print "$file..\n";
 		if (&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file)) {
 			if ($nbFtpFile++ > 31) {
 				deleteFtpFile($ftpRep, $file);
