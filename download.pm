@@ -35,12 +35,16 @@ sub initRepZip {
 	
 	opendir (REP, $repZip);
 
+	print "read local rep $zipPrefix\n";
 	foreach my $file (readdir(REP) ) {
-		&filtreFile(\%lastZipByPrefix, \%lastDateByPrefix, $file);
+		if ($file =~ /${zipPrefix}_????????.zip/) {
+			&filtreFile(\%lastZipByPrefix, \%lastDateByPrefix, $file);
+		}
 	}
 
 	# lit le repertoire  ftp:
 	my $nbFtpFile = 0;
+	print "read  ftp rep $zipPrefix\n";
 	foreach my $file (ftpRead($ftpRep, $zipPrefix)) {
 	#	print "..$file..\n";
 		if (&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file)) {

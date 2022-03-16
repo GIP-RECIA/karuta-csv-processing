@@ -5,9 +5,9 @@ package Univ;
 my %UNIVS;
 
 sub new {
-	my ($class, $id, $ftpRep, $path, $filePrefix, $zipfilePrefix) = @_;
-	unless ($zipfilePrefix) {
-		$zipfilePrefix = $filePrefix;
+	my ($class, $id, $ftpRep, $path, $filePrefix, $zipFilePrefix) = @_;
+	unless ($zipFilePrefix) {
+		$zipFilePrefix = $filePrefix;
 	}
 	my $self = {
 		id => $id,
