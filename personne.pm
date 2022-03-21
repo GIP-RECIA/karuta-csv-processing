@@ -67,21 +67,31 @@ sub getEntete {
 
 
 
+
 ###############
 #
 #
 package Etudiant;
 use base qw(Personne);
 
+
 sub entete {
 	my $class = shift;
 	my $univ = shift;
 	my $annee = shift;
-	my $diplome = shift;
-	my $cohorte =shift;
+	my $etape = shift;
+	my $cohorte = shift;
+	my $site = $etape->site;
+	my $formation = $etape->formation;
+	my $formation_label = $formation->label;
+	my $formation_code = $formation->code;
 	return (
-		["model_code","dossierModeles","cohorte"],
-		["kapc/etudiants/modeles.batch-creer-etudiants","${diplome}${univ}kapc/etudiants/modeles","${diplome}${univ}kapc/etudiants/instances/${cohorte}_${annee}"],
+		["model_code","formation_code", "formation_label", "cohorte"],
+		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
+			"${univ}_${formation_code}",
+			"${univ} - ${formation_label}",
+			"${univ}_${site}_${cohorte}_${annee}"
+		],
 		["eppn","nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant"]
 	)
 }
@@ -116,15 +126,22 @@ use base qw(Personne);
 sub entete {
 	my $class = shift;
 	my $univ = shift;
-	my $annee = shift;
-	my $diplome = shift;
-	my $cohorte =shift;
+	my $annee = shift;  # attention $annee et $cohorte ne sont pas utilisé mais sont transmise
+	my $etape = shift;
+	my $cohorte = shift;
+	my $formation = $etape->formation;
+	my $formation_code = $formation->code;
+	my $formation_label = $formation->label;
 	return (
-		["model_code","dossierModeles","instancesEnseignants","cohorte"],
-		["kapc/enseignants/modeles.batch-creer-enseignants","${diplome}${univ}kapc/enseignants/modeles","${diplome}${univ}kapc/enseignants/instances/${cohorte}","${diplome}${univ}kapc-enseignants-${cohorte}"],
+		["model_code","formation_code","formation_label"],
+		[	"kapc/3enseignants.batch-creer-enseignants-authentification-externe",
+			"${univ}_${formation_code}",
+			"${univ} - ${formation_label}",
+		],
 		["eppn","nomFamilleEnseignant","prenomEnseignant","courrielEnseignant"]
 	)
 }
+
 sub new {
 	my $class = shift;
 			# liste des données en entrée du csv

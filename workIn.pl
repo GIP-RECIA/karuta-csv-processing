@@ -14,7 +14,7 @@ use download;
 use formation;
 use traitementCsv;
 
-MyLogger::level(4, 2);
+MyLogger::level(5, 2);
 
 my $workingDir = shift;
 
@@ -58,6 +58,7 @@ my $ftp = "/usr/bin/sftp -b- $ftpAddr";
 	Recuperation des fichiers.zip de chaque univ
 =cut
 
+#goto NOFTP; #decommenter pour tester sans download
 Download::openFtp($ftp);
 
 foreach my $univ (Univ::all) {
@@ -72,6 +73,19 @@ foreach my $univ (Univ::all) {
 }
 
 Download::closeFtp();
+goto TRAITEMENT;
+# code pour tester sans download
+NOFTP: foreach my $univ (Univ::all) {
+	my $newPath = "Test/". ucfirst ($univ->id()) . '_20220308';
+	if ($newPath) {
+		$univ->path($newPath);
+		DEBUG! "new path = " . $univ->path() . "\n";
+	} else {
+		# on vide le path pour indiqué qu'il n'y a pas de nouveau fichier
+		$univ->path("");
+	}
+}
+
 
 =begin
  	Traitement principal
@@ -79,17 +93,21 @@ Download::closeFtp();
 	zip le repertoire résultat
 =cut
 
-foreach my $univ (Univ::all) {
+TRAITEMENT: foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
-	if ($newPath =~ /^$workingDir\/(.+)/) {
+	print ":$newPath:\n";
+	if ($newPath =~ /^${workingDir}\/(.+)/) {
 		my $relativePath=$1;
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
 		if ($formationFile) {
 			Formation::readFile($newPath, $formationFile, $univ->sepChar());
+			Formation::writeFile($univ, $dateFile);
 			Traitement::parseFile('ETU', $univ ,  $dateFile, $annee);
 			Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee);
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${relativePath}.zip ${relativePath}*");
 		}
+	} else {
+		print ", KO; :$workingDir:\n";
 	}
 }
 
@@ -99,9 +117,11 @@ foreach my $univ (Univ::all) {
 =cut
 sub findInfoFile {
 	my $rep = shift;
+	print "\n:" ,$rep , ":\n";
 	opendir REP, $rep;
 	foreach my $file (readdir(REP) ) {
-		if ($file =~ /^(\D)+([^_]+)_FORMATIONS.csv$/) {
+		print "\t$file\t";
+		if ($file =~ /^(.+?)_(\d{8})_FORMATIONS.csv$/) {
 			closedir REP;
 			return ($file, $1, $2);
 		}

@@ -4,98 +4,8 @@ use Text::CSV; # sudo apt-get install libtext-csv-perl
 use open qw( :encoding(utf8) :std );
 use MyLogger;
 
-package Formation;
 
-my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0});
-my %code2Formation;
-
-
-sub get {
-	my $code = shift;
-	return $code2Formation{$code};
-}
-
-sub readFile {
-	my $path = shift;
-	my $fileName = shift;
-	my $sepChar = shift;
-
-	my $fileNameLog = "${path}.log";
-	DEBUG! "open  $path/$fileName \n";
-
-	open (FORMATION, "<$path/$fileName") || FATAL!  "$path/$fileName " . $! . "\n";
-	<FORMATION>; # 1er ligne : nom de colonne
-
-	open (LOG, ">>$fileNameLog") || FATAL!  "$fileNameLog " . $!;
-	
-	#$csv->sep_char($sepChar);
-	my $nbline = 1;
-	while (<FORMATION>) {
-		$nbline++;
-		s/\"\;\"/\"\,\"/g; #on force les ,
-		if ($csv->parse($_) ){
-			unless (new Formation($csv->fields())){
-				#WARN! "formation ligne $nbline : create object error !";
-				print LOG "formation $nbline rejet : $_\n";
-			}
-		} else {
-			WARN! "formation ligne  $nbline could not be parsed: $_";
-			print LOG "formation ($nbline) rejet : $_\n";
-		} 
-	}
-	close LOG;
-}
-
-sub new {
-	my ($class, $codeEtap , $libEtap, $libCourt) = @_;
-	if ($libCourt) {
-		$libCourt =~ s/(\W|_)+/_/g;
-
-	} else {
-		$libCourt = $codeEtap;
-	}
-	my $self;
-	if ($libEtap =~ m/^(\S+)\s.+$/) {
-		$self = {
-			code => $codeEtap,
-			lib => $libEtap,
-			diplome => $1,
-			court => $libCourt,
-			files => {}
-		};
-	} else {
-		$self = {
-			code => $codeEtap,
-			lib => $libEtap,
-			diplome => $libEtap,
-			court => $libCourt,
-			files => {}
-		};
-		WARN! ("$codeEtap erreur libEtape : $libEtap");
-		return 0;
-	}
-	bless $self, $class;
-	$code2Formation{$self->{code}} = $self;
-	return $self;
-}
-sub code {
-	my $self = shift;
-	return $self->{code};
-}
-sub diplome {
-	my $self = shift;
-	return $self->{diplome};
-}
-
-sub lib {
-	my $self = shift;
-	return $self->{lib};
-}
-
-sub court {
-	my $self = shift;
-	return $self->{court};
-}
+package HaveFiles;
 
 sub getFile {
 	my $self = shift;
@@ -113,6 +23,225 @@ sub setFile {
 	
 	$$files{$type} = $file;
 }
+
+
+
+
+package Etape;
+use base qw(HaveFiles);
+
+my %codeEtap2etap;
+
+sub init {
+	%codeEtap2etap = ();
+}
+
+sub getByCodeEtap {
+	my $codeEtap = shift;
+	return $codeEtap2etap{$codeEtap};
+}
+
+sub new {
+	my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
+	my $cohorte;
+
+	DEBUG!  "$codeEtap , $libEtap, $libCourt, $site";
+	
+	if ($libCourt) {
+		$cohorte = $libCourt;
+	} else {
+		$cohorte = $codeEtap;
+	}
+
+	$cohorte =~ s/(\W|_)+/_/g;
+	my $codeFormation = uc($cohorte);
+	$codeFormation =~ s/\d+//g;
+	$codeFormation =~ s/_+/_/g;
+
+	my $label = uc($libEtap) ;
+	$label =~ s/(\d|\s)+/ /g;
+	
+	my $self;
+	
+	if ($codeFormation =~ m/\w+/) {
+
+		my $formation = new  Formation($codeFormation, $label);
+
+		if ($formation) {
+			DEBUG! "Create etape : $codeEtap, $libEtap, $libCourt, $site, $cohorte ";
+			$self = {
+				etap => $codeEtap,
+				lib => $libEtap,
+				court => $libCourt,
+				site => $site,
+				cohorte => $cohorte,
+				formation => $formation,
+				files => {}
+			};
+
+			bless $self, $class;
+
+			$formation->etapes($self);
+
+			$codeEtap2etap{$codeEtap} = $self;
+			
+			return $self;
+		}
+		return 0;
+	} else {
+		ERROR! " codeFormation ", $codeFormation;
+		return 0;
+	}
+}
+
+sub site {
+	my $self = shift;
+	return $self->{site};
+}
+
+sub cohorte {
+	my  $self = shift;
+	return $self->{cohorte}
+}
+sub formation {
+	my  $self = shift;
+	return $self->{formation}
+}
+
+
+package Formation;
+use base qw(HaveFiles);
+
+my %code2Formation;
+
+my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0});
+
+# ATTENTION code donne une et une seule formation , mais une formation paut avoir plusieurs etapes.
+
+sun init{
+	%code2Formation = ();
+	Etape::init();
+}
+
+
+sub getByCode {
+	my $code = shift;
+	return $code2Formation{$code};
+}
+
+sub readFile {
+	my $path = shift;
+	my $fileName = shift;
+	my $sepChar = shift;
+
+	init();
+
+	
+	my $fileNameLog = "${path}.log";
+	DEBUG! "open  $path/$fileName \n";
+
+	open (FORMATION, "<$path/$fileName") || FATAL!  "$path/$fileName " . $! . "\n";
+	<FORMATION>; # 1er ligne : nom de colonne
+
+	open (LOG, ">>$fileNameLog") || FATAL!  "$fileNameLog " . $!;
+	
+	#$csv->sep_char($sepChar);
+	my $nbline = 1;
+	while (<FORMATION>) {
+		$nbline++;
+		s/\"\;\"/\"\,\"/g; #on force les ,
+		if ($csv->parse($_) ){
+			unless (new Etape($csv->fields())){
+				WARN! "formation ligne $nbline : create object error !";
+				print LOG "formation $nbline rejet : $_\n";
+			}
+		} else {
+			WARN! "formation ligne  $nbline could not be parsed: $_";
+			print LOG "formation ($nbline) rejet : $_\n";
+		} 
+	}
+	close LOG;
+}
+
+sub writeFile {
+	
+	my $univ = shift;
+	my $dateFile = shift;
+	
+	my $file;
+	my $path =  $univ->path;
+	my $fileName = sprintf("%s_%s_%s.csv", $univ->id, 'FORMATIONS', $dateFile);
+
+	my $tmp = "${path}_tmp/";
+	$fileName = $tmp . $fileName;
+
+	INFO! "write $fileName";
+	unless ( -d $tmp) {
+		mkdir $tmp, 0775;
+	}
+	open ($file , "> $fileName") || FATAL!  "$fileName " . $!;
+	
+	$csv->print($file, ['formation', 'formation_label']);
+	print $file "\n";
+
+	foreach my $formation  (values %code2Formation) {
+		my @info = ($univ->id() . '_' . $formation->code(), $univ->id() . ' - ' . $formation->label );
+		$csv->print($file, \@info );
+		print $file "\n";
+	}
+	close $file;
+}
+
+sub new {
+	my ($class, $code , $label) = @_;
+
+	my $formation = getByCode($code);
+	if ($formation) {
+		if ($formation->label ne $label) {
+				WARN! "formation ($code) avec plusieurs label: $label ", $formation->label;
+			}
+		return $formation;
+	} 
+
+	if ($code =~ m/\S/) {
+		# on peut rencontrer plusieurs fois la même formation avec des codes etape differents
+		$formation = {
+			code => $code,
+			label => $label,
+			etapes => [],
+			files => {}
+		};
+		
+	} else {
+		WARN! ("Erreur codeForamation $code : $label");
+		return 0;
+	}
+	bless $formation, $class;
+	$code2Formation{$code} = $formation;
+
+	return $formation;
+}
+
+sub etapes {
+	my $self = shift;
+	if (@_ > 0) {
+		push @{$self->{etapes}}, @_;
+	}
+}
+
+
+
+sub code {
+	my $self = shift;
+	return $self->{code};
+}
+sub label {
+	my $self = shift;
+	return $self->{label};
+}
+
+
+
 
 =begin
 

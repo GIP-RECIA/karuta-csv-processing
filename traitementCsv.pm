@@ -71,25 +71,28 @@ sub parseFile {
 	close LOG;
 }
 
+
 sub traitement {
 	my $personne = shift;
 	my $nberr = 0;
-	foreach my $code (@{$personne->codesEtape()}) {
-		my $formation = Formation::get($code);
-		if ($formation) {
-			printInFormationFile($formation, $personne);
+	foreach my $codeEtap (@{$personne->codesEtape()}) {
+		my $etape = Etape::getByCodeEtap($codeEtap);
+		if ($etape) {
+			printInFormationFile($etape, $personne);
 		} else {
-			WARN! ("pas de formation pour ce codeEtap : $code !");
-			print LOG "code formation erreur: $code ! ";
+			WARN! ("pas d'etape pour ce codeEtap : $codeEtap !");
+			print LOG "codeEtape erreur: $codeEtap !\n";
 			$nberr++;
 		}
 	}
 	return $nberr;
 }
+
+
 sub printInFormationFile {
-	my $formation = shift;
+	my $etape = shift;
 	my $personne = shift;
-	my $file = getFile($formation, $personne->type);
+	my $file = getFile($etape, $personne->type);
 	if ($file) {
 		$csv->print($file, $personne->info());
 		print $file  "\n";
@@ -99,17 +102,12 @@ sub printInFormationFile {
 
 
 sub openFile {
-	my $formation = shift;
+	my $cohorte = shift; # pour les staff ce sera  formation_code 
+	my $etape = shift;
 	my $type = shift;
-	if ($formation && $type) {
+	if ($etape && $type) {
 		
-		my $cohorte = $formation->court();
-	
-
-		my $diplome = lc($formation->diplome());
-
-		
-		my $fileName = sprintf("%s_%s_%s_%s_%s_%s.csv", $univ->id , $diplome , $type, $cohorte, $annee, $dateFile);
+		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $cohorte, $annee, $dateFile);
 
 		my $file = $fileName2file{$fileName};
 		if ($file) {
@@ -122,7 +120,7 @@ sub openFile {
 
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 		
-		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $diplome, $cohorte)) {
+		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $cohorte)) {
 			$csv->print($file, $entete);
 			print $file "\n";
 		}
@@ -134,14 +132,26 @@ sub openFile {
 }
 
 sub getFile {
-	my $formation= shift;
+	my $etape = shift;
 	my $type = shift;
+	my $file;
+	my $haveFiles;
+	my $cohorte; # contient une cohorte ou un code formation.
+	my $formation = $etape->formation;
 	
-	my $file = $formation->getFile($type);
+	if ($type eq 'ETU') {
+		$haveFiles = $etape;
+		$cohorte = $etape->cohorte;
+	} else {
+		$haveFiles = $formation;
+		$cohorte = $formation->code;
+	}
+	$haveFiles->getFile($type);
+	
 	unless ($file) {
-		$file = openFile($formation, $type);
+		$file = openFile($cohorte, $etape, $type);
 		if ($file) {
-			$formation->setFile($file, $type);
+			$haveFiles->setFile($file, $type);
 		}
 	}
 	return $file;
