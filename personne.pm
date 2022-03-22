@@ -132,14 +132,15 @@ sub entete {
 	my $annee = shift;  # attention $annee et $typeFile ne sont pas utilisé mais sont transmise
 	my $etape = shift;
 	my $typeFile = shift;
+	my $site = $etape->site;
 	my $formation = $etape->formation;
 	my $formation_code = $formation->code;
 	my $formation_label = $formation->label;
 	return (
 		["model_code","formation_code","formation_label"],
 		[	"kapc/3enseignants.batch-creer-enseignants-authentification-externe",
-			"${univ}_${formation_code}",
-			"${univ} - ${formation_label}",
+			"${univ}_${site}_${formation_code}",
+			"${univ}_${site} - ${formation_label}",
 		],
 		["nomFamilleEnseignant","prenomEnseignant","courrielEnseignant", "loginEnseignant"]
 	)

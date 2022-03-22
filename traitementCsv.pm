@@ -144,7 +144,7 @@ sub getFile {
 		$typeFile = $etape->site . "_" . $etape->cohorte;
 	} else {
 		$haveFiles = $formation;
-		$typeFile = $formation->code;
+		$typeFile = $etape->site . "_" . $formation->code;
 	}
 	$haveFiles->getFile($type);
 	
