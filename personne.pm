@@ -91,8 +91,8 @@ sub entete {
 	return (
 		["model_code","formation_code", "formation_label", "cohorte"],
 		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
-			"${univ}_${formation_code}",
-			"${univ} - ${formation_label}",
+			"${univ}_${site}_${formation_code}",
+			"${univ}_${site} - ${formation_label}",
 			"${univ}_${typeFile}_${annee}"
 		],
 		["nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant", "loginEtudiant"]
