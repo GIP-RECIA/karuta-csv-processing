@@ -83,7 +83,7 @@ sub entete {
 	my $univ = shift;
 	my $annee = shift;
 	my $etape = shift;
-	my $cohorte = shift;
+	my $typeFile = shift;
 	my $site = $etape->site;
 	my $formation = $etape->formation;
 	my $formation_label = $formation->label;
@@ -93,7 +93,7 @@ sub entete {
 		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
 			"${univ}_${formation_code}",
 			"${univ} - ${formation_label}",
-			"${univ}_${site}_${cohorte}_${annee}"
+			"${univ}_${typeFile}_${annee}"
 		],
 		["nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant", "loginEtudiant"]
 	)
@@ -129,9 +129,9 @@ use base qw(Personne);
 sub entete {
 	my $class = shift;
 	my $univ = shift;
-	my $annee = shift;  # attention $annee et $cohorte ne sont pas utilisé mais sont transmise
+	my $annee = shift;  # attention $annee et $typeFile ne sont pas utilisé mais sont transmise
 	my $etape = shift;
-	my $cohorte = shift;
+	my $typeFile = shift;
 	my $formation = $etape->formation;
 	my $formation_code = $formation->code;
 	my $formation_label = $formation->label;

@@ -102,12 +102,12 @@ sub printInFormationFile {
 
 
 sub openFile {
-	my $cohorte = shift; # pour les staff ce sera  formation_code 
+	my $typeFile = shift; # pour les staff ce sera  formation_code 
 	my $etape = shift;
 	my $type = shift;
 	if ($etape && $type) {
 		
-		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $cohorte, $annee, $dateFile);
+		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $typeFile, $annee, $dateFile);
 
 		my $file = $fileName2file{$fileName};
 		if ($file) {
@@ -120,7 +120,7 @@ sub openFile {
 
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 		
-		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $cohorte)) {
+		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $typeFile)) {
 			$csv->print($file, $entete);
 			print $file "\n";
 		}
@@ -136,20 +136,20 @@ sub getFile {
 	my $type = shift;
 	my $file;
 	my $haveFiles;
-	my $cohorte; # contient une cohorte ou un code formation.
+	my $typeFile; # contient une site_cohorte ou un code formation.
 	my $formation = $etape->formation;
 	
 	if ($type eq 'ETU') {
 		$haveFiles = $etape;
-		$cohorte = $etape->cohorte;
+		$typeFile = $etape->site . "_" . $etape->cohorte;
 	} else {
 		$haveFiles = $formation;
-		$cohorte = $formation->code;
+		$typeFile = $formation->code;
 	}
 	$haveFiles->getFile($type);
 	
 	unless ($file) {
-		$file = openFile($cohorte, $etape, $type);
+		$file = openFile($typeFile, $etape, $type);
 		if ($file) {
 			$haveFiles->setFile($file, $type);
 		}
