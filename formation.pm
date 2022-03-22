@@ -118,7 +118,7 @@ my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0});
 
 # ATTENTION code donne une et une seule formation , mais une formation paut avoir plusieurs etapes.
 
-sun init{
+sub init{
 	%code2Formation = ();
 	Etape::init();
 }
