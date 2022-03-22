@@ -21,11 +21,15 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
+  
   ```
 * STAFF:
 
   ```
   "eppn","nomFamilleEnseignant","prenomEnseignant","courrielEnseignant","codesEtape"
+  
+  
   
   
   
@@ -37,11 +41,15 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
+  
   ```
 * BIATS:
 
   ```
   "eppn","nomFamilleBIATS","prenomBIATS","courrielBIATS"
+  
+  
   
   
   
@@ -64,6 +72,8 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   # lignes désignant les comptes appartenant à la cohorte
   
   
+  
+  
   ```
 
 _
@@ -75,6 +85,8 @@ _
   “kapc/enseignants/modeles.batch-creer-enseignants”,”${diplôme}${univ}kapc/enseignants/modeles”,”${diplôme}${univ}kapc/enseignants/instances/${cohorte}”,”${diplôme}${univ}kapc-enseignants-${cohorte}”,
   “eppn”,”nomFamilleEnseignant”,”prenomEnseignant”,”courrielEnseignant”,
   # lignes désignant les comptes appartenant à la cohorte
+  
+  
   
   
   ```
@@ -98,6 +110,8 @@ _
   "${univ}_${formation_code}", "${univ} - ${formation_label}"
   
   
+  
+  
   ```
 
   Fichier nommé avec le pattern: `{univ}_FORMATIONS_{date_ISO}.csv`
@@ -106,19 +120,25 @@ _
   ```
   “model_code”,”formation_code”,”formation_label”,”cohorte”,
   “kapc/8etudiants.batch-creer-etudiants-authentification-externe”,”${univ}_${formation_code}”,”${univ} - ${formation_label}”,”${univ}_${site}_${cohorte}_${année}”
-  “eppn”,”nomFamilleEtudiant”,”prenomEtudiant”,”courrielEtudiant”,”matriculeEtudiant”,
-  # lignes désignant les comptes appartenant à la cohorte
+  “nomFamilleEtudiant”,”prenomEtudiant”,”courrielEtudiant”,”matriculeEtudiant”,”loginEtudiant”
+  # lignes désignant les comptes appartenant à la cohorte (et du site) - "loginEtudiant" doit être l'eppn
+  
+  
   
   ```
 
-  Fichier nommé selon le pattern: `{univ}_ETU_{cohorte}_{année}_{date_ISO}.csv`
+  Fichier nommé selon le pattern: `{univ}_ETU_{site}_{cohorte}_{année}_{date_ISO}.csv`
+
+  Nommer les fichiers avec la notion de site n'est utile que pour le lecteur, car à chaque cohorte correspond un site précis, on ne peut pas avoir un même nom de cohorte pour des sites différents.
 * 1 fichier csv par valeur ~~"codesetape"~~ "formation" à partir du fichier STAFF, permettant "d'exploser" la génération des portfolios par ~~codeEtape~~ formation pour les enseignants selon ces entêtes:
 
   ```
   “model_code”,”formation_code”,”formation_label”
   “kapc/3enseignants.batch-creer-enseignants-authentification-externe”,”${univ}_${formation_code}”,”${univ} - ${formation_label}”,
-  “eppn”,”nomFamilleEnseignant”,”prenomEnseignant”,”courrielEnseignant”,
-  # lignes désignant les comptes appartenant à la formation
+  ”nomFamilleEnseignant”,”prenomEnseignant”,”courrielEnseignant”,”loginEnseignant”
+  # lignes désignant les comptes appartenant à la formation - "loginEnseignant" doit être l'eppn
+  
+  
   
   
   ```
@@ -130,6 +150,8 @@ _
 
   ```
   à déterminer
+  
+  
   
   
   ```

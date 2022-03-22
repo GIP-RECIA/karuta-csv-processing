@@ -10,6 +10,9 @@ sub new {
 	my $class = shift;
 	my @info = @_;
 	if (testInfo(@info)) {
+		# eppn == login
+		my $eppn = shift @info;
+		push @info, $eppn;
 		my $self = {
 			info => \@info
 		};
@@ -92,7 +95,7 @@ sub entete {
 			"${univ} - ${formation_label}",
 			"${univ}_${site}_${cohorte}_${annee}"
 		],
-		["eppn","nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant"]
+		["nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant", "loginEtudiant"]
 	)
 }
 
@@ -105,7 +108,7 @@ sub new {
 	my $courriel = shift;
 	my $matricule = shift;
 		# liste des infos en sortie dans csv 
-	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule );
+	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule);
 	if ($self) {
 		$self->setCodesEtape(@_);
 		return bless $self, $class;
@@ -138,7 +141,7 @@ sub entete {
 			"${univ}_${formation_code}",
 			"${univ} - ${formation_label}",
 		],
-		["eppn","nomFamilleEnseignant","prenomEnseignant","courrielEnseignant"]
+		["nomFamilleEnseignant","prenomEnseignant","courrielEnseignant", "loginEnseignant"]
 	)
 }
 
