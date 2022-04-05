@@ -88,10 +88,11 @@ sub entete {
 	my $formation = $etape->formation;
 	my $formation_label = $formation->label;
 	my $formation_code = $formation->code;
+	my $cohorte = $etape->cohorte;
 	return (
 		["model_code","formation_code", "formation_label", "cohorte"],
 		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
-			"${univ}_${site}_${formation_code}",
+			"${univ}_${site}_${cohorte}",
 			"${univ}_${site} - ${formation_label}",
 			"${univ}_${typeFile}_${annee}"
 		],
@@ -136,10 +137,11 @@ sub entete {
 	my $formation = $etape->formation;
 	my $formation_code = $formation->code;
 	my $formation_label = $formation->label;
+	my $cohorte = $etape->cohorte;
 	return (
 		["model_code","formation_code","formation_label"],
 		[	"kapc/3enseignants.batch-creer-enseignants-authentification-externe",
-			"${univ}_${site}_${formation_code}",
+			"${univ}_${site}_${cohorte}",
 			"${univ}_${site} - ${formation_label}",
 		],
 		["nomFamilleEnseignant","prenomEnseignant","courrielEnseignant", "loginEnseignant"]
