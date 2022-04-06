@@ -26,11 +26,13 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
   ```
 * STAFF:
 
   ```
   "eppn","nomFamilleEnseignant","prenomEnseignant","courrielEnseignant","codesEtape"
+  
   
   
   
@@ -52,11 +54,13 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
   ```
 * BIATS:
 
   ```
   "eppn","nomFamilleBIATS","prenomBIATS","courrielBIATS"
+  
   
   
   
@@ -89,6 +93,7 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   
   
   
+  
   ```
 
 _
@@ -100,6 +105,7 @@ _
   “kapc/enseignants/modeles.batch-creer-enseignants”,”${diplôme}${univ}kapc/enseignants/modeles”,”${diplôme}${univ}kapc/enseignants/instances/${cohorte}”,”${diplôme}${univ}kapc-enseignants-${cohorte}”,
   “eppn”,”nomFamilleEnseignant”,”prenomEnseignant”,”courrielEnseignant”,
   # lignes désignant les comptes appartenant à la cohorte
+  
   
   
   
@@ -133,6 +139,7 @@ _
   
   
   
+  
   ```
 
   Fichier nommé avec le pattern: `{univ}_FORMATIONS_{date_ISO}.csv`
@@ -149,6 +156,7 @@ _
   
   
   
+  
   ```
 
   Fichier nommé selon le pattern: `{univ}_ETU_{site}_{cohorte}_{année}_{date_ISO}.csv`
@@ -158,9 +166,10 @@ _
 
   ```
   “model_code”,”formation_code”,”formation_label”,”cohorte”,
-  “kapc/8etudiants.batch-creer-etudiants-authentification-externe”,”${univ}_${site}_${cohorte}”,”${univ}_${site} - ${formation_label}”,”${univ}_${site}_${cohorte}_${année}”
+  “kapc/8etudiants.batch-creer-etudiants-authentification-externe”,”${univ}_${site}_${formation_code}”,”${univ}_${site} - ${formation_label}”,”${univ}_${site}_${cohorte}_${année}”
   “nomFamilleEtudiant”,”prenomEtudiant”,”courrielEtudiant”,”matriculeEtudiant”,”loginEtudiant”
   # lignes désignant les comptes appartenant à la cohorte (et du site) - "loginEtudiant" doit être l'eppn
+  
   
   
   
@@ -186,6 +195,7 @@ _
   
   
   
+  
   ```
 
   ATTENTION: la subtilité étant que plusieurs codes étapes peuvent correspondre à une même Formation. Il faudra donc rassembler tous les STAFF de la même univ - formation, même si le code étape change.
@@ -195,9 +205,10 @@ _
 
   ```
   “model_code”,”formation_code”,”formation_label”
-  “kapc/3enseignants.batch-creer-enseignants-authentification-externe”,”${univ}_${site}_${cohorte}”,”${univ}_${site} - ${formation_label}”,
+  “kapc/3enseignants.batch-creer-enseignants-authentification-externe”,”${univ}_${site}_${formation_code}”,”${univ}_${site} - ${formation_label}”,
   ”nomFamilleEnseignant”,”prenomEnseignant”,”courrielEnseignant”,”loginEnseignant”
   # lignes désignant les comptes appartenant à la formation - "loginEnseignant" doit être l'eppn
+  
   
   
   
@@ -209,7 +220,7 @@ _
 
   ATTENTION: la subtilité étant que plusieurs codes étapes peuvent correspondre à une même Formation. Il faudra donc rassembler tous les STAFF de la même univ - formation, même si le code étape change.
 
-  Fichier nommé selon le pattern: `{univ}_STAFF_{site}_{cohorte}_{année}_{dateISO}.csv`
+  Fichier nommé selon le pattern: `{univ}_STAFF_{site}_{formation_code}_{année}_{dateISO}.csv`
 * 1 fichier csv par univ à partir du fichier BIATS, pour les personnels encadrants selon ces entêtes:
 
   ```
@@ -221,10 +232,11 @@ _
   
   
   
+  
   ```
 * pour les variables indiquées dans les fichiers sous forme du pattern `${var}` voici les détails (sauf exception explicité il ne doit y avoir que des caractères et chiffres [A-Z0-9]+, aucun espace ni signe):
   * *cohorte* est l'acronyme qu'on retrouve dans le fichier FORMATIONS dans une 3ème colonne `libelleCourtEtape`. Ce champs est à utilisé transformé de la façon suivante: remplacement des caractères non alphanumériques par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
-  * *formation_code* peut être obtenu à partir de la variable *cohorte* en supprimant les caractères numériques ainsi que les redondances successives du caractères `_`. La chaîne ne doit contenir que des caractères en majuscule sans ponctuation.
+  * *formation_code* peut être obtenu à partir de la variable *cohorte* en supprimant le caractère numérique entre "_" (sans caractère alphabétique autour) ainsi que les redondances successives du caractères `_`. La chaîne ne doit contenir que des caractères en majuscule sans ponctuation.
   * *formation_label* est à déterminer à partir de la colonne `libelleEtape` en supprimant les caractères numériques et en simplifiant les espaces successifs. La chaîne ne doit contenir que des caractères en majuscule, la ponctuation est autorisée.
   * *univ* est le nom court de l'université en majuscule, soit: `TOURS`, `ORLEANS`, etc... ces termes sont en minuscules.
   * *site* correspondant à la structure/antenne, soit `IUT-18`, `IUT-28`, `IUT-36-CHX`, etc... obtenu via la colonne `site` dans le fichier FORMATIONS. Ce terme est facultatif pour le moment par rapport à l'univ de Tours.

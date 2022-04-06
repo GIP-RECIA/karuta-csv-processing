@@ -136,7 +136,7 @@ sub getFile {
 	my $type = shift;
 	my $file;
 	my $haveFiles;
-	my $typeFile; # contient une site_cohorte ou un code formation.
+	my $typeFile; # contient  site_cohorte/formation .
 	my $formation = $etape->formation;
 	
 	if ($type eq 'ETU') {
@@ -144,7 +144,7 @@ sub getFile {
 		$typeFile = $etape->site . "_" . $etape->cohorte;
 	} else {
 		$haveFiles = $formation;
-		$typeFile = $etape->site . "_" . $etape->cohorte;
+		$typeFile = $etape->site . "_" . $etape->formation;
 	}
 	$haveFiles->getFile($type);
 	
