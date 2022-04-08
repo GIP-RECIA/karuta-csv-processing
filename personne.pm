@@ -94,7 +94,7 @@ sub entete {
 		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
 			"${univ}_${site}_${formation_code}",
 			"${univ}_${site} - ${formation_label}",
-			"${univ}_${typeFile}_${annee}"
+			"${univ}_${typeFile}"
 		],
 		["nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant", "loginEtudiant"]
 	)
