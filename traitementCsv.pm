@@ -119,7 +119,7 @@ sub openFile {
 
 		my $file = $fileName2file{$fileName};
 		if ($file) {
-			return $file;
+			return $file, $fileName;
 		} else {
 			$file = new IO::File;
 		}
@@ -163,7 +163,7 @@ sub getFile {
 			$haveFiles->setFile($file, $type);
 		}
 	} else {
-		$fileName = getFileName ($typeFile, $etape, $type);
+		$fileName = getFileName($typeFile, $etape, $type);
 	}
 	return ($file, $fileName);
 }
