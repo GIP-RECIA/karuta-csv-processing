@@ -57,9 +57,12 @@ sub new {
 	my $codeFormation = uc($cohorte);
 	$codeFormation =~ s/_\d+_/_/g;
 	$codeFormation =~ s/_+/_/g;
+	$codeFormation =~ s/_\d+$//;
 
 	my $label = uc($libEtap) ;
-	$label =~ s/(\d|\s)+/ /g;
+	$label =~ s/((ANNÉE\s\d+$)|\d|\s)+/ /g;
+    $label =~ s/\s+$//;
+
 	
 	my $self;
 	
