@@ -14,11 +14,20 @@ sub new {
 		my $eppn = shift @info;
 		push @info, $eppn;
 		my $self = {
-			info => \@info
+			info => \@info,
+			files => {}
 		};
 		return bless $self, $class;
 	}
 	return 0;
+}
+
+
+sub inFile {
+	my $self = shift;
+	my $file = shift;
+	my $files = $$self{file};
+	return ++ $$files{$file} ;
 }
 
 sub testInfo {

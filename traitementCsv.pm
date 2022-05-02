@@ -89,13 +89,16 @@ sub traitement {
 }
 
 
+
 sub printInFormationFile {
 	my $etape = shift;
 	my $personne = shift;
 	my $file = getFile($etape, $personne->type);
 	if ($file) {
-		$csv->print($file, $personne->info());
-		print $file  "\n";
+		unless ($personne->inFile($file) ) {
+			$csv->print($file, $personne->info());
+			print $file  "\n";
+		}
 	}
 }
 
