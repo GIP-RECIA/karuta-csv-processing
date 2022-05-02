@@ -26,7 +26,7 @@ sub new {
 sub inFile {
 	my $self = shift;
 	my $fileName = shift;
-	my $files = $$self{files};
+	my $files = $self->{files};
 	return $$files{$fileName}++ ;
 }
 

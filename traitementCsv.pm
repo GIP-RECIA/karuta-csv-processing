@@ -102,7 +102,12 @@ sub printInFormationFile {
 	}
 }
 
-
+sub getFileName{
+	my $typeFile = shift; # pour les staff ce sera  formation_code 
+	my $etape = shift;
+	my $type = shift;
+	return sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $typeFile, $annee, $dateFile);
+}
 
 sub openFile {
 	my $typeFile = shift; # pour les staff ce sera  formation_code 
@@ -110,7 +115,7 @@ sub openFile {
 	my $type = shift;
 	if ($etape && $type) {
 		
-		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $typeFile, $annee, $dateFile);
+		my $fileName = getFileName($typeFile, $etape, $type );
 
 		my $file = $fileName2file{$fileName};
 		if ($file) {
@@ -157,6 +162,8 @@ sub getFile {
 		if ($file) {
 			$haveFiles->setFile($file, $type);
 		}
+	} else {
+		$fileName = getFileName ($typeFile, $etape, $type);
 	}
 	return ($file, $fileName);
 }
