@@ -25,9 +25,9 @@ sub new {
 
 sub inFile {
 	my $self = shift;
-	my $file = shift;
-	my $files = $$self{file};
-	return ++ $$files{$file} ;
+	my $fileName = shift;
+	my $files = $$self{files};
+	return $$files{$fileName}++ ;
 }
 
 sub testInfo {

@@ -93,9 +93,9 @@ sub traitement {
 sub printInFormationFile {
 	my $etape = shift;
 	my $personne = shift;
-	my $file = getFile($etape, $personne->type);
+	my ($file , $fileName) = getFile($etape, $personne->type);
 	if ($file) {
-		unless ($personne->inFile($file) ) {
+		unless ($personne->inFile($fileName) ) {
 			$csv->print($file, $personne->info());
 			print $file  "\n";
 		}
@@ -129,7 +129,7 @@ sub openFile {
 		}
 
 		$fileName2file{$fileName} = $file;
-		return $file;
+		return $file, $fileName;
 	}
 	return 0;
 }
@@ -139,6 +139,7 @@ sub getFile {
 	my $type = shift;
 	my $file;
 	my $haveFiles;
+	my $fileName;
 	my $typeFile; # contient  site_cohorte/formation .
 	my $formation = $etape->formation;
 	
@@ -152,12 +153,12 @@ sub getFile {
 	$haveFiles->getFile($type);
 	
 	unless ($file) {
-		$file = openFile($typeFile, $etape, $type);
+		($file, $fileName) = openFile($typeFile, $etape, $type);
 		if ($file) {
 			$haveFiles->setFile($file, $type);
 		}
 	}
-	return $file;
+	return ($file, $fileName);
 }
 
 
