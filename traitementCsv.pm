@@ -93,21 +93,16 @@ sub traitement {
 sub printInFormationFile {
 	my $etape = shift;
 	my $personne = shift;
-	my ($file , $fileName) = getFile($etape, $personne->type);
+	my $file  = getFile($etape, $personne->type);
 	if ($file) {
-		unless ($personne->inFile($fileName) ) {
+		unless ($personne->inFile($file) ) {
 			$csv->print($file, $personne->info());
 			print $file  "\n";
 		}
 	}
 }
 
-sub getFileName{
-	my $typeFile = shift; # pour les staff ce sera  formation_code 
-	my $etape = shift;
-	my $type = shift;
-	return sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $typeFile, $annee, $dateFile);
-}
+
 
 sub openFile {
 	my $typeFile = shift; # pour les staff ce sera  formation_code 
@@ -115,11 +110,12 @@ sub openFile {
 	my $type = shift;
 	if ($etape && $type) {
 		
-		my $fileName = getFileName($typeFile, $etape, $type );
+		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $typeFile, $annee, $dateFile);
+
 
 		my $file = $fileName2file{$fileName};
 		if ($file) {
-			return $file, $fileName;
+			return $file;
 		} else {
 			$file = new IO::File;
 		}
@@ -134,7 +130,7 @@ sub openFile {
 		}
 
 		$fileName2file{$fileName} = $file;
-		return $file, $fileName;
+		return $file;
 	}
 	return 0;
 }
@@ -144,7 +140,6 @@ sub getFile {
 	my $type = shift;
 	my $file;
 	my $haveFiles;
-	my $fileName;
 	my $typeFile; # contient  site_cohorte/formation .
 	my $formation = $etape->formation;
 	
@@ -158,14 +153,12 @@ sub getFile {
 	$haveFiles->getFile($type);
 	
 	unless ($file) {
-		($file, $fileName) = openFile($typeFile, $etape, $type);
+		$file = openFile($typeFile, $etape, $type);
 		if ($file) {
 			$haveFiles->setFile($file, $type);
 		}
-	} else {
-		$fileName = getFileName($typeFile, $etape, $type);
 	}
-	return ($file, $fileName);
+	return $file;
 }
 
 
