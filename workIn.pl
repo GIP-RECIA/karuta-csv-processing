@@ -42,12 +42,20 @@ my $ftpAddr = $properties-> getProperty('ftp.addr') or FATAL!  "ftp.addr propert
 my $listUniv= $properties-> getProperty('univ.list') or FATAL!  "univ.list propertie not found" ;
 my $annee= $properties-> getProperty('annee.scolaire') or FATAL!  "annee.scolaire propertie not found" ;
 
+my $modeTest = 0;
 	INFO! "$listUniv";
 foreach my $univ (split(" ", $listUniv) ){
 	INFO! "create object univ for $univ" ;
 	my $ftpRep = $properties-> getProperty("${univ}.ftp.rep") or  FATAL!  "${univ}.ftp.rep propertie not found" ;
 	my $filePrefix = $properties-> getProperty("${univ}.file.prefix") or FATAL!  "${univ}.file.prefix propertie not found" ;
-	new Univ($univ, $ftpRep, $workingDir, $filePrefix);
+	my $newPathTest = $properties-> getProperty("${univ}.test.newPath");
+	
+	if ($newPathTest) {
+		$modeTest = 1;
+		new Univ($univ, $ftpRep, $workingDir, $filePrefix)->path($newPathTest);
+	} else {
+		new Univ($univ, $ftpRep, $workingDir, $filePrefix);
+	}
 }
 
 my $ftp = "/usr/bin/sftp -b- $ftpAddr";
@@ -58,33 +66,25 @@ my $ftp = "/usr/bin/sftp -b- $ftpAddr";
 	Recuperation des fichiers.zip de chaque univ
 =cut
 
-#goto NOFTP; #decommenter pour tester sans download
-Download::openFtp($ftp);
+unless ($modeTest) { # on est en test pas de download
 
-foreach my $univ (Univ::all) {
-	my $newPath = Download::initRepZip($univ->path, $univ->ftpRep, $univ->zipPrefix);
-	if ($newPath) {
-		$univ->path($newPath);
-		DEBUG! "new path = " . $univ->path() . "\n";
-	} else {
-		# on vide le path pour indiqué qu'il n'y a pas de nouveau fichier
-		$univ->path("");
+	Download::openFtp($ftp);
+
+	foreach my $univ (Univ::all) {
+		my $newPath = Download::initRepZip($univ->path, $univ->ftpRep, $univ->zipPrefix);
+		if ($newPath) {
+			$univ->path($newPath);
+			DEBUG! "new path = " . $univ->path() . "\n";
+		} else {
+			# on vide le path pour indiqué qu'il n'y a pas de nouveau fichier
+			$univ->path("");
+		}
 	}
+
+	Download::closeFtp();
 }
 
-Download::closeFtp();
-goto TRAITEMENT;
-# code pour tester sans download
-NOFTP: foreach my $univ (Univ::all) {
-	my $newPath = "Test/". ucfirst ($univ->id()) . '_20220308';
-	if ($newPath) {
-		$univ->path($newPath);
-		DEBUG! "new path = " . $univ->path() . "\n";
-	} else {
-		# on vide le path pour indiqué qu'il n'y a pas de nouveau fichier
-		$univ->path("");
-	}
-}
+
 
 
 =begin
@@ -95,7 +95,7 @@ NOFTP: foreach my $univ (Univ::all) {
 
 TRAITEMENT: foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
-	print ":$newPath:\n";
+	INFO! "$newPath";
 	if ($newPath =~ /^${workingDir}\/(.+)/) {
 		my $relativePath=$1;
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
@@ -104,10 +104,11 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			Formation::writeFile($univ, $dateFile);
 			Traitement::parseFile('ETU', $univ ,  $dateFile, $annee);
 			Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee);
-			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${relativePath}.zip ${relativePath}*");
+			my $zipName = lc($relativePath). '.zip';
+			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath}*");
 		}
 	} else {
-		print ", KO; :$workingDir:\n";
+		ERROR! $univ->id(), " KO; $workingDir";
 	}
 }
 
