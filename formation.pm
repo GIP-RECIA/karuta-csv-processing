@@ -41,20 +41,24 @@ sub getByCodeEtap {
 	return $codeEtap2etap{$codeEtap};
 }
 
+#cohorte = $typeFormation_$sigleFormation_$parcoursFormation_$anneeFormation
+#formation_code = $typeFormation_$sigleFormation
+#formation_label = $libelle_etape je me demande si on ne fera pas = formation_code
+
 sub new {
-	my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
+	# Attention on peut créer plusieurs etap on renvoie donc le nombre d'étap créés
+	# on creer aussi les formations correspondantes aux etapes.
+	# my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
+	my ($class, $codesEtaps, $libEtap, $typeFormation, $sigleFormation, $parcoursFormation, $anneeFormation, $site) = @_;
 	my $cohorte;
 
-	DEBUG!  "$codeEtap , $libEtap, $libCourt, $site";
+	DEBUG!  "$codesEtaps , $libEtap, $typeFormation, $sigleFormation, $parcoursFormation, $anneeFormation , $site";
 	
-	if ($libCourt) {
-		$cohorte = $libCourt;
-	} else {
-		$cohorte = $codeEtap;
-	}
+	
+	$cohorte = "${typeFormation}_${sigleFormation}_${parcoursFormation}_${anneeFormation}";
 
 	$cohorte =~ s/(\W|_)+/_/g;
-	my $codeFormation = uc($cohorte);
+	my $codeFormation = uc("${typeFormation}_${sigleFormation}");
 	$codeFormation =~ s/_\d+_/_/g;
 	$codeFormation =~ s/_+/_/g;
 	$codeFormation =~ s/_\d+$//;
@@ -71,24 +75,27 @@ sub new {
 		my $formation = new  Formation($codeFormation, $label);
 
 		if ($formation) {
-			DEBUG! "Create etape : $codeEtap, $libEtap, $libCourt, $site, $cohorte ";
-			$self = {
-				etap => $codeEtap,
-				lib => $libEtap,
-				court => $libCourt,
-				site => $site,
-				cohorte => $cohorte,
-				formation => $formation,
-				files => {}
-			};
+			my $nbEtap = 0;
+			foreach my $codeEtap (split('@',$codesEtaps)) {
+				DEBUG! "Create etape : $codeEtap, $libEtap, $site, $cohorte ";
+				$self = {
+					etap => $codeEtap,
+					lib => $libEtap,
+				#	court => $libCourt,
+					site => $site,
+					cohorte => $cohorte,
+					formation => $formation,
+					files => {}
+				};
 
-			bless $self, $class;
+				bless $self, $class;
 
-			$formation->etapes($self);
+				$formation->etapes($self);
 
-			$codeEtap2etap{$codeEtap} = $self;
-			
-			return $self;
+				$codeEtap2etap{$codeEtap} = $self;
+				$nbEtap++;
+			}
+			return $nbEtap;
 		}
 		return 0;
 	} else {
@@ -153,6 +160,7 @@ sub readFile {
 	while (<FORMATION>) {
 		$nbline++;
 		s/\"\;\"/\"\,\"/g; #on force les ,
+		s/(\;|\s)+$//;
 		if ($csv->parse($_) ){
 			unless (new Etape($csv->fields())){
 				WARN! "formation ligne $nbline : create object error !";
