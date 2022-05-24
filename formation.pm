@@ -64,7 +64,7 @@ sub new {
 	$codeFormation =~ s/_\d+$//;
 
 	my $label = uc($libEtap) ;
-	$label =~ s/((ANNÉE\s\d+$)|\d|\s)+/ /g;
+	#$label =~ s/((ANNÉE\s\d+$)|\d|\s)+/ /g;
     $label =~ s/\s+$//;
 
 	
@@ -151,6 +151,8 @@ sub readFile {
 	DEBUG! "open  $path/$fileName \n";
 
 	open (FORMATION, "<$path/$fileName") || FATAL!  "$path/$fileName " . $! . "\n";
+	binmode(FORMATION, ":encoding(utf8)");
+
 	<FORMATION>; # 1er ligne : nom de colonne
 
 	open (LOG, ">>$fileNameLog") || FATAL!  "$fileNameLog " . $!;
@@ -160,7 +162,7 @@ sub readFile {
 	while (<FORMATION>) {
 		$nbline++;
 		s/\"\;\"/\"\,\"/g; #on force les ,
-		s/(\;|\s)+$//;
+		#s/(\;|\s)+$//;
 		if ($csv->parse($_) ){
 			unless (new Etape($csv->fields())){
 				WARN! "formation ligne $nbline : create object error !";
