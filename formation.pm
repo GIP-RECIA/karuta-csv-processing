@@ -42,8 +42,13 @@ sub getByCodeEtap {
 }
 
 #cohorte = $typeFormation_$sigleFormation_$parcoursFormation_$anneeFormation
+#new cohorte = ${typeFormation}_*${sigleFormation}_*${parcoursFormation}_${anneeFormation}~~ (on applique le formatage défini) ~~ou~~
+#new cohorte = ${libelleEtape}
 #formation_code = $typeFormation_$sigleFormation
+#new formation*code = ${formation*label}
+
 #formation_label = $libelle_etape je me demande si on ne fera pas = formation_code
+# new formation_label = ${typeFormation} ${sigleFormation} (attention à l'espace entre les deux variables)
 
 sub new {
 	# Attention on peut créer plusieurs etap on renvoie donc le nombre d'étap créés
@@ -54,18 +59,15 @@ sub new {
 
 	DEBUG!  "$codesEtaps , $libEtap, $typeFormation, $sigleFormation, $parcoursFormation, $anneeFormation , $site";
 	
+	my $label = uc("${typeFormation} ${sigleFormation}");
+
 	
-	$cohorte = "${typeFormation}_${sigleFormation}_${parcoursFormation}_${anneeFormation}";
-
+	$cohorte = $libEtap;
 	$cohorte =~ s/(\W|_)+/_/g;
-	my $codeFormation = uc("${typeFormation}_${sigleFormation}");
-	$codeFormation =~ s/_\d+_/_/g;
-	$codeFormation =~ s/_+/_/g;
-	$codeFormation =~ s/_\d+$//;
 
-	my $label = uc($libEtap) ;
-	#$label =~ s/((ANNÉE\s\d+$)|\d|\s)+/ /g;
-    $label =~ s/\s+$//;
+	my $codeFormation = $label;
+	$codeFormation =~ s/(\W|_)+/_/g;
+
 
 	
 	my $self;
@@ -162,7 +164,7 @@ sub readFile {
 	while (<FORMATION>) {
 		$nbline++;
 		s/\"\;\"/\"\,\"/g; #on force les ,
-		#s/(\;|\s)+$//;
+		s/(;|\s)+$//;
 		if ($csv->parse($_) ){
 			unless (new Etape($csv->fields())){
 				WARN! "formation ligne $nbline : create object error !";
@@ -170,6 +172,7 @@ sub readFile {
 			}
 		} else {
 			WARN! "formation ligne  $nbline could not be parsed: $_";
+			$csv->error_diag ();
 			print LOG "formation ($nbline) rejet : $_\n";
 		} 
 	}

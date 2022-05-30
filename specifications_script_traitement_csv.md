@@ -22,6 +22,8 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
+  
   ```
 * STAFF:
 
@@ -30,13 +32,17 @@ Formalisme (liste des colonnes) des fichiers csv:
     
   
   
+  
+  
   ```
-* FORMATIONS: 
+* FORMATIONS:
 
   version ancienne
 
   ```
   "codeEtape","libelleEtape","libelleCourtEtape","site"
+  
+  
   
   
   
@@ -49,9 +55,11 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
+  
   ```
 
-  Le champs typeFormation correspondra à type court de formation, par exemple "BUT", "LICENCE", "MASTER",  "INGÉNIEUR", etc...
+  Le champs typeFormation correspondra à type court de formation, par exemple "BUT", "LICENCE", "MASTER", "INGÉNIEUR", etc...
 
   Le champs sigleFormation devra être (du moins essayer de se rapprocher) d'un sigle pour l'intitulé de la formation (texte très court généralement utilisé dans le langage courant), par exemple: "GEII", "INFORMATIQUE", "GEA", "QLIO", "GMP", "MTE", etc...
 
@@ -62,6 +70,8 @@ Formalisme (liste des colonnes) des fichiers csv:
 
   ```
   "eppn","nomFamilleSuperviseur","prenomSuperviseur","courrielSuperviseur"
+  
+  
   
   
   
@@ -89,6 +99,8 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   
   
   
+  
+  
   ```
 
   Fichier nommé avec le pattern: `{univ}_FORMATIONS_{date_ISO}.csv`
@@ -99,6 +111,8 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   “kapc/8etudiants.batch-creer-etudiants-authentification-externe”,”${univ}_${site}_${formation_code}”,”${univ}_${site} - ${formation_label}”,”${univ}_${site}_${cohorte}”
   “nomFamilleEtudiant”,”prenomEtudiant”,”courrielEtudiant”,”matriculeEtudiant”,”loginEtudiant”
   # lignes désignant les comptes appartenant à la cohorte (et du site) - "loginEtudiant" doit être l'eppn
+  
+  
   
   
   
@@ -131,6 +145,8 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   
   
   
+  
+  
   ```
 
   ATTENTION: la subtilité étant que plusieurs codes étapes peuvent correspondre à une même Formation. Il faudra donc rassembler tous les STAFF de la même univ - formation, même si le code étape change.
@@ -149,13 +165,27 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   
   
   
+  
+  
   ```
 * pour les variables indiquées dans les fichiers sous forme du pattern `${var}` voici les détails (sauf exception explicité il ne doit y avoir que des caractères et chiffres [A-Z0-9]+, aucun espace ni signe):
   * *cohorte* est l'acronyme qu'on retrouve dans le fichier FORMATIONS dans une 3ème colonne `libelleCourtEtape`. Ce champs est à utilisé transformé de la façon suivante: remplacement des caractères non alphanumériques par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
+
+    **Version modifiée**: ~~cohorte = ${typeFormation}_*${sigleFormation}_*${parcoursFormation}_${anneeFormation}~~ (on applique le formatage défini) ~~ou~~ cohorte = ${libelleEtape}
+
+    **Formatage de la chaîne:**  remplacement des caractères non alphanumériques par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
   * *formation_code* peut être obtenu à partir de la variable *cohorte* en supprimant le caractère numérique entre "_" (sans caractère alphabétique autour) ainsi que les redondances successives du caractères `_`. Pour l'INSA on supprime la chaine décimale avec le caractère `_` devant une chaîne décimale et si c'est en fin de chaîne. La chaîne ne doit contenir que des caractères en majuscule sans ponctuation.
+
+    **Version modifiée**: formation*code = ${formation*label}
+
+    **Formatage de la chaîne:**  remplacement des caractères non compris dans la chaine `[a-zA-Z0-9-]+` par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
   * *formation_label* est à déterminer à partir de la colonne `libelleEtape` en supprimant la chaine `ANNÉE\s\d` où `\d` correspond à une chaîne numérique et `\s` à un espace, en supprimant les caractères numériques et en simplifiant les espaces successifs. La chaîne ne doit contenir que des caractères en majuscule, la ponctuation est autorisée.
+
+    **Version modifiée**: formation_label = ${typeFormation} ${sigleFormation} (attention à l'espace entre les deux variables)
+
+    **Formatage de la chaîne:** La chaîne ne doit contenir que des caractères en majuscule, la ponctuation est autorisée => aucune transformation autre que la mise en majuscule n'est nécessaire.
   * *univ* est le nom court de l'université en majuscule, soit: `TOURS`, `ORLEANS`,`INSA`, etc... ces termes sont en minuscules.
-  * *site* correspondant à la structure/antenne, soit `IUT-18`, `IUT-28`, `IUT-36-CHX`, etc... obtenu via la colonne `site` dans le fichier FORMATIONS. ~~Ce terme est facultatif pour le moment par rapport à l'univ de Tours.~~
+  * *site* correspondant à la structure/antenne, soit `IUT-18`, `IUT-28`, `IUT-36-CHX`, etc... obtenu via la colonne `site` dans le fichier FORMATIONS.
   * *année* correspond pour le moment à l'année scolaire 2021, on reverra cela après si on peut traiter correctement ou non à partir d'un des futurs champs afin de connaître uniquement la promotion du diplôme (2021 pour un première année, et 2020 pour un deuxième année par exemple)
 * des `;` peuvent être utilisés à la place des `,` comme séparateurs de champs, le parser Karuta sait traiter. Comme le fait d'avoir une virgule en fin de ligne cela ne semble pas obligatoire.
 
