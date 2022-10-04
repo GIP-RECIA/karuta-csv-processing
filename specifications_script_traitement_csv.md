@@ -24,6 +24,12 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
+  
+  
+  
+  
+  
   ```
 * STAFF:
 
@@ -34,13 +40,25 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   
   
+  
+  
+  
+  
+  
+  
   ```
 * FORMATIONS:
 
-  version ancienne
+  version **dépréciée**
 
   ```
   "codeEtape","libelleEtape","libelleCourtEtape","site"
+  
+  
+  
+  
+  
+  
   
   
   
@@ -51,7 +69,13 @@ Formalisme (liste des colonnes) des fichiers csv:
   nouvelle version
 
   ```
-  "codeEtape","libelleEtape","typeFormation", "sigleFormation","parcoursFormation","anneeFormation","site"
+  "codeEtape","libelleEtape","codeSISE", "typeDiplome", "intituleDiplome","site"
+  
+  
+  
+  
+  
+  
   
   
   
@@ -59,17 +83,25 @@ Formalisme (liste des colonnes) des fichiers csv:
   
   ```
 
-  Le champs typeFormation correspondra à type court de formation, par exemple "BUT", "LICENCE", "MASTER", "INGÉNIEUR", etc...
+  Le champs libelleEtape doit contenir en fin de chaîne le numéro de l'année de formation dans le diplôme. Attention ce n'est pas l'année (bac +x) dans le parcours de l'étudiant, mais par exemple 2 pour un Master en 2ème année et non 5 pour ce cas. Le champs ne devra se terminer que par un chiffre.
 
-  Le champs sigleFormation devra être (du moins essayer de se rapprocher) d'un sigle pour l'intitulé de la formation (texte très court généralement utilisé dans le langage courant), par exemple: "GEII", "INFORMATIQUE", "GEA", "QLIO", "GMP", "MTE", etc...
+  Le champs codeSISE doit être le code associé au diplôme, code connu au niveau national permettant de faire le lien avec les autres formations "identiques" des autres universités. Ce champs sera utile pour les transferts d'informations et la récupération des portfolios, il ne sera pas traité dans Karuta pour le moment - un historique du fichier Formation sera conservé.
 
-  Le champs parcoursFormation est optionnel, il permet de façon succincte de définir le parcours ou plus communément l'option de la formation. Cela permettra de définir et de distinguer des compétences/SAÉ spécifiques par rapport à une formation commune.
+  Le champs typeDiplome correspondra à type court de formation, par exemple "BUT", "LICENCE", "MASTER", voir "MAST LMD, "FORM. ING.", etc... Cela fait référence au champs  `Type du diplôme SISE `décrit dans la BCN.
 
-  Le champs anneeFormation permet de définir l'année de la formation, attention ce n'est pas l'année (bac +x) dans le parcours de l'étudiant, mais par exemple 2 pour un Master en 2ème année et non 5 pour ce cas. Devra être limité à un chiffre.
+  Le champs intituleDiplome devra être (du moins essayer de se rapprocher) d'un sigle pour l'intitulé de la formation (texte très court généralement utilisé dans le langage courant), par exemple: "GEII", "INFORMATIQUE", "GEA", "QLIO", "GMP", "MTE", etc... Cela fait référence au champs `Intitulé 1 du diplôme SISE`
+
+  Le champs site fait référence au champs `composante de rattachement` et prends les valeurs exemples IUT Tours, IUT Orléans pour les universités et BOURGES ou BLOIS pour l'INSA CVL
 * SUPERVISEUR:
 
   ```
   "eppn","nomFamilleSuperviseur","prenomSuperviseur","courrielSuperviseur"
+  
+  
+  
+  
+  
+  
   
   
   
@@ -101,6 +133,12 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   
   
   
+  
+  
+  
+  
+  
+  
   ```
 
   Fichier nommé avec le pattern: `{univ}_FORMATIONS_{date_ISO}.csv`
@@ -111,6 +149,12 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   “kapc/8etudiants.batch-creer-etudiants-authentification-externe”,”${univ}_${site}_${formation_code}”,”${univ}_${site} - ${formation_label}”,”${univ}_${site}_${cohorte}”
   “nomFamilleEtudiant”,”prenomEtudiant”,”courrielEtudiant”,”matriculeEtudiant”,”loginEtudiant”
   # lignes désignant les comptes appartenant à la cohorte (et du site) - "loginEtudiant" doit être l'eppn
+  
+  
+  
+  
+  
+  
   
   
   
@@ -147,6 +191,12 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   
   
   
+  
+  
+  
+  
+  
+  
   ```
 
   ATTENTION: la subtilité étant que plusieurs codes étapes peuvent correspondre à une même Formation. Il faudra donc rassembler tous les STAFF de la même univ - formation, même si le code étape change.
@@ -167,21 +217,27 @@ D'autres attributs pourront être fourni, mais il ne seront pas a traiter dans c
   
   
   
+  
+  
+  
+  
+  
+  
   ```
 * pour les variables indiquées dans les fichiers sous forme du pattern `${var}` voici les détails (sauf exception explicité il ne doit y avoir que des caractères et chiffres [A-Z0-9]+, aucun espace ni signe):
-  * *cohorte* est l'acronyme qu'on retrouve dans le fichier FORMATIONS dans une 3ème colonne `libelleCourtEtape`. Ce champs est à utilisé transformé de la façon suivante: remplacement des caractères non alphanumériques par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
+  * *cohorte* ~~est l'acronyme qu'on retrouve dans le fichier FORMATIONS dans une 3ème colonne~~ `libelleCourtEtape`~~. Ce champs est à utilisé transformé de la façon suivante: remplacement des caractères non alphanumériques par le caractère~~ `_` ~~en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul~~ `_` ~~entre chaque caractères alphanumériques).~~
 
-    **Version modifiée**: ~~cohorte = ${typeFormation}_*${sigleFormation}_*${parcoursFormation}_${anneeFormation}~~ (on applique le formatage défini) ~~ou~~ cohorte = ${libelleEtape}
+    **Version modifiée**: ~~cohorte = ${typeFormation}*\*${sigleFormation}*\*${parcoursFormation}_${anneeFormation}~~ ~~ou~~ cohorte = ${libelleEtape}
 
-    **Formatage de la chaîne:**  remplacement des caractères non alphanumériques par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
-  * *formation_code* peut être obtenu à partir de la variable *cohorte* en supprimant le caractère numérique entre "_" (sans caractère alphabétique autour) ainsi que les redondances successives du caractères `_`. Pour l'INSA on supprime la chaine décimale avec le caractère `_` devant une chaîne décimale et si c'est en fin de chaîne. La chaîne ne doit contenir que des caractères en majuscule sans ponctuation.
+    **Formatage de la chaîne:** remplacement des caractères non alphanumériques par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
+  * *formation_code* ~~peut être obtenu à partir de la variable *cohorte* en supprimant le caractère numérique entre "_" (sans caractère alphabétique autour) ainsi que les redondances successives du caractères~~ `_`~~. Pour l'INSA on supprime la chaine décimale avec le caractère~~ `_` ~~devant une chaîne décimale et si c'est en fin de chaîne. La chaîne ne doit contenir que des caractères en majuscule sans ponctuation.~~
 
-    **Version modifiée**: formation*code = ${formation*label}
+    **Version modifiée**: formation_*code = ${formation*label}
 
-    **Formatage de la chaîne:**  remplacement des caractères non compris dans la chaine `[a-zA-Z0-9-]+` par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
-  * *formation_label* est à déterminer à partir de la colonne `libelleEtape` en supprimant la chaine `ANNÉE\s\d` où `\d` correspond à une chaîne numérique et `\s` à un espace, en supprimant les caractères numériques et en simplifiant les espaces successifs. La chaîne ne doit contenir que des caractères en majuscule, la ponctuation est autorisée.
+    **Formatage de la chaîne:** remplacement des caractères non compris dans la chaine `[a-zA-Z0-9-]+` par le caractère `_` en supprimant les redondances successives de ce caractère (il ne peut y avoir qu'un seul `_` entre chaque caractères alphanumériques).
+  * *formation_label* ~~est à déterminer à partir de la colonne~~ `libelleEtape` ~~en supprimant la chaine~~ `ANNÉE\s\d` ~~où~~ `\d` ~~correspond à une chaîne numérique et~~ `\s` ~~à un espace, en supprimant les caractères numériques et en simplifiant les espaces successifs. La chaîne ne doit contenir que des caractères en majuscule, la ponctuation est autorisée.~~
 
-    **Version modifiée**: formation_label = ${typeFormation} ${sigleFormation} (attention à l'espace entre les deux variables)
+    **Version modifiée**: formation_label = ${typeDiplome} ${intituleDiplome} (attention à l'espace entre les deux variables)
 
     **Formatage de la chaîne:** La chaîne ne doit contenir que des caractères en majuscule, la ponctuation est autorisée => aucune transformation autre que la mise en majuscule n'est nécessaire.
   * *univ* est le nom court de l'université en majuscule, soit: `TOURS`, `ORLEANS`,`INSA`, etc... ces termes sont en minuscules.
