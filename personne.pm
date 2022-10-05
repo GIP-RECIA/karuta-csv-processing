@@ -45,9 +45,14 @@ sub setCodesEtape {
 	my @codesEtape;
 	if (@_ > 1 ) {
 		foreach my $code (@_) {
-			push ( @codesEtape, $code);
+			chomp $code;
+			if ($code =~ /\s*(\S+)\s*/) {
+				$code = $1;
+				push ( @codesEtape, $code);
+			}
 		}
 	} else {
+		 chomp($_[0]);
 		@codesEtape = split ('@', $_[0]);
 	}
 	$$self{codesEtape} = \@codesEtape;
