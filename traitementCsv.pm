@@ -62,6 +62,8 @@ sub parseFile {
 			} else {
 				print LOG "$fileName rejet : $_\n";
 			}
+		} else {
+			DEBUG! "csv no parse line : ", $nbligne, " $fileName: $_\n";
 		}
 	}
 	foreach my $file (values %fileName2file) {
@@ -160,7 +162,5 @@ sub getFile {
 	}
 	return $file;
 }
-
-
 
 1;

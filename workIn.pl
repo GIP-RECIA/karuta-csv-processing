@@ -95,7 +95,7 @@ unless ($modeTest) { # on est en test pas de download
 
 TRAITEMENT: foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
-	INFO! "$newPath";
+	INFO! ":$newPath", ": :${workingDir}:";
 	if ($newPath =~ /^${workingDir}\/(.+)/) {
 		my $relativePath=$1;
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
