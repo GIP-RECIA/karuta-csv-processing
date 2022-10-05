@@ -177,4 +177,28 @@ sub type {
 	return 'STAFF';
 }
 
+##############
+#
+# SUPERVISEUR
+#
+package Superviseur;
+use base qw(Personne);
+
+sub new {
+	my $class = shift;
+			# liste des données en entrée du csv
+	my $eppn = shift;
+	my $nom = shift;
+	my $prenom = shift;
+	my $courriel = shift;
+	my $self = new Personne( $eppn, $nom, $prenom, $courriel);
+
+	if ($self) {
+		return bless $self, $class;
+	}
+}
+sub type {
+	return 'SUPERVISEUR';
+}
+
 1;

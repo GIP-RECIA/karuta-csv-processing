@@ -54,12 +54,12 @@ sub new {
 	# Attention on peut créer plusieurs etap on renvoie donc le nombre d'étap créés
 	# on creer aussi les formations correspondantes aux etapes.
 	# my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
-	my ($class, $codesEtaps, $libEtap, $typeFormation, $sigleFormation, $parcoursFormation, $anneeFormation, $site) = @_;
+	my ($class, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site) = @_;
 	my $cohorte;
 
-	DEBUG!  "$codesEtaps , $libEtap, $typeFormation, $sigleFormation, $parcoursFormation, $anneeFormation , $site";
+	DEBUG!  "$class, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site";
 	
-	my $label = uc("${typeFormation} ${sigleFormation}");
+	my $label = uc("${typeDiplome} ${intituleDiplome}");
 
 	
 	$cohorte = $libEtap;
@@ -128,7 +128,7 @@ my %code2Formation;
 
 my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0});
 
-# ATTENTION code donne une et une seule formation , mais une formation paut avoir plusieurs etapes.
+# ATTENTION code donne une et une seule formation , mais une formation peut avoir plusieurs etapes.
 
 sub init{
 	%code2Formation = ();
