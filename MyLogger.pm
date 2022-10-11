@@ -17,9 +17,9 @@ FILTER {
 	s/SYSTEM!/MyLogger::traceSystem/g;   
 };
 
-my $level;
+my $level = 3;
 my $file;
-my $mod;
+my $mod = 1;
 
 sub file {
 	if ($file) {
@@ -57,9 +57,9 @@ sub trace {
 }
 
 sub debug {
+	push @_, "\n";
 	if ($file ) {
 		unshift (@_, lastname (shift));
-		push @_, "\n";
 		print MyLoggerFile dateHeure(), 'DEBUG: ', @_;
 	}
 	

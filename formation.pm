@@ -54,10 +54,20 @@ sub new {
 	# Attention on peut créer plusieurs etap on renvoie donc le nombre d'étap créés
 	# on creer aussi les formations correspondantes aux etapes.
 	# my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
+
 	my ($class, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site) = @_;
+	
 	my $cohorte;
 
 	DEBUG!  "$class, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site";
+	unless ($site) {
+		ERROR! "Etape ($codesEtaps) sans site\n";
+		foreach my $elem (@_) {
+			DEBUG! "newEtap:  $elem";
+		}
+		return 0;
+	}
+	
 	
 	my $label = uc("${typeDiplome} ${intituleDiplome}");
 
@@ -126,7 +136,7 @@ use base qw(HaveFiles);
 
 my %code2Formation;
 
-my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0});
+my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0, always_quote => 1 });
 
 # ATTENTION code donne une et une seule formation , mais une formation peut avoir plusieurs etapes.
 
@@ -166,8 +176,12 @@ sub readFile {
 		s/\"\;\"/\"\,\"/g; #on force les ,
 		s/(;|\s)+$//;
 		if ($csv->parse($_) ){
-			unless (new Etape($csv->fields())){
+			my @fields = $csv->fields();
+			unless (new Etape(@fields)){
 				WARN! "formation ligne $nbline : create object error !";
+				foreach my $elem (@fields) {
+					INFO! $elem;
+				}
 				print LOG "formation $nbline rejet : $_\n";
 			}
 		} else {

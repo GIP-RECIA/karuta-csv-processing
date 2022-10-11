@@ -10,5 +10,5 @@ use MyLogger;
 
 use DiffCsv;
 
-
-DiffCsv::sort ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221006.csv', 3);
+MyLogger::level(4, 2);
+DiffCsv::sort ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221006.csv', 3, 1, 3);
