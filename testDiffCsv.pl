@@ -11,4 +11,7 @@ use MyLogger;
 use DiffCsv;
 
 MyLogger::level(4, 2);
-DiffCsv::sort ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221006.csv', 3, 1, 3);
+#DiffCsv::sort ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221006.csv', 3, 1, 3);
+#DiffCsv::sort ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv', 3, 1, 3);
+
+DiffCsv::compareFile ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221006.csv', 'tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv',3, 1, 3);
