@@ -2,7 +2,6 @@
 use strict;
 use utf8;
 use open qw( :encoding(utf8) :std );
-
 #use FindBin;                    
 #use lib $FindBin::Bin;  
 
@@ -10,31 +9,27 @@ use MyLogger;
 
 package DiffCsv;
 
+
 my $csvSep = '","';
 
+
 sub sort {
-	my $file = shift;
+	my $in = shift; # DiffCsvReader
+	my $out = shift; # DiffCsvWriter
 	my $enteteSize = shift;
 	my @cleeTab = @_; # tableau des cles donne les indices des clees du csv
-	my $IN;
-	my $OUT;
-	my @entete ;
+
 	my @data;
-	rename ($file, "$file.org") || FATAL! "mv $file, $file.org " . $!;
-	
-	open ($OUT , ">$file")  || FATAL! "write $file " . $!;  
-	open ($IN , "$file.org") || FATAL! "$file " .$!;
-
 	my $lineNo = 0;
+	my $lastEntete; 
+	while ($enteteSize--) {
+		$out->push($lastEntete = $in->pull);
+	}
 
-	my $lastEntete = &copieEntete($IN, $OUT, $enteteSize);
-	
-	while (<$IN>) { push (@data, $_); }
-	
-	close $IN;
-
+	while ($in->val) { push (@data, $in->pull);}
+	$in->close;
 	my $trier;
-	
+
 	if (@cleeTab) {
 		my @colAutre = ();
 		if ($lastEntete) {
@@ -46,34 +41,22 @@ sub sort {
 	} else {
 		$trier = sub {sort(@data)};
 	}
-	map({print ($OUT $_);} &$trier );
-	close $OUT;
-}
-
-sub copieEntete {
-	my $in = shift;
-	my $out = shift;
-	my $cpt = shift;
-	my $last;
-	while ($cpt--) {
-		$last = <$in>;
-		print $out $last;
-	}
-	return $last;
+	for (&$trier) {$out->push($_)}
+	$out->close;
 }
 
 sub colNoKey {
 	my $entete = shift;
 	my @cleeTab = @_;
 	my @colUsed;
-		for (@cleeTab) { $colUsed[$_]=1} ;
-		@cleeTab = ();
-		my $nbColEntete = split $csvSep, $entete;
-		for (my $i = 0 ; $i < $nbColEntete; $i++) {
-			unless ($colUsed[$i]) {
-				push @cleeTab, $i; 
-			}
+	for (@cleeTab) { $colUsed[$_]=1} ;
+	@cleeTab = ();
+	my $nbColEntete = split $csvSep, $entete;
+	for (my $i = 0 ; $i < $nbColEntete; $i++) {
+		unless ($colUsed[$i]) {
+			push @cleeTab, $i; 
 		}
+	}
 	return @cleeTab;
 }
 
@@ -96,73 +79,115 @@ sub compareLigne {
 }
 
  
-# renvoie 3 tableaux des differences:
+# prend 2 DiffCsvReader à comparer les 2 fichiers doivent être triés.
+# et 3 DiffCsvWriter resultat
 # les suppressions (ce qui est dans file1 mais pas dans file2)
 # les ajouts (ce qui est dans file2 mais pas dans file1)
 # les modifs (ce qui est dans file2 et dans file1 et  different) suppose une notion de clé
-# on suppose les 2 fichiers triés.
+# 
 sub compareFile {
-	my $file1 = shift;
-	my $file2 = shift;
-	my $enteteSize = shift;
-	my @cleeTab = @_;
+	my $f1 = shift; #2 file reader 
+	my $f2 = shift;
+	my $add = shift; #3 file writer
+	my $supp = shift;
+	my $diff = shift; 
+	my $enteteSize = shift; # la taille des 1ere lignes a sauté
+	my @cleeTab = @_; # les positions des champs dans l'ordre pour le trie
 
-	my $add = $file2;
-	$add =~ s/.csv$/_add.csv/ || FATAL! "$file2 not csv file";
-	my $sup = $file1;
-
-	$sup =~ s/.csv$/_sup.csv/ || FATAL! "$file1 not csv file";
-
-	my ($IN1,$IN2,$ADD, $SUP);
-	open $IN1, "$file1" || FATAL! "read $file1 : $!";
-	open $IN2, "$file2" || FATAL! "read $file2 : $!";
-
-	open $ADD, ">$add" || FATAL! "read $add : $!";
-	open $SUP, ">$sup" || FATAL! "read $sup : $!";
-
-
-	my $entete = copieEntete($IN1, $SUP, $enteteSize);
-
-	if (copieEntete($IN2, $ADD, $enteteSize) eq $entete) {
-		my @colNoKey = colNoKey($entete, @cleeTab);
-		my $in1 = <$IN1>;
-		my $in2 = <$IN2>;
-		while ($in1 && $in2) {
-			my $cmp = compareLigne($in1, $in2, @cleeTab, @colNoKey);
-			if ($cmp) {
-				# cas les lignes sont differentes
-				if (abs($cmp) > @cleeTab) {
-					# cas on la clee est la même, c'est une modif
-					print "-+ $in1";
-					print "+- $in2\n";
-					$in1 = <$IN1>;
-					$in2 = <$IN2>;
-				} elsif ($cmp < 0) {
-					# in1 vient avant in2 donc in1 à été supprimé
-					print $SUP $in1;
-					print "-- $in1\n";
-					$in1 = <$IN1>; 
-				} else {
-					# in2 vient avant in1 donc in2 à été ajouté
-					print $ADD $in2;
-					print "++ $in2\n";
-					$in2 = <$IN2>;
-				}
-			} else {
-				# même 2 lignes
-				$in1 = <$IN1>;
-				$in2 = <$IN2>;
-			}
+	my $entete ="";
+	while ($enteteSize--) {
+		if ($f1->val ne $f2->val) {
+			$diff->push($f1->val);
+			$diff->push($f2->val);
 		}
-		while ($in1) {
-			print $SUP $in1;
-			$in1 = <$IN1>; 
-		};
-		while ($in2) {
-			print $ADD $in2;
-			$in2 = <$IN2>;
+		$entete = $f1->val;
+		$supp->push($f1->pull);
+		$add->push($f2->pull);
+	}
+	
+	my @colNoKey = colNoKey($entete, @cleeTab);
+	my $cleSize = @cleeTab;
+	
+	while ($f1->val && $f2->val) {
+		my $cmp = compareLigne($f1->val, $f2->val, @cleeTab, @colNoKey);
+		if ($cmp) {
+			# Les lignes sont differentes
+			if (abs($cmp) > $cleSize) {
+				# avec la même clé.
+				$diff->push($f1->pull, $f2->pull);
+			} elsif ($cmp < 0) {
+				# line1 avant line2 => line1 supprimé
+				$supp->push($f1->pull);
+			} else {
+				# line2 avant line1 => line2 ajouté
+				$add->push($f2->pull);
+			}
+		} else {
+			# ligne inchangée;
+			$f1->pull;
+			$f2->pull;
 		}
 	}
+	while ($f1->val) {
+		$supp->push($f1->pull);
+	}
+	while ($f2->val) {
+		$add->push($f2->pull);
+	}
+}
+
+package DiffCsvReader ;
+sub open {
+	my ($class, $fileName) = @_;
+	my $self = {
+		fileName => $fileName,
+		line => 0,
+		file => 0,
+	};
+	my $desc;
+	open ($desc, $fileName) || FATAL! "read $fileName : $!";
+	$self->{file} = $desc;
+	$self->{line} = <$desc>;
+	return bless $self, $class;
+}
+sub val {
+	my $self = shift;
+	return  $self->{line};
+}
+sub pull{
+	my $self = shift;
+	my $line = $self->{line};
+	if ($line) {
+		my $desc = $self->{file};
+		$self->{line} = <$desc>;
+	}
+	return $line;
+}
+sub close {
+	my $self = shift;
+	close $self->{file};
+}
+
+package DiffCsvWriter ;
+sub open {
+	my ($class, $fileName) = @_;
+	my $self = {
+		fileName => $fileName,
+		file => 0,
+	};
+	my $desc;
+	open ($desc, ">$fileName") || FATAL! "write $fileName : $!";
+	$self->{file} = $desc;
+	return bless $self, $class;
+}
+sub push {
+	my ($self, @lines) = @_;
+	my $desc = $self->{file};
+	for (@lines ) { print( $desc $_) }; 
+}
+sub close {
+	my $self = shift;
+	close $self->{file};
 }
 
 1;
