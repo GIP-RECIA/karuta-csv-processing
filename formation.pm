@@ -70,7 +70,7 @@ sub new {
 	
 	
 	my $label = uc("${typeDiplome} ${intituleDiplome}");
-
+	$label =~ s/\//-/;
 	
 	$cohorte = $libEtap;
 	$cohorte =~ s/(\W|_)+/_/g;
@@ -84,7 +84,7 @@ sub new {
 	
 	if ($codeFormation =~ m/\w+/) {
 
-		my $formation = new  Formation($codeFormation, $label);
+		my $formation = new  Formation($codeFormation, $label, $site);
 
 		if ($formation) {
 			my $nbEtap = 0;
@@ -146,9 +146,10 @@ sub init{
 }
 
 
-sub getByCode {
-	my $code = shift;
-	return $code2Formation{$code};
+#la cle est $site_$code
+sub getByCle {
+	my $cle = shift;
+	return $code2Formation{$cle};
 }
 
 sub readFile {
@@ -215,7 +216,7 @@ sub writeFile {
 	print $file "\n";
 
 	foreach my $formation  (values %code2Formation) {
-		my @info = ($univ->id() . '_' . $formation->code(), $univ->id() . ' - ' . $formation->label );
+		my @info = ($univ->id() . '_' . $formation->site(). '_' . $formation->code(), $univ->id() .'_' . $formation->site(). ' - ' . $formation->label );
 		$csv->print($file, \@info );
 		print $file "\n";
 	}
@@ -223,12 +224,13 @@ sub writeFile {
 }
 
 sub new {
-	my ($class, $code , $label) = @_;
+	my ($class, $code , $label, $site) = @_;
 
-	my $formation = getByCode($code);
+	my $cle="${site}_${code}";
+	my $formation = getByCle($cle);
 	if ($formation) {
 		if ($formation->label ne $label) {
-				WARN! "formation ($code) avec plusieurs label: $label ", $formation->label;
+				WARN! "formation ($cle) avec plusieurs label: $label ", $formation->label;
 			}
 		return $formation;
 	} 
@@ -239,6 +241,7 @@ sub new {
 			code => $code,
 			label => $label,
 			etapes => [],
+			site => $site,
 			files => {}
 		};
 		
@@ -247,7 +250,7 @@ sub new {
 		return 0;
 	}
 	bless $formation, $class;
-	$code2Formation{$code} = $formation;
+	$code2Formation{$cle} = $formation;
 
 	return $formation;
 }
@@ -264,6 +267,11 @@ sub etapes {
 sub code {
 	my $self = shift;
 	return $self->{code};
+}
+
+sub site {
+	my $self = shift;
+	return $self->{site};
 }
 sub label {
 	my $self = shift;
