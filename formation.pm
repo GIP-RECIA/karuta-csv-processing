@@ -78,7 +78,7 @@ sub new {
 	my $codeFormation = $label;
 	$codeFormation =~ s/(\W|_)+/_/g;
 
-	$site =~ s/\s+/-/g;
+	$site =~ s/\W+/-/g;
 
 
 	
