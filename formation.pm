@@ -214,7 +214,7 @@ sub writeFile {
 	}
 	open ($file , "> $fileName") || FATAL!  "$fileName " . $!;
 	
-	$csv->print($file, ['formation', 'formation_label']);
+	$csv->print($file, ['formation_code', 'formation_label']);
 	print $file "\n";
 
 	foreach my $formation  (values %code2Formation) {
