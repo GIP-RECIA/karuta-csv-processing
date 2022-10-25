@@ -8,14 +8,20 @@ use lib $FindBin::Bin;
 
 use MyLogger;
 
-use DiffCsv;
+use DiffCsvHeap;
 
 MyLogger::level(4, 2);
-my $name1 = 'tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221006';
-my $csv1 = DiffCsvReader->open($name1 . '.csv');
-my $sorted = DiffCsvWriter->open($name1 . '.sorted.csv');
+my $name1 = 'tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv';
 
-DiffCsv::sort ($csv1, $sorted,  3, 1, 3);
+#my $csv1 = DiffCsvReader->open($name1 . '.csv');
+#my $sorted = DiffCsvWriter->open($name1 . '.sorted.csv');
+
+trieFile($name1, './', './trier_', 3, 1, 3);
+
+
+
+
+#DiffCsv::sort ($csv1, $sorted,  3, 1, 3);
 #DiffCsv::sort ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv', 3, 1, 3);
 
 __END__
