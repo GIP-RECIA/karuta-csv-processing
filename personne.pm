@@ -1,5 +1,6 @@
 use strict;
 use utf8;
+use MyLogger;
 
 #########
 #
@@ -41,20 +42,25 @@ sub testInfo {
 }
 
 sub setCodesEtape {
-	my $self = shift; 
+	my $self = shift;
+	my $univ = shift;
 	my @codesEtape;
+	my $filtre = $univ->{filtreEtap};
+	DEBUG! "set codes etapes : ", @_;
 	if (@_ > 1 ) {
-		foreach my $code (@_) {
-			chomp $code;
-			if ($code =~ /\s*(\S+)\s*/) {
-				$code = $1;
-				push ( @codesEtape, $code);
-			}
+		@codesEtape = map ({s/\s*(\S+)\s*/\1/; $_} @_);
+		if ($filtre) {
+			DEBUG! " : ", @codesEtape;
+			@codesEtape = &$filtre(@codesEtape);
 		}
 	} else {
 		 chomp($_[0]);
-		@codesEtape = split ('@', $_[0]);
+		 @codesEtape =split ('@', $_[0]);
+		 if ($filtre) {
+			 @codesEtape = &$filtre(@codesEtape);
+		 } 
 	}
+	DEBUG! "return ", @codesEtape;
 	$$self{codesEtape} = \@codesEtape;
 }
 
@@ -116,6 +122,7 @@ sub entete {
 
 sub new {
 	my $class = shift;
+	my $univ = shift;
 		# liste des données en entrée du csv
 	my $eppn = shift;
 	my $nom = shift;
@@ -125,7 +132,8 @@ sub new {
 		# liste des infos en sortie dans csv 
 	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule);
 	if ($self) {
-		$self->setCodesEtape(@_);
+		$self->{univ} = $univ;
+		$self->setCodesEtape($univ, @_);
 		return bless $self, $class;
 	}
 	return 0;
@@ -164,6 +172,7 @@ sub entete {
 
 sub new {
 	my $class = shift;
+	my $univ = shift;
 			# liste des données en entrée du csv
 	my $eppn = shift;
 	my $nom = shift;
@@ -172,7 +181,8 @@ sub new {
 		# liste des infos en sortie dans csv 
 	my $self = new Personne( $eppn, $nom, $prenom, $courriel);
 	if ($self) {
-		$self->setCodesEtape(@_);
+		$self->{univ} = $univ;
+		$self->setCodesEtape($univ, @_);
 		return bless $self, $class;
 	}
 	return 0;

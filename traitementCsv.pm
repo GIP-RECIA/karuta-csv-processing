@@ -51,9 +51,9 @@ sub parseFile {
 			
 			my $person;
 			if ($isEtu) {
-				$person = new Etudiant($csv->fields());
+				$person = new Etudiant($univ, $csv->fields());
 			} else {
-				$person = new Staff($csv->fields());
+				$person = new Staff($univ, $csv->fields());
 			}
 			if ($person) {
 				if (traitement($person)) {
