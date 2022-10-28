@@ -10,9 +10,6 @@ use MyLogger;
 
 my $csvSep = '","';
 
-
-
-
 #
 sub colNoKey {
 	my $entete = shift;

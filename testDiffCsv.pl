@@ -16,7 +16,7 @@ my $name1 = 'tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv';
 #my $csv1 = DiffCsvReader->open($name1 . '.csv');
 #my $sorted = DiffCsvWriter->open($name1 . '.sorted.csv');
 
-trieFile($name1, './', './trier_', 3, 1, 3);
+trieFile($name1, './', './trier_', 3, 4);
 
 
 
