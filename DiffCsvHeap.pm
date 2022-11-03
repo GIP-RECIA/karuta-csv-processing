@@ -10,6 +10,7 @@ use MyLogger;
 
 my $csvSep = '","';
 
+
 #
 sub colNoKey {
 	my $entete = shift;
@@ -48,35 +49,85 @@ sub compareLigne {
 
 sub createHeap {
 	my ($in, @clee) = @_;
-	
 	my @tas;
 
-	sub addTas {
-		my ($pos, $val) = @_;
-		
-		if ($pos > 0) {
-			# on est sur un fils gauche
-			# on regarde si le pere est plus grand
-			my $pere = int ($pos / 2);
-			my $valPere = $tas[$pere];
-
-			if ( compareLigne($valPere, $val, @clee) > 0) {
-				$tas[$pos] = $valPere;
-				return 1 + addTas($pere, $val, @clee);
-			}
-			$tas[$pos] = $val;
-			return 1;
-		}
-		$tas[$pos] = $val;
-		return 0;
+	#ecriture du fichier dans un tableau;
+	while (my $ligne = $in->pull) {
+		push @tas, $ligne;
 	}
 
+	my $nbElem = @tas;
 	my $cout = 0;
-	while (my $ligne = $in->pull) {
-		$cout += addTas(scalar(@tas), $ligne);
+	for (my $noeud = int(($nbElem - 2)/2) ; $noeud >= 0 ; $noeud --) {
+		$cout += &reorgTas(\@tas, $noeud, $tas[$noeud], $nbElem, @clee);
 	}
 	return (\@tas, $cout);
 }
+
+# utile pour le debug:
+sub printHeap {
+	my ($tas, $fin) = @_;
+	my $nbCol = 1;
+
+	print "\n";
+	for (my $pos = 0; $pos < $fin ;) {
+		my $col = 0 ;
+		for (; $col < $nbCol && $pos < $fin ; $col++ ) {
+			my $v = $$tas[$pos][3];
+			 $v =~ s/TOUR//;
+			print $pos++,":$v", "\t" x (int(48 / $nbCol)-1);
+		}
+		print "\n";
+		$nbCol *= 2;
+	}
+}
+
+
+sub reorgTas {
+	my ($tas, $pos, $val, $fin, @clee)= @_;
+
+	my $gauche =0;
+	my $droit = 0;
+	my $cout = 0;
+
+	while ( ($droit =  $pos * 2 + 2) < $fin ) {
+		$gauche = $droit -1 ;
+		my $valG = $$tas[$gauche];
+		my $valD = $$tas[$droit];
+		$cout++;
+		if ( compareLigne($valG, $valD, @clee) > 0) {
+			$cout++;
+			if (compareLigne($val, $valD, @clee) > 0) {
+				$$tas[$pos] = $valD;
+				$pos = $droit;
+				next;
+			} 
+		} else {
+			$cout++;
+			if (compareLigne($val, $valG, @clee) > 0) {
+				$$tas[$pos] = $valG;
+				$pos = $gauche;
+				next;
+			}
+		}
+		$droit = $fin+1; #pour eviter le test apres la boucle
+		last;
+	}
+	$gauche = $droit -1;
+	if ($gauche < $fin) {
+		my $valG = $$tas[$gauche];
+		$cout++;
+		if (compareLigne($val, $valG, @clee) > 0) {
+			$$tas[$pos] = $valG;
+			$pos = $gauche;
+		} 
+	}
+	
+	$$tas[$pos] =  $val;
+	return $cout;
+}
+
+
 
 sub depileHeap {
 	# depile tout le tas en ecrivant dans l'ordre et dans $out, renvoie le nombre de comparaisons
@@ -84,48 +135,12 @@ sub depileHeap {
 	my $nbElem = @$tas;
 
 	my $cout = 0 ;
-
-	sub reorgTas {
-		# la sommet est libre et on insert val dans le tas , il faut la mettre à la bonne place
-		# on doit se retrouver avec le min du tas au sommet.
-		my ($tas, $pos, $val, $fin)= @_;
-
-		my $res = $val;
-		my $gauche = $pos * 2 + 1;
-		my $droit = $gauche + 1;
-		if ( $droit < $fin ) {
-			my $valG = $$tas[$gauche];
-			my $valD = $$tas[$droit];
-
-			$cout++;
-			if ( compareLigne($valG, $valD, @clee) > 0) {
-				$cout++;
-				if (compareLigne($val, $valD, @clee) > 0) {
-					$res = $valD;
-					reorgTas($tas, $droit, $val, $fin);
-				}
-			} else {
-				$cout++;
-				if (compareLigne($val, $valG, @clee) > 0) {
-					$res = $valG;
-					reorgTas($tas, $gauche, $val, $fin);
-				}
-			}
-		} elsif ($gauche < $fin) {
-			my $valG = $$tas[$gauche];
-			$cout++;
-			if (compareLigne($val, $valG, @clee) > 0) {
-				$res = $valG;
-				reorgTas($tas, $gauche, $val, $fin);
-			}
-		}
-		return $$tas[$pos] = $res;
-	}
-
-	while ($nbElem--) {
+	while (--$nbElem) {
 		$out->push($$tas[0]);
-		reorgTas($tas, 0,  $$tas[$nbElem], $nbElem);
+		$$tas[0] = $$tas[$nbElem],
+		$cout += reorgTas($tas, 0, $$tas[0], $nbElem, @clee);
 	}
+	$out->push($$tas[0]);
 	return $cout;
 }
 
@@ -147,6 +162,7 @@ sub trieFile {
 
 	@colNoKey = colNoKey($lastHeader, @cle);
 	($heap, $cout) = createHeap($in,  @cle, @colNoKey);
+
 	INFO! "cout lecture = $cout";
 
 	$cout += depileHeap($heap, $out, @cle, @colNoKey);
