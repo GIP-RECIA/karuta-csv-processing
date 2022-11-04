@@ -7,8 +7,11 @@ use open qw( :encoding(utf8) :std );
 
 use MyLogger;
 
-
 my $csvSep = '","';
+
+
+package DiffCsv;
+
 
 
 #
@@ -27,7 +30,18 @@ sub colNoKey {
 	return @cleeTab;
 }
 
-
+sub egalLigne {
+	my $line1 = shift;
+	my $line2 = shift;
+	if (@$line1 == @$line2) {
+		my $i;
+		for ($i = 0; $i < @$line1; $i++) {
+			return 0 if $$line1[$i] != $$line2[$i];
+		}
+		return $i;
+	}
+	return 0;
+}
 sub compareLigne {
 	my $line1 = shift;
 	my $line2 = shift;
@@ -38,13 +52,15 @@ sub compareLigne {
 		if ($i < @$line1) {
 			if ($i < @$line2) {
 				$cpt =  do { $$line1[$i] cmp $$line2[$i] || next }  * $cpt;
-			} 
-		} else {
-			$cpt =  - $cpt;
+			}
+			return $cpt;
 		}
-		last;
+		if ($i < @$line2) {
+			return - $cpt;
+		}
+		return 0;
 	}
-	return $cpt;
+	return 0;
 }
 
 sub createHeap {
@@ -171,6 +187,65 @@ sub trieFile {
 	$out->close;
 }
 
+# prend 2 DiffCsvReader à comparer; les 2 fichiers doivent être triés.
+# et 3 DiffCsvWriter resultat
+# les suppressions (ce qui est dans file1 mais pas dans file2)
+# les ajouts (ce qui est dans file2 mais pas dans file1)
+# les modifs (ce qui est dans file2 et dans file1 et  different) meme clé autre données differetes
+# 
+sub compareFile {
+	my $f1 = shift; #2 file reader 
+	my $f2 = shift;
+	my $add = shift; #3 file writer
+	my $supp = shift;
+	my $diff = shift; 
+	my $enteteSize = shift; # la taille des 1ere lignes a sauté
+	my @cleeTab = @_; # les positions des champs clés dans l'ordre pour le trie
+
+	my $entete ="";
+	while ($enteteSize--) {
+		if (!egalLigne ($f1->val, $f2->val)) {
+			$diff->push($f1->val);
+			$diff->push($f2->val);
+		}
+		$entete = $f1->val;
+		$supp->push($f1->pull);
+		$add->push($f2->pull);
+	}
+	
+	my @colNoKey = colNoKey($entete, @cleeTab);
+	my $cleSize = @cleeTab;
+	
+	while ($f1->val && $f2->val) {
+		my $cmp = compareLigne($f1->val, $f2->val, @cleeTab, @colNoKey);
+		if ($cmp) {
+			# Les lignes sont differentes
+			if (abs($cmp) > $cleSize) {
+				# avec la même clé.
+				$diff->push($f1->pull);
+				$diff->push($f2->pull);
+				$diff->print("\n");
+			} elsif ($cmp < 0) {
+				# line1 avant line2 => line1 supprimé
+				$supp->push($f1->pull);
+			} else {
+				# line2 avant line1 => line2 ajouté
+				$add->push($f2->pull);
+			}
+		} else {
+			# ligne inchangée;
+			$f1->pull;
+			$f2->pull;
+		}
+	}
+	while ($f1->val) {
+		$supp->push($f1->pull);
+	}
+	while ($f2->val) {
+		$add->push($f2->pull);
+	}
+}
+
 package DiffCsvReader ;
 
 sub splitLine {
@@ -250,6 +325,13 @@ sub push {
 	}; 
 }
 
+sub print {
+	my ($self, $string) = @_;
+	my $desc = $self->{'file'};
+	if ($string) {
+		print( $desc $string);
+	}
+}
 sub close {
 	my $self = shift;
 	close $self->{file};
