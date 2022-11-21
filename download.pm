@@ -22,14 +22,18 @@ my $FTPin;
 my $FTPout;
 my $ftpPid;
 
+my %lastZipByPrefix;
+my %lastDateByPrefix;
+
+
+
+
 sub initRepZip {
 	$repZip = shift;
 	my $ftpRep = shift;
 	my $zipPrefix = shift;
 
 	# on regarde les fichiers.zip existant
-	my %lastZipByPrefix;
-	my %lastDateByPrefix;
 	my %newZipByPrefix;
 
 	
@@ -39,11 +43,12 @@ sub initRepZip {
 
 	foreach my $file (readdir(REP) ) {
 		TRACE! ">\t$file ...\n";
-		if ($file =~ /${zipPrefix}_\d{8}.zip/) {
+	#	if ($file =~ /${zipPrefix}_\d{8}.zip/) { #TODO le test est inutile 
 			&filtreFile(\%lastZipByPrefix, \%lastDateByPrefix, $file, $zipPrefix);
-		}
+	#	}
 	}
 
+	
 	# lit le repertoire  ftp:
 	my $nbFtpFile = 0;
 	
@@ -58,7 +63,7 @@ sub initRepZip {
 		}
 	}
 	
-	foreach my $file (values %newZipByPrefix) { # en fait il ne devrait en avoir qu'un zip 
+	foreach my $file (values %newZipByPrefix) { # en fait il ne devrait avoir qu'un zip 
 		ftpGet("$ftpRep/$file", $repZip);
 		DEBUG! "test $file pour unzip\n";
 		if ($file =~ /(univ-)?(.+).zip/) {

@@ -46,7 +46,7 @@ sub setCodesEtape {
 	my $univ = shift;
 	my @codesEtape;
 	my $filtre = $univ->{filtreEtap};
-	DEBUG! "set codes etapes : ", @_;
+#	DEBUG! "set codes etapes : ", @_;
 	if (@_ > 1 ) {
 		@codesEtape = map ({s/\s*(\S+)\s*/\1/; $_} @_);
 		if ($filtre) {
@@ -60,7 +60,7 @@ sub setCodesEtape {
 			 @codesEtape = &$filtre(@codesEtape);
 		 } 
 	}
-	DEBUG! "return ", @codesEtape;
+#	DEBUG! "return ", @codesEtape;
 	$$self{codesEtape} = \@codesEtape;
 }
 

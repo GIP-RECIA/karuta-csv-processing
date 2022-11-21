@@ -27,10 +27,14 @@ sub parseFile {
 	$univ = shift;
 	$dateFile = shift;
 	$annee = shift;
+	$tmp = shift; #le repertoire temporaire de travail;
+
+	%fileName2file =();
+
 	my $fileName = sprintf("%s_%s_%s.csv", $univ->prefix, $dateFile, $type);
 	
 	$path = $univ->path;
-	$tmp = "${path}_tmp";
+
 	my $fileNameLog = "${path}.log";
 	
 	 #$csv->sep_char($univ->sepChar());
@@ -48,7 +52,7 @@ sub parseFile {
 		s/\"\;\"/\"\,\"/g; # on force les ,
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
-			
+
 			my $person;
 			if ($isEtu) {
 				$person = new Etudiant($univ, $csv->fields());
@@ -69,8 +73,9 @@ sub parseFile {
 	foreach my $file (values %fileName2file) {
 		close $file;
 	}
-	%fileName2file =();
+	
 	close LOG;
+	return keys %fileName2file;
 }
 
 

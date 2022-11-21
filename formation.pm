@@ -59,7 +59,7 @@ sub new {
 	
 	my $cohorte;
 
-	DEBUG!  "$class, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site";
+#	DEBUG!  "$class, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site";
 	unless ($site) {
 		ERROR! "Etape ($codesEtaps) sans site\n";
 		foreach my $elem (@_) {
@@ -91,7 +91,7 @@ sub new {
 		if ($formation) {
 			my $nbEtap = 0;
 			foreach my $codeEtap (split('@',$codesEtaps)) {
-				DEBUG! "Create etape : $codeEtap, $libEtap, $site, $cohorte ";
+#				DEBUG! "Create etape : $codeEtap, $libEtap, $site, $cohorte ";
 				$self = {
 					etap => $codeEtap,
 					lib => $libEtap,
@@ -142,7 +142,7 @@ my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0, alwa
 
 # ATTENTION code donne une et une seule formation , mais une formation peut avoir plusieurs etapes.
 
-sub init{
+sub init {
 	%code2Formation = ();
 	Etape::init();
 }
@@ -200,19 +200,20 @@ sub writeFile {
 	
 	my $univ = shift;
 	my $dateFile = shift;
+	my $tmp = shift; #le repertoire temporaire de tavail
 	
 	my $file;
 	my $path =  $univ->path;
 	my $fileName = sprintf("%s_%s_%s.csv", $univ->id, 'FORMATIONS', $dateFile);
 
-	my $tmp = "${path}_tmp/";
-	$fileName = $tmp . $fileName;
+	
+	my $fullFileName = $tmp . $fileName;
 
-	INFO! "write $fileName";
+	INFO! "write $fullFileName";
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
 	}
-	open ($file , "> $fileName") || FATAL!  "$fileName " . $!;
+	open ($file , "> $fullFileName") || FATAL!  "$fullFileName " . $!;
 	
 	$csv->print($file, ['formation_code', 'formation_label']);
 	print $file "\n";
@@ -223,6 +224,7 @@ sub writeFile {
 		print $file "\n";
 	}
 	close $file;
+	return $fileName;
 }
 
 sub new {

@@ -246,6 +246,22 @@ sub compareFile {
 	}
 }
 
+sub openAndCompareFile {
+	my $name1 = shift; #2 fileName a comparer
+	my $name2 = shift;
+	my $nameAdd = shift; #3 fileName resultat
+	my $nameSupp = shift;
+	my $nameDiff = shift; 
+	my $enteteSize = shift; # la taille des 1ere lignes a sauté
+	my @cle = @_; # les positions des champs clés dans l'ordre pour le trie
+
+	my $f1 = DiffCsvReader->open($name1);
+	my $f2 = DiffCsvReader->open($name2);
+	my $fAdd = DiffCsvWriter->open($nameAdd);
+	my $fSupp = DiffCsvWriter->open($nameSupp);
+	my $fDiff = DiffCsvWriter->open($nameDiff);
+	compareFile($f1, $f2, $fAdd, $fSupp, $fDiff, $enteteSize, @cle);
+}
 package DiffCsvReader ;
 
 sub splitLine {

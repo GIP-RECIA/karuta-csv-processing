@@ -43,6 +43,14 @@ sub path {
 	return $self->{path} ;
 }
 
+sub lastPath {
+	my $self = shift;
+	if (@_ > 0) {
+		$self->{lastPath} = shift;
+	}
+	return $self->{lastPath} ;
+}
+
 sub ftpRep {
 	my $self = shift;
 	if (@_ > 0) {

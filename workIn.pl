@@ -2,6 +2,7 @@
 use strict;
 use utf8;
 use open qw( :encoding(utf8) :std );
+use File::Copy qw(copy);
 
 use FindBin;                    
 use lib $FindBin::Bin;  
@@ -13,6 +14,7 @@ use univ;
 use download;
 use formation;
 use traitementCsv;
+use DiffCsvHeap;
 
 MyLogger::level(5, 2);
 
@@ -41,6 +43,21 @@ if ($logFile) {
 my $ftpAddr = $properties-> getProperty('ftp.addr') or FATAL!  "ftp.addr propertie not found" ;
 my $listUniv= $properties-> getProperty('univ.list') or FATAL!  "univ.list propertie not found" ;
 my $annee= $properties-> getProperty('annee.scolaire') or FATAL!  "annee.scolaire propertie not found" ;
+my $dataFile = $properties-> getProperty('data.file');
+
+unless ($dataFile) {
+	$dataFile = "$workingDir/karuta.data";
+}
+my %data;
+#lecture du fichier data s'il existe
+if (-d $dataFile) {
+	open DATA, $dataFile or FATAL! "error lecture $dataFile: $!";
+	while (<DATA>) {
+		my ($cle, $valeur) = split '\s*=\s*', $_, 2;
+		$data{$cle} = $valeur;
+	}
+	close DATA;
+}
 
 my $modeTest = 0;
 	INFO! "$listUniv";
@@ -49,13 +66,16 @@ foreach my $univ (split(" ", $listUniv) ){
 	my $ftpRep = $properties-> getProperty("${univ}.ftp.rep") or  FATAL!  "${univ}.ftp.rep propertie not found" ;
 	my $filePrefix = $properties-> getProperty("${univ}.file.prefix") or FATAL!  "${univ}.file.prefix propertie not found" ;
 	my $newPathTest = $properties-> getProperty("${univ}.test.newPath");
-	
+
+	my $u = new Univ($univ, $ftpRep, $workingDir, $filePrefix);
 	if ($newPathTest) {
 		$modeTest = 1;
-		new Univ($univ, $ftpRep, $workingDir, $filePrefix)->path($newPathTest);
+		$u->path($newPathTest);
+		$u->lastPath($properties-> getProperty("${univ}.test.lastPath"));
 	} else {
-		new Univ($univ, $ftpRep, $workingDir, $filePrefix);
+		$u->lastPath($data{$univ});
 	}
+	DEBUG! "univ last path = ", $u->lastPath;
 }
 
 my $ftp = "/usr/bin/sftp -b- $ftpAddr";
@@ -66,7 +86,7 @@ my $ftp = "/usr/bin/sftp -b- $ftpAddr";
 	Recuperation des fichiers.zip de chaque univ
 =cut
 
-unless ($modeTest) { # on est en test pas de download
+unless ($modeTest) { # si on est en test pas de download
 
 	Download::openFtp($ftp);
 
@@ -96,22 +116,110 @@ unless ($modeTest) { # on est en test pas de download
 TRAITEMENT: foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
 	INFO! ":$newPath", ": :${workingDir}:";
+
+	my @allNewFile;
+	my $lastPath = $univ->lastPath();
+	
 	if ($newPath =~ /^${workingDir}\/(.+)/) {
 		my $relativePath=$1;
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
+		my $tmpRep = "${newPath}_tmp/";
+		unless ( -d $tmpRep) {
+			mkdir $tmpRep, 0775;
+		}
+		my $resRep = "${newPath}_diff/";
+		unless ( -d $resRep) {
+			mkdir $resRep, 0775;
+		}
 		if ($formationFile) {
 			Formation::readFile($newPath, $formationFile, $univ->sepChar());
-			Formation::writeFile($univ, $dateFile);
-			Traitement::parseFile('ETU', $univ ,  $dateFile, $annee);
-			Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee);
+			my $newFormationFile = Formation::writeFile($univ, $dateFile, $tmpRep);
+			DiffCsv::trieFile($newFormationFile, $tmpRep, $resRep, 1 );
+			if ($lastPath) {
+					push @allNewFile, $newFormationFile ;
+					compareSortedFile($newFormationFile, $resRep, $lastPath,  3, 3);
+				}
+			
+			for (Traitement::parseFile('ETU', $univ ,  $dateFile, $annee, $tmpRep)) {
+				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 3);
+				if ($lastPath) {
+					push @allNewFile, $_;
+					compareSortedFile($_, $resRep, $lastPath,  3, 3);
+				}
+			}
+			for (Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
+				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 3);
+				if ($lastPath) {
+					push @allNewFile, $_;
+					compareSortedFile($_, $resRep, $lastPath,  3, 3);
+				}
+			}
+
+			#on trie et deplace  les nouveaux fichiers
+			#DEBUG! join "\n", @allNewFile;
+
+			if ($lastPath) {
+				#on parcourt l'ancien repertoire pour voir si on n'a pas des fichiers absents dans le nouveau.
+				opendir OLDREP, $lastPath;
+				while (readdir OLDREP) {
+					print "$_\n";
+				}
+			}
+			
 			my $zipName = lc($relativePath). '.zip';
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath}*");
+
+			#on memorise le new path
+			$data{$univ->id()} = $newPath;
+			DEBUG! $univ->id, " <=", $newPath;
 		}
 	} else {
 		ERROR! $univ->id(), " KO; $workingDir";
 	}
 }
 
+# on ecrit le dataFile
+open DATA, ">$dataFile" or FATAL! "error ecriture $dataFile: $!";
+while (my ($key, $val) = each %data) {
+	DEBUG! $key, " ",$val;
+	print DATA $key, "=$val\n";
+}
+
+sub compareSortedFile {
+	my $fileName = shift;
+	my $newRep = shift;
+	my $lastRep = shift;
+	my $enteteSize = shift;
+	my @cle = @_;
+
+	unless ($lastRep =~ /(_\d{8})/ ) {
+		ERROR! "Comparaison impossible: Ancien repertoire non daté: $lastRep";
+		return 0;
+	}
+	my $lastDate = $1;
+	my $prefixFile = $fileName;
+	unless ($prefixFile =~ s/_\d{8}.csv$//) {
+		ERROR! "Comparaison impossible: Mauvais format de fichier: $fileName";
+		return 0;
+	};
+
+	my $oldFile = $lastRep . $prefixFile . $lastDate . ".csv";
+	my $newFile = my $addFile = my $suppFile = my $diffFile = $newRep . $fileName;
+
+	$addFile =~ s/csv$/add.csv/;
+	$suppFile =~ s/csv$/supp.csv/;
+	$diffFile =~ s/csv$/diff.csv/;
+	
+	if ( -f $oldFile) {
+		DEBUG! "openAndCompareFile($oldFile, $newFile, $addFile, $suppFile, $diffFile, $enteteSize ..)";
+		DiffCsv::openAndCompareFile($oldFile, $newFile, $addFile, $suppFile, $diffFile, $enteteSize, @cle);
+	} else {
+		# l'ancien fichier n'existe pas => le nouveau n'est qu'ajouts;
+		INFO! "Comparaison ($fileName): Ancien fichier inexistant: $oldFile";
+		copy $newFile, $addFile;
+	}
+	return 1;
+}
 
 =begin
 	Recherche du fichier FORMATION en deduit le préfix et la date.
