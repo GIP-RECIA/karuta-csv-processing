@@ -112,14 +112,19 @@ unless ($modeTest) { # si on est en test pas de download
 	pour chaque univ parse les fichiers FORMATION , ETU et STAFF
 	zip le repertoire résultat
 =cut
+my %allNewPrefixFile;
 
 TRAITEMENT: foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
 	INFO! ":$newPath", ": :${workingDir}:";
-
-	my @allNewFile;
-	my $lastPath = $univ->lastPath();
 	
+	my $lastPath = $univ->lastPath();
+	if ($lastPath) {
+		$lastPath .= '_diff/';
+		DEBUG! "ancien path : $lastPath";
+	} else {
+		DEBUG! "ancien path ; NVL";
+	}
 	if ($newPath =~ /^${workingDir}\/(.+)/) {
 		my $relativePath=$1;
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
@@ -134,24 +139,22 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 		if ($formationFile) {
 			Formation::readFile($newPath, $formationFile, $univ->sepChar());
 			my $newFormationFile = Formation::writeFile($univ, $dateFile, $tmpRep);
+			my $prefixFile;
 			DiffCsv::trieFile($newFormationFile, $tmpRep, $resRep, 1 );
 			if ($lastPath) {
-					push @allNewFile, $newFormationFile ;
-					compareSortedFile($newFormationFile, $resRep, $lastPath,  3, 3);
-				}
+				compareSortedFile($newFormationFile, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
+			}
 			
 			for (Traitement::parseFile('ETU', $univ ,  $dateFile, $annee, $tmpRep)) {
 				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 3);
 				if ($lastPath) {
-					push @allNewFile, $_;
-					compareSortedFile($_, $resRep, $lastPath,  3, 3);
+					compareSortedFile($_, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
 				}
 			}
 			for (Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
 				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 3);
 				if ($lastPath) {
-					push @allNewFile, $_;
-					compareSortedFile($_, $resRep, $lastPath,  3, 3);
+					compareSortedFile($_, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
 				}
 			}
 
@@ -162,7 +165,15 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				#on parcourt l'ancien repertoire pour voir si on n'a pas des fichiers absents dans le nouveau.
 				opendir OLDREP, $lastPath;
 				while (readdir OLDREP) {
-					print "$_\n";
+					my $oldFile = $_;
+					if (s/_\d{8}.csv$//) {
+						unless ($allNewPrefixFile{$_}) {
+							INFO!  "nouveau fichier inexistant ! l'ancien étant : $oldFile\n";
+							my $newFile = $oldFile;
+							$newFile =~ s/.csv$/.supp.csv/;
+							copy $lastPath . $oldFile, $resRep . $newFile;
+						}
+					}
 				}
 			}
 			
@@ -206,9 +217,9 @@ sub compareSortedFile {
 	my $oldFile = $lastRep . $prefixFile . $lastDate . ".csv";
 	my $newFile = my $addFile = my $suppFile = my $diffFile = $newRep . $fileName;
 
-	$addFile =~ s/csv$/add.csv/;
-	$suppFile =~ s/csv$/supp.csv/;
-	$diffFile =~ s/csv$/diff.csv/;
+	$addFile =~ s/_\d{8}.csv$/$lastDate.add.csv/;
+	$suppFile =~ s/_\d{8}.csv$/$lastDate.supp.csv/;
+	$diffFile =~ s/_\d{8}.csv$/$lastDate.diff.csv/;
 	
 	if ( -f $oldFile) {
 		DEBUG! "openAndCompareFile($oldFile, $newFile, $addFile, $suppFile, $diffFile, $enteteSize ..)";
@@ -218,7 +229,8 @@ sub compareSortedFile {
 		INFO! "Comparaison ($fileName): Ancien fichier inexistant: $oldFile";
 		copy $newFile, $addFile;
 	}
-	return 1;
+	$allNewPrefixFile{$prefixFile} = $fileName;
+	return  1;
 }
 
 =begin
