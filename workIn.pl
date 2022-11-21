@@ -20,6 +20,8 @@ MyLogger::level(5, 2);
 
 my $workingDir = shift;
 
+my $outSuffix = '_diff/';
+
 unless ($workingDir) {
 	die "il manque le repertoire de travail \n";
 }
@@ -120,7 +122,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 	
 	my $lastPath = $univ->lastPath();
 	if ($lastPath) {
-		$lastPath .= '_diff/';
+		$lastPath .= $outSuffix;
 		DEBUG! "ancien path : $lastPath";
 	} else {
 		DEBUG! "ancien path ; NVL";
@@ -132,7 +134,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 		unless ( -d $tmpRep) {
 			mkdir $tmpRep, 0775;
 		}
-		my $resRep = "${newPath}_diff/";
+		my $resRep = ${newPath}. $outSuffix ;
 		unless ( -d $resRep) {
 			mkdir $resRep, 0775;
 		}
