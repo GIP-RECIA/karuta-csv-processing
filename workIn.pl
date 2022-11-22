@@ -180,7 +180,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			}
 			
 			my $zipName = lc($relativePath). '.zip';
-			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath}*");
+			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${$outSuffix} ${relativePath}.log");
 
 			#on memorise le new path
 			$data{$univ->id()} = $newPath;
