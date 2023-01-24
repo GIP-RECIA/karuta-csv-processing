@@ -6,7 +6,7 @@ La spécification des traitements est décrite dans [specifications_script_trait
 #### usage :
 
 	./workIn.pl WORKING_DIR
-	ou WORKING_DIR est le répertoire de travail.
+	où WORKING_DIR est le répertoire de travail.
 
 WORKING_DIR doit contenir le fichier *karuta.properties* de paramétrage du script.
 Tout fichier, téléchargé ou calculé, serra placé dans ce répertoire.
@@ -26,9 +26,24 @@ De la forme login@server.name.
 
 - *__nomUniv__*.file.prefix: prefix des fichiers de l'université *__nomUniv__*
 
+##### Les paramètres facultatifs
+si on ne veut pas récupérer un nouveau .zip mais travailler sur un déjà reçu et dézipé 
+
+- *__nomUniv__*.test.newPath: nom du répertoire déziper en entrée.
+
+le fichier *karuta.data* contient les derniers fichiers traiter pour chaques univ: utile pour faire le calcul des différences.
+
+- *__nomUniv__*.test.oldPath: nom de l'ancien répertoire sur lequel on va se basé pour calculer les différences sans tenir compte du karuta.data
+
+
 #### Les resultats
 Pour chaque université on récupère du sftp le dernier fichier non déjà présent dans WORKING_DIR.
 Pour chaque fichier récupéré un fichier.zip est créé dans  WORKING_DIR  prefixé par *_nomUniv_* et terminant par la date.
-Il contient les fichiers reçu et les fichiers créés (dans le répertoire *__nomUniv__*_tmp).
+Il contient les fichiers reçu et les fichiers créés (dans le répertoire *__nomUniv__*_diff).
 
 A la racine de l'archive il y a aussi création d'un fichier de log contenant les lignes en entrées rejetées (non conforme).
+
+#### Contenu des archives resultat ( nomUniv_date.zip)
+
+- le repertoire des données reçu tel quelles  : *__nomUniv__*_*__date__*
+- le repertoire avec les fichiers calculés : *__nomUniv__*_*__date__*\_diff
