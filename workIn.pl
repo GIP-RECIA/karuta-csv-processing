@@ -48,14 +48,17 @@ my $annee= $properties-> getProperty('annee.scolaire') or FATAL!  "annee.scolair
 my $dataFile = $properties-> getProperty('data.file');
 
 unless ($dataFile) {
-	$dataFile = "$workingDir/karuta.data";
+	$dataFile = $workingDir. "karuta.data";
 }
+DEBUG! "datafile = $dataFile";
 my %data;
 #lecture du fichier data s'il existe
-if (-d $dataFile) {
+if (-f $dataFile) {
 	open DATA, $dataFile or FATAL! "error lecture $dataFile: $!";
 	while (<DATA>) {
 		my ($cle, $valeur) = split '\s*=\s*', $_, 2;
+		chomp $valeur;
+		DEBUG! "Data : ($cle, $valeur)"; 
 		$data{$cle} = $valeur;
 	}
 	close DATA;
@@ -71,17 +74,17 @@ foreach my $univ (split(" ", $listUniv) ){
 
 	my $u = new Univ($univ, $ftpRep, $workingDir, $filePrefix);
 	if ($newPathTest) {
+		DEBUG! "newPathTest = " , $newPathTest;
 		$modeTest = 1;
 		$u->path($newPathTest);
 		$u->lastPath($properties-> getProperty("${univ}.test.lastPath"));
 	} else {
 		$u->lastPath($data{$univ});
 	}
-	DEBUG! "univ last path = ", $u->lastPath;
+	DEBUG! "univ last path = ", $u->lastPath,";";
 }
 
 my $ftp = "/usr/bin/sftp -b- $ftpAddr";
-
 
 
 =begin
@@ -180,7 +183,8 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			}
 			
 			my $zipName = lc($relativePath). '.zip';
-			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${$outSuffix} ${relativePath}.log");
+			print "cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log", "\n";
+			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
 
 			#on memorise le new path
 			$data{$univ->id()} = $newPath;
@@ -229,6 +233,7 @@ sub compareSortedFile {
 	} else {
 		# l'ancien fichier n'existe pas => le nouveau n'est qu'ajouts;
 		INFO! "Comparaison ($fileName): Ancien fichier inexistant: $oldFile";
+
 		copy $newFile, $addFile;
 	}
 	$allNewPrefixFile{$prefixFile} = $fileName;
