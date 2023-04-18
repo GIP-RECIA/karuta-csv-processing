@@ -196,7 +196,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 }
 
 # on ecrit le dataFile
-open DATA, ">$dataFile" or FATAL! "error ecriture $dataFile: $!";
+open DATA, ">>$dataFile" or FATAL! "error ecriture $dataFile: $!";
 while (my ($key, $val) = each %data) {
 	DEBUG! $key, " ",$val;
 	print DATA $key, "=$val\n";
