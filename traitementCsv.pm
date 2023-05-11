@@ -44,7 +44,15 @@ sub parseFile {
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
 	}
-	my $isEtu = $type eq 'ETU';
+
+	my $isEtu;
+	my $straitement;
+	if ($isEtu = $type eq 'ETU') {
+		$traitement = \&traitementETU;
+	} else {
+		$traitement = \&traitementSTAFF;
+	}
+
 	$_ = <CSV>;
 	my $nbligne = 1;
 	while (<CSV>) {
@@ -52,7 +60,6 @@ sub parseFile {
 		s/\"\;\"/\"\,\"/g; # on force les ,
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
-
 			my $person;
 			if ($isEtu) {
 				$person = new Etudiant($univ, $csv->fields());
@@ -60,7 +67,7 @@ sub parseFile {
 				$person = new Staff($univ, $csv->fields());
 			}
 			if ($person) {
-				if (traitementParFormation($person)) {
+				if (&$traitement($person)) {
 					print LOG "dans $fileName ligne $nbligne\n";
 				}
 			} else {
@@ -79,14 +86,13 @@ sub parseFile {
 }
 
 
-sub traitementParFormation {
-	# cas ou on creer un fichier par formation
+sub traitementETU {
 	my $personne = shift;
 	my $nberr = 0;
 	foreach my $codeEtap (@{$personne->codesEtape()}) {
 		my $etape = Etape::getByCodeEtap($codeEtap);
 		if ($etape) {
-			printInFormationFile($etape, $personne);
+			printInFormationFileETU($etape, $personne);
 		} else {
 			WARN! ("pas d'etape pour ce codeEtap : $codeEtap !");
 			print LOG "codeEtape erreur: $codeEtap !\n";
@@ -96,12 +102,18 @@ sub traitementParFormation {
 	return $nberr;
 }
 
+sub traitementSTAFF {
+	my $personne = shift;
+	my $nberr = 0;
+	#TODO le reste du traitement
+}
 
 
-sub printInFormationFile {
+
+sub printInFormationFileETU {
 	my $etape = shift;
 	my $personne = shift;
-	my $file  = getFile($etape, $personne->type);
+	my $file  = getFileETU($etape);
 	if ($file) {
 		unless ($personne->inFile($file) ) {
 			$csv->print($file, $personne->info());
@@ -112,13 +124,12 @@ sub printInFormationFile {
 
 
 
-sub openFile {
+sub openFileETU {
 	my $typeFile = shift; # pour les staff ce sera  formation_code 
 	my $etape = shift;
-	my $type = shift;
-	if ($etape && $type) {
+	if ($etape) {
 		
-		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $typeFile, $annee, $dateFile);
+		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , 'ETU', $typeFile, $annee, $dateFile);
 
 
 		my $file = $fileName2file{$fileName};
@@ -132,7 +143,7 @@ sub openFile {
 
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 		
-		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $typeFile)) {
+		foreach my $entete (Personne->getEntete('ETU', $univ->id, $annee, $etape, $typeFile)) {
 			$csv->print($file, $entete);
 			print $file "\n";
 		}
@@ -143,27 +154,22 @@ sub openFile {
 	return 0;
 }
 
-sub getFile {
+sub getFileETU {
 	my $etape = shift;
-	my $type = shift;
 	my $file;
 	my $haveFiles;
 	my $typeFile; # contient  site_cohorte/formation .
 	my $formation = $etape->formation;
 	
-	if ($type eq 'ETU') {
-		$haveFiles = $etape;
-		$typeFile = $etape->site . "_" . $etape->cohorte;
-	} else {
-		$haveFiles = $formation;
-		$typeFile = $etape->site . "_" . $formation->code;
-	}
-	$haveFiles->getFile($type);
+	$haveFiles = $etape;
+	$typeFile = $etape->site . "_" . $etape->cohorte;
+
+	$haveFiles->getFile('ETU');
 	
 	unless ($file) {
-		$file = openFile($typeFile, $etape, $type);
+		$file = openFileETU($typeFile, $etape);
 		if ($file) {
-			$haveFiles->setFile($file, $type);
+			$haveFiles->setFile($file, 'ETU');
 		}
 	}
 	return $file;
