@@ -60,7 +60,7 @@ sub parseFile {
 				$person = new Staff($univ, $csv->fields());
 			}
 			if ($person) {
-				if (traitement($person)) {
+				if (traitementParFormation($person)) {
 					print LOG "dans $fileName ligne $nbligne\n";
 				}
 			} else {
@@ -79,7 +79,8 @@ sub parseFile {
 }
 
 
-sub traitement {
+sub traitementParFormation {
+	# cas ou on creer un fichier par formation
 	my $personne = shift;
 	my $nberr = 0;
 	foreach my $codeEtap (@{$personne->codesEtape()}) {
