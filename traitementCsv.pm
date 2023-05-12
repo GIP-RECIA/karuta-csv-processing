@@ -22,6 +22,8 @@ my $type;
 my $tmp;
 my %fileName2file;
 
+my %StaffFiles;
+
 sub parseFile {
 	$type = shift;
 	$univ = shift;
@@ -30,13 +32,14 @@ sub parseFile {
 	$tmp = shift; #le repertoire temporaire de travail;
 
 	%fileName2file =();
+	%StaffFiles = ();
 
 	my $fileName = sprintf("%s_%s_%s.csv", $univ->prefix, $dateFile, $type);
-	
+
 	$path = $univ->path;
 
 	my $fileNameLog = "${path}.log";
-	
+
 	 #$csv->sep_char($univ->sepChar());
 	 DEBUG! "open $path/$fileName \n";
 	open (CSV, "<$path/$fileName") || FATAL!  "$path/$fileName  " . $!;
@@ -46,7 +49,7 @@ sub parseFile {
 	}
 
 	my $isEtu;
-	my $straitement;
+	my $traitement;
 	if ($isEtu = $type eq 'ETU') {
 		$traitement = \&traitementETU;
 	} else {
@@ -105,7 +108,29 @@ sub traitementETU {
 sub traitementSTAFF {
 	my $personne = shift;
 	my $nberr = 0;
-	#TODO le reste du traitement
+	my $file = getFileSTAFF('Personne');
+	if ($file) {
+		unless ($personne->inFile($file) ) {
+			$csv->print($file, $personne->info());
+			print $file  "\n";
+		}
+		$file = getFileSTAFF('Formation');
+		if ($file) {
+			foreach my $codeEtap (@{$personne->codesEtape()}) {
+				my $etape = Etape::getByCodeEtap($codeEtap);
+				my $infoRef = $personne->info;
+				my @info = @$infoRef;
+				my $formationLabel = $etape->formation->label;
+				unless ($personne->compteur($formationLabel)) {
+					@info[3]= $formationLabel;
+					DEBUG! @info;
+					$csv->print($file, \@info);
+					print $file  "\n";
+				}
+			}
+		}
+	}
+	return 0;
 }
 
 
@@ -123,13 +148,14 @@ sub printInFormationFileETU {
 }
 
 
-
-sub openFileETU {
-	my $typeFile = shift; # pour les staff ce sera  formation_code 
-	my $etape = shift;
-	if ($etape) {
+sub openFile {
+	my $typeFile = shift;
+	my $type = shift;
+	my $etape = shift; #pour etu; pour staff on vera 
+	
+	if ($type) {
 		
-		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , 'ETU', $typeFile, $annee, $dateFile);
+		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $typeFile, $annee, $dateFile);
 
 
 		my $file = $fileName2file{$fileName};
@@ -143,7 +169,7 @@ sub openFileETU {
 
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 		
-		foreach my $entete (Personne->getEntete('ETU', $univ->id, $annee, $etape, $typeFile)) {
+		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $typeFile)) {
 			$csv->print($file, $entete);
 			print $file "\n";
 		}
@@ -152,6 +178,21 @@ sub openFileETU {
 		return $file;
 	}
 	return 0;
+}
+
+
+sub getFileSTAFF {
+	my $typeFile =  shift; # Formation ou autre
+	my $file;
+
+	$file = $StaffFiles{$typeFile};
+	unless ($file) {
+		$file = openFile($typeFile, 'STAFF' , "");
+		if ($file) {
+			$StaffFiles{$typeFile} = $file;
+		}
+	}
+	return $file;
 }
 
 sub getFileETU {
@@ -167,7 +208,7 @@ sub getFileETU {
 	$haveFiles->getFile('ETU');
 	
 	unless ($file) {
-		$file = openFileETU($typeFile, $etape);
+		$file = openFile($typeFile, 'ETU' , $etape);
 		if ($file) {
 			$haveFiles->setFile($file, 'ETU');
 		}

@@ -147,7 +147,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			my $prefixFile;
 			DiffCsv::trieFile($newFormationFile, $tmpRep, $resRep, 1 );
 			if ($lastPath) {
-				compareSortedFile($newFormationFile, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
+				compareSortedFile($newFormationFile, $resRep, $lastPath,  1) or next TRAITEMENT;
 			}
 			
 			for (Traitement::parseFile('ETU', $univ ,  $dateFile, $annee, $tmpRep)) {
@@ -156,10 +156,11 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 					compareSortedFile($_, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
 				}
 			}
+
 			for (Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
-				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 3);
+				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 2);
 				if ($lastPath) {
-					compareSortedFile($_, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
+					compareSortedFile($_, $resRep, $lastPath,  3, 2) or next TRAITEMENT;
 				}
 			}
 
@@ -182,7 +183,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				}
 			}
 			
-			my $zipName = lc($relativePath). '.zip';
+			my $zipName = lc($relativePath). '.kpc.1.3.zip';
 			print "cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log", "\n";
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
 

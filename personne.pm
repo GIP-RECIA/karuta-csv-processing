@@ -9,26 +9,25 @@ package Personne;
 
 sub new {
 	my $class = shift;
+	my $id = shift;
 	my @info = @_;
-	if (testInfo(@info)) {
-		# eppn == login
-		my $eppn = shift @info;
-		push @info, $eppn;
+	if (testInfo($id, @info)) {
 		my $self = {
+			id => $id,
 			info => \@info,
-			files => {}
+			compteurs => {}
 		};
 		return bless $self, $class;
 	}
 	return 0;
 }
 
-
+sub compteur {
+	my ($self, $key) = @_;
+	return $self->{compteurs}->{$key}++;
+}
 sub inFile {
-	my $self = shift;
-	my $file = shift;
-	my $files = $self->{files};
-	return $$files{$file}++ ;
+	return &compteur;
 }
 
 sub testInfo {
@@ -129,8 +128,8 @@ sub new {
 	my $prenom = shift;
 	my $courriel = shift;
 	my $matricule = shift;
-		# liste des infos en sortie dans csv 
-	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule);
+		# identifiant + liste des infos en sortie dans csv
+	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule, $eppn);
 	if ($self) {
 		$self->{univ} = $univ;
 		$self->setCodesEtape($univ, @_);
@@ -152,22 +151,27 @@ use base qw(Personne);
 sub entete {
 	my $class = shift;
 	my $univ = shift;
-	my $annee = shift;  # attention $annee et $typeFile ne sont pas utilisé mais sont transmise
+	my $annee = shift;  # attention $annee et $etap ne sont pas utilisé mais sont transmise
 	my $etape = shift;
-	my $typeFile = shift;
-	my $site = $etape->site;
-	my $formation = $etape->formation;
-	my $formation_code = $formation->code;
-	my $formation_label = $formation->label;
-	my $cohorte = $etape->cohorte;
-	return (
-		["model_code","formation_code","formation_label"],
-		[	"kapc/3enseignants.batch-creer-enseignants-authentification-externe",
-			"${univ}_${site}_${formation_code}",
-			"${univ}_${site} - ${formation_label}",
-		],
-		["nomFamilleEnseignant","prenomEnseignant","courrielEnseignant", "loginEnseignant"]
-	)
+	my $typeFile = shift; # 2 typeFile  ... et Formation
+	#my $site = $etape->site;
+	#my $formation = $etape->formation;
+	#my $formation_code = $formation->code;
+	#my $formation_label = $formation->label;
+	#my $cohorte = $etape->cohorte;
+	if ($typeFile eq 'Formation') {
+		return (
+			[ "model_code",,,],
+			[ "kapc/7enseignants.batch-associer-enseignants-formations",,,],
+			[ "nomFamilleEnseignant","prenomEnseignant","loginEnseignant","formation_code"]
+		)
+	} else {
+		return (
+			["model_code",,,],
+			["kapc/7enseignants.batch-creer-enseignants-authentification-externe",,,],
+			["nomFamilleEnseignant","prenomEnseignant","loginEnseignant","courrielEnseignant"]
+		)
+	}
 }
 
 sub new {
@@ -178,8 +182,8 @@ sub new {
 	my $nom = shift;
 	my $prenom = shift;
 	my $courriel = shift;
-		# liste des infos en sortie dans csv 
-	my $self = new Personne( $eppn, $nom, $prenom, $courriel);
+		# identifiant + liste des infos en sortie dans csv
+	my $self = new Personne($eppn, $nom, $prenom, $eppn, $courriel);
 	if ($self) {
 		$self->{univ} = $univ;
 		$self->setCodesEtape($univ, @_);
