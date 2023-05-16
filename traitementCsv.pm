@@ -118,8 +118,7 @@ sub traitementSTAFF {
 		if ($file) {
 			foreach my $codeEtap (@{$personne->codesEtape()}) {
 				my $etape = Etape::getByCodeEtap($codeEtap);
-				my $infoRef = $personne->info;
-				my @info = @$infoRef;
+				my @info = @{$personne->info};
 				my $formationLabel = $etape->formation->label;
 				unless ($personne->compteur($formationLabel)) {
 					@info[3]= $formationLabel;
@@ -151,7 +150,7 @@ sub printInFormationFileETU {
 sub openFile {
 	my $typeFile = shift;
 	my $type = shift;
-	my $etape = shift; #pour etu; pour staff on vera 
+	my $etape = shift; 
 	
 	if ($type) {
 		

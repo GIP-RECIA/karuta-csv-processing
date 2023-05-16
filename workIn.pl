@@ -183,7 +183,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				}
 			}
 			
-			my $zipName = lc($relativePath). '.kpc.1.3.zip';
+			my $zipName = lc($relativePath). '.kapc.1.3.zip';
 			print "cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log", "\n";
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
 
