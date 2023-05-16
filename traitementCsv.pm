@@ -119,7 +119,7 @@ sub traitementSTAFF {
 			foreach my $codeEtap (@{$personne->codesEtape()}) {
 				my $etape = Etape::getByCodeEtap($codeEtap);
 				my @info = @{$personne->info};
-				my $formationLabel = $etape->formation->label;
+				my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->label;
 				unless ($personne->compteur($formationLabel)) {
 					@info[3]= $formationLabel;
 					DEBUG! @info;
@@ -169,8 +169,9 @@ sub openFile {
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 		
 		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $typeFile)) {
+			my $finDeLigne = @$entete > 1 ? "\n" : ",\n";
 			$csv->print($file, $entete);
-			print $file "\n";
+			print $file $finDeLigne;
 		}
 
 		$fileName2file{$fileName} = $file;

@@ -161,14 +161,14 @@ sub entete {
 	#my $cohorte = $etape->cohorte;
 	if ($typeFile eq 'Formation') {
 		return (
-			[ "model_code", ""],
-			[ "kapc/7enseignants.batch-associer-enseignants-formations", "" ],
+			[ "model_code"],
+			[ "kapc/7enseignants.batch-associer-enseignants-formations"],
 			[ "nomFamilleEnseignant","prenomEnseignant","loginEnseignant","formation_code"]
 		)
 	} else {
 		return (
-			["model_code",""],
-			["kapc/7enseignants.batch-creer-enseignants-authentification-externe",""],
+			["model_code"],
+			["kapc/7enseignants.batch-creer-enseignants-authentification-externe"],
 			["nomFamilleEnseignant","prenomEnseignant","loginEnseignant","courrielEnseignant"]
 		)
 	}
