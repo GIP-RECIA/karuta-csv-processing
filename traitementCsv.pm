@@ -119,7 +119,7 @@ sub traitementSTAFF {
 			foreach my $codeEtap (@{$personne->codesEtape()}) {
 				my $etape = Etape::getByCodeEtap($codeEtap);
 				my @info = @{$personne->info};
-				my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->label;
+				my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->code;
 				unless ($personne->compteur($formationLabel)) {
 					@info[3]= $formationLabel;
 					DEBUG! @info;
