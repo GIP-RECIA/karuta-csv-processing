@@ -2,8 +2,6 @@
 use strict;
 use utf8;
 use open qw( :encoding(utf8) :std );
-#use FindBin;                    
-#use lib $FindBin::Bin;  
 
 use MyLogger;
 
@@ -80,7 +78,8 @@ sub compareLigne {
 
  
 # prend 2 DiffCsvReader à comparer les 2 fichiers doivent être triés.
-# et 3 DiffCsvWriter resultat
+# et 3 DiffCsvWriter
+# resultat  :
 # les suppressions (ce qui est dans file1 mais pas dans file2)
 # les ajouts (ce qui est dans file2 mais pas dans file1)
 # les modifs (ce qui est dans file2 et dans file1 et  different) suppose une notion de clé

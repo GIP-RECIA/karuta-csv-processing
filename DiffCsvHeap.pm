@@ -2,9 +2,7 @@
 use strict;
 use utf8;
 use open qw( :encoding(utf8) :std );
-#use FindBin;                    
-#use lib $FindBin::Bin;  
-
+ 
 use MyLogger;
 
 my $csvSep = '","';

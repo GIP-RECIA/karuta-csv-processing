@@ -17,7 +17,7 @@ sub new {
 		filePrefix => $filePrefix,
 		sepChar => ','
 	};
-#	bless $self, $class;
+
 	if ($id eq "orleans") {
 		$self->{filtreEtap} =
 			sub {

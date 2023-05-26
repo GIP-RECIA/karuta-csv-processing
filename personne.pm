@@ -45,7 +45,7 @@ sub setCodesEtape {
 	my $univ = shift;
 	my @codesEtape;
 	my $filtre = $univ->{filtreEtap};
-#	DEBUG! "set codes etapes : ", @_;
+
 	if (@_ > 1 ) {
 		@codesEtape = map ({s/\s*(\S+)\s*/\1/; $_} @_);
 		if ($filtre) {
@@ -59,7 +59,7 @@ sub setCodesEtape {
 			 @codesEtape = &$filtre(@codesEtape);
 		 } 
 	}
-#	DEBUG! "return ", @codesEtape;
+
 	$$self{codesEtape} = \@codesEtape;
 }
 
@@ -154,11 +154,7 @@ sub entete {
 	my $annee = shift;  # attention $annee et $etap ne sont pas utilisé mais sont transmise
 	my $etape = shift;
 	my $typeFile = shift; # 2 typeFile  ... et Formation
-	#my $site = $etape->site;
-	#my $formation = $etape->formation;
-	#my $formation_code = $formation->code;
-	#my $formation_label = $formation->label;
-	#my $cohorte = $etape->cohorte;
+
 	if ($typeFile eq 'Formation') {
 		return (
 			[ "model_code"],

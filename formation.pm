@@ -1,6 +1,6 @@
 use strict;
 use utf8;
-use Text::CSV; # sudo apt-get install libtext-csv-perl
+use Text::CSV; 
 use open qw( :encoding(utf8) :std );
 use MyLogger;
 
@@ -59,7 +59,6 @@ sub new {
 	
 	my $cohorte;
 
-#	DEBUG!  "$class, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site";
 	unless ($site) {
 		ERROR! "Etape ($codesEtaps) sans site\n";
 		foreach my $elem (@_) {
@@ -91,11 +90,9 @@ sub new {
 		if ($formation) {
 			my $nbEtap = 0;
 			foreach my $codeEtap (split('@',$codesEtaps)) {
-#				DEBUG! "Create etape : $codeEtap, $libEtap, $site, $cohorte ";
 				$self = {
 					etap => $codeEtap,
 					lib => $libEtap,
-				#	court => $libCourt,
 					site => $site,
 					cohorte => $cohorte,
 					formation => $formation,
@@ -172,7 +169,6 @@ sub readFile {
 
 	open (LOG, ">>$fileNameLog") || FATAL!  "$fileNameLog " . $!;
 	
-	#$csv->sep_char($sepChar);
 	my $nbline = 1;
 	while (<FORMATION>) {
 		$nbline++;
@@ -210,6 +206,7 @@ sub writeFile {
 	my $fullFileName = $tmp . $fileName;
 
 	INFO! "write $fullFileName";
+	
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
 	}
