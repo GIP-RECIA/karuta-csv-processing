@@ -44,38 +44,35 @@ my $dataFile = $properties-> getProperty('data.file', $workingDir. "/karuta.data
 
 DEBUG! "datafile = $dataFile";
 
-my %data;
 
+my $dataProps = new Config::Properties();
 #lecture du fichier data s'il existe
 if (-f $dataFile) {
-	open DATA, $dataFile or FATAL! "error lecture $dataFile: $!";
-	while (<DATA>) {
-		my ($cle, $valeur) = split '\s*=\s*', $_, 2;
-		chomp $valeur;
-		DEBUG! "Data : ($cle, $valeur)"; 
-		$data{$cle} = $valeur;
-	}
-	close DATA;
+	open my $data, $dataFile or FATAL! "error lecture $dataFile: $!";
+	$dataProps->load($data);
+	close $data;
 }
 
 my $modeTest = 0;
-	INFO! "$listUniv";
+
 foreach my $univ (split(" ", $listUniv) ){
-	INFO! "create object univ for $univ" ;
+	INFO! "Univ a traiter: $univ" ;
+
 	my $ftpRep = $properties-> getProperty("${univ}.ftp.rep") or  FATAL!  "${univ}.ftp.rep propertie not found" ;
 	my $filePrefix = $properties-> getProperty("${univ}.file.prefix") or FATAL!  "${univ}.file.prefix propertie not found" ;
 	my $newPathTest = $properties-> getProperty("${univ}.test.newPath");
 
 	my $u = new Univ($univ, $ftpRep, $workingDir, $filePrefix);
+	
 	if ($newPathTest) {
 		DEBUG! "newPathTest = " , $newPathTest;
 		$modeTest = 1;
 		$u->path($newPathTest);
-		$u->lastPath($properties-> getProperty("${univ}.test.lastPath"));
+		$u->lastPath($properties->getProperty("${univ}.test.lastPath"));
 	} else {
-		$u->lastPath($data{$univ});
+		$u->lastPath($dataProps->getProperty($univ));
 	}
-	DEBUG! "univ last path = ", $u->lastPath,";";
+	DEBUG! "$univ last path = ", $u->lastPath,";";
 }
 
 my $ftp = "/usr/bin/sftp -b- $ftpAddr";
@@ -111,35 +108,47 @@ unless ($modeTest) { # si on est en test pas de download
 	pour chaque univ parse les fichiers FORMATION , ETU et STAFF
 	zip le repertoire résultat
 =cut
+
 my %allNewPrefixFile;
 
 TRAITEMENT: foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
+	
 	INFO! ":$newPath", ": :${workingDir}:";
 	
 	my $lastPath = $univ->lastPath();
+
 	if ($lastPath) {
 		$lastPath .= $outSuffix;
 		DEBUG! "ancien path : $lastPath";
 	} else {
 		DEBUG! "ancien path ; NVL";
 	}
+	
 	if ($newPath =~ /^${workingDir}\/(.+)/) {
 		my $relativePath=$1;
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
 		my $tmpRep = "${newPath}_tmp/";
+
 		unless ( -d $tmpRep) {
 			mkdir $tmpRep, 0775;
 		}
+		
 		my $resRep = ${newPath}. $outSuffix ;
+
 		unless ( -d $resRep) {
 			mkdir $resRep, 0775;
 		}
+		
 		if ($formationFile) {
+			
 			Formation::readFile($newPath, $formationFile, $univ->sepChar());
+
 			my $newFormationFile = Formation::writeFile($univ, $dateFile, $tmpRep);
 			my $prefixFile;
+
 			DiffCsv::trieFile($newFormationFile, $tmpRep, $resRep, 1 );
+
 			if ($lastPath) {
 				compareSortedFile($newFormationFile, $resRep, $lastPath,  1) or next TRAITEMENT;
 			}
@@ -158,11 +167,8 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				}
 			}
 
-			#on trie et deplace  les nouveaux fichiers
-			#DEBUG! join "\n", @allNewFile;
-
 			if ($lastPath) {
-				#on parcourt l'ancien repertoire pour voir si on n'a pas des fichiers absents dans le nouveau.
+				#on parcourt l'ancien repertoire pour voir si l'on n'a pas des fichiers absents dans le nouveau.
 				opendir OLDREP, $lastPath;
 				while (readdir OLDREP) {
 					my $oldFile = $_;
@@ -178,11 +184,11 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			}
 			
 			my $zipName = lc($relativePath). '.kapc.1.3.zip';
-			print "cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log", "\n";
+
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
 
 			#on memorise le new path
-			$data{$univ->id()} = $newPath;
+			$dataProps->changeProperty($univ->id(),$newPath);
 			DEBUG! $univ->id, " <=", $newPath;
 		}
 	} else {
@@ -191,11 +197,9 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 }
 
 # on ecrit le dataFile
-open DATA, ">>$dataFile" or FATAL! "error ecriture $dataFile: $!";
-while (my ($key, $val) = each %data) {
-	DEBUG! $key, " ",$val;
-	print DATA $key, "=$val\n";
-}
+open my $data, ">$dataFile" or FATAL! "error ecriture $dataFile: $!";
+$dataProps->save($data);
+
 
 sub compareSortedFile {
 	my $fileName = shift;
