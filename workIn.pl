@@ -3,13 +3,10 @@ use strict;
 use utf8;
 use open qw( :encoding(utf8) :std );
 use File::Copy qw(copy);
-
 use FindBin;                    
 use lib $FindBin::Bin;  
-
 use MyLogger;
 use Config::Properties;
-
 use univ;
 use download;
 use formation;
@@ -25,17 +22,15 @@ my $outSuffix = '_diff/';
 unless ($workingDir) {
 	die "il manque le repertoire de travail \n";
 }
+
 MyLogger::file "$workingDir/karuta.log";
 
 my $configFile = "$workingDir/karuta.properties";
 
- INFO! "Lecture des properties";
-open PROPS, "$configFile" or die "$configFile : " . $! . "\n";
+INFO! "Lecture des properties";
+my $properties = new Config::Properties( file => $configFile) or FATAL! "Properties $configFile : $!";
 
-my $properties = new Config::Properties();
-$properties->load(*PROPS);
-
-my $logFile = $properties-> getProperty('log.file');
+my $logFile = $properties->getProperty('log.file');
 
 if ($logFile) {
 	INFO! "new logger file : ", $logFile;
@@ -45,13 +40,12 @@ if ($logFile) {
 my $ftpAddr = $properties-> getProperty('ftp.addr') or FATAL!  "ftp.addr propertie not found" ;
 my $listUniv= $properties-> getProperty('univ.list') or FATAL!  "univ.list propertie not found" ;
 my $annee= $properties-> getProperty('annee.scolaire') or FATAL!  "annee.scolaire propertie not found" ;
-my $dataFile = $properties-> getProperty('data.file');
+my $dataFile = $properties-> getProperty('data.file', $workingDir. "/karuta.data");
 
-unless ($dataFile) {
-	$dataFile = $workingDir. "karuta.data";
-}
 DEBUG! "datafile = $dataFile";
+
 my %data;
+
 #lecture du fichier data s'il existe
 if (-f $dataFile) {
 	open DATA, $dataFile or FATAL! "error lecture $dataFile: $!";
