@@ -118,6 +118,11 @@ sub traitementSTAFF {
 		if ($file) {
 			foreach my $codeEtap (@{$personne->codesEtape()}) {
 				my $etape = Etape::getByCodeEtap($codeEtap);
+				unless ($etape) {
+					WARN! ("pas d'etape pour ce codeEtap : $codeEtap !");
+					print LOG $personne->{id} . ": codeEtape erreur: $codeEtap !\n";
+					next;
+				}
 				my @info = @{$personne->info};
 				my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->code;
 				unless ($personne->compteur($formationLabel)) {

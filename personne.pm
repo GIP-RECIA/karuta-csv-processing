@@ -128,12 +128,18 @@ sub new {
 	my $prenom = shift;
 	my $courriel = shift;
 	my $matricule = shift;
+	my $codesEtape= shift;
+	my $civile = shift;
+	my $academie = shift;
+	my $fonction = shift;
 		# identifiant + liste des infos en sortie dans csv
-	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule, $eppn);
+	my $self = new Personne($eppn, $nom, $prenom, $courriel, $eppn);
 	if ($self) {
 		$self->{univ} = $univ;
-		$self->setCodesEtape($univ, @_);
+		$self->setCodesEtape($univ, $codesEtape);
 		return bless $self, $class;
+	} else {
+		WARN! "new etudiant ($eppn, $nom, $prenom, $courriel,  $eppn)";
 	}
 	return 0;
 }
@@ -184,6 +190,8 @@ sub new {
 		$self->{univ} = $univ;
 		$self->setCodesEtape($univ, @_);
 		return bless $self, $class;
+	} else {
+		WARN! "new staff ($eppn, $nom, $prenom,   $eppn, $courriel)";
 	}
 	return 0;
 }

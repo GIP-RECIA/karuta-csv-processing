@@ -192,7 +192,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			DEBUG! $univ->id, " <=", $newPath;
 		}
 	} else {
-		ERROR! $univ->id(), " KO; $workingDir";
+		ERROR! $univ->id(), " KO; newPath=$newPath; workinDir=$workingDir";
 	}
 }
 
