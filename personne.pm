@@ -108,14 +108,17 @@ sub entete {
 	my $formation_label = $formation->label;
 	my $formation_code = $formation->code;
 	my $cohorte = $etape->cohorte;
+
+DEBUG! "entete ETU formation_label: $formation_label; $typeFile; $cohorte";
 	return (
 		["model_code","formation_code", "formation_label", "cohorte"],
-		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
-			"${univ}_${site}_${formation_code}",
-			"${univ}_${site} - ${formation_label}",
-			"${univ}_${typeFile}"
+		[	"ih2ef.batch-creer-etudiants",
+			$etape->codeSise, # $formation_code
+			"${formation_label}",
+			"$cohorte", # "${typeFile}",
+			"$site"
 		],
-		["nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant", "loginEtudiant"]
+		["eppn","nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","civiliteEtudiant","loginEtudiant","academieEtudiant","fonctionEtudiant","naissanceEtudiant"]
 	)
 }
 
@@ -130,13 +133,15 @@ sub new {
 	my $matricule = shift;
 	my $codesEtape= shift;
 	my $civile = shift;
+	my $naissance = shift;
 	my $academie = shift;
 	my $fonction = shift;
 		# identifiant + liste des infos en sortie dans csv
-	my $self = new Personne($eppn, $nom, $prenom, $courriel, $eppn);
+	my $self = new Personne($eppn, $eppn, $nom, $prenom, $courriel, $civile, $courriel, $academie, $fonction, $naissance);
 	if ($self) {
 		$self->{univ} = $univ;
 		$self->setCodesEtape($univ, $codesEtape);
+		$self->{mail} = $courriel;
 		return bless $self, $class;
 	} else {
 		WARN! "new etudiant ($eppn, $nom, $prenom, $courriel,  $eppn)";

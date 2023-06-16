@@ -68,7 +68,8 @@ sub new {
 	}
 	
 	
-	my $label = uc("${typeDiplome} ${intituleDiplome}");
+#	my $label = uc("${typeDiplome} ${intituleDiplome}");
+	my $label = uc("${intituleDiplome}");
 	$label =~ s/\//-/;
 	
 	$cohorte = $libEtap;
@@ -96,6 +97,7 @@ sub new {
 					site => $site,
 					cohorte => $cohorte,
 					formation => $formation,
+					codeSise => $codeSISE,
 					files => {}
 				};
 
@@ -127,6 +129,11 @@ sub cohorte {
 sub formation {
 	my  $self = shift;
 	return $self->{formation}
+}
+
+sub codeSise {
+	my  $self = shift;
+	return $self->{codeSise}
 }
 
 
@@ -227,8 +234,11 @@ sub writeFile {
 sub new {
 	my ($class, $code , $label, $site) = @_;
 
+DEBUG! "new formation: $label";
+
 	my $cle="${site}_${code}";
 	my $formation = getByCle($cle);
+	
 	if ($formation) {
 		if ($formation->label ne $label) {
 				WARN! "formation ($cle) avec plusieurs label: $label ", $formation->label;
@@ -247,7 +257,7 @@ sub new {
 		};
 		
 	} else {
-		WARN! ("Erreur codeForamation $code : $label");
+		WARN! ("Erreur codeFormation $code : $label");
 		return 0;
 	}
 	bless $formation, $class;

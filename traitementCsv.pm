@@ -3,6 +3,7 @@ use utf8;
 use Text::CSV; # sudo apt-get install libtext-csv-perl
 use open qw( :encoding(utf8) :std );
 use IO::File;
+use Data::Dumper;
 
 use formation;
 use personne;
@@ -137,7 +138,7 @@ sub traitementSTAFF {
 	return 0;
 }
 
-
+my %ListeETU;
 
 sub printInFormationFileETU {
 	my $etape = shift;
@@ -147,6 +148,8 @@ sub printInFormationFileETU {
 		unless ($personne->inFile($file) ) {
 			$csv->print($file, $personne->info());
 			print $file  "\n";
+			# verru pour le changement de mail
+			$listeETU{$personne->id} = $personne
 		}
 	}
 }
@@ -172,7 +175,8 @@ sub openFile {
 		DEBUG! "write file  $fileName\n";
 
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
-		
+
+DEBUG! "openfile " . Data::Dumper::Dumper($etape);
 		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $typeFile)) {
 			my $finDeLigne = @$entete > 1 ? "\n" : ",\n";
 			$csv->print($file, $entete);
@@ -209,7 +213,8 @@ sub getFileETU {
 	
 	$haveFiles = $etape;
 	$typeFile = $etape->site . "_" . $etape->cohorte;
-
+#	$typeFile = $etape->cohorte;
+	
 	$haveFiles->getFile('ETU');
 	
 	unless ($file) {
