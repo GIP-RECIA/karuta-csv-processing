@@ -24,6 +24,8 @@ my $tmp;
 my %fileName2file;
 
 my %StaffFiles;
+my %ListeETU;
+my %oldMailETU;
 
 sub parseFile {
 	$type = shift;
@@ -34,6 +36,7 @@ sub parseFile {
 
 	%fileName2file =();
 	%StaffFiles = ();
+	%ListeETU = ();
 
 	my $fileName = sprintf("%s_%s_%s.csv", $univ->prefix, $dateFile, $type);
 
@@ -138,18 +141,56 @@ sub traitementSTAFF {
 	return 0;
 }
 
-my %ListeETU;
 
-sub writeAjoutSql {
-	my $fileName = shift;
-DEBUG! "open SQL, >$fileName" ;
-	open SQL, ">$fileName" or FATAL! $!;
-	foreach my $personne (values %ListeETU) {
-		my $eppn = $personne->{id};
-		my $mail = $personne->{mail};
-		print SQL qq/update credential set eppn="$eppn" where login = "$mail";/, "\n";
+
+sub mailEtu2sql {
+	my $tmpPath = shift;
+	my $diffPath = shift;
+	my $oldTmpPath = shift;
+
+	my $fileMail = "allMail.txt";
+	my $modifMailFile = $diffPath . "modifMail.sql";
+	my $newMailFile = $tmpPath . $fileMail;
+	my $oldMailFile = $oldTmpPath . $fileMail;
+
+	DEBUG! "modifMailFile = $modifMailFile ; newMailFile = $newMailFile ; oldMailFile = $oldMailFile.";
+
+	open SQL, "> $modifMailFile" or FATAL! "open $modifMailFile : $!";
+	open NEWMAIL, "> $newMailFile" or FATAL! "open $newMailFile : $!";
+	
+	if ($oldTmpPath) {
+		%oldMailETU=();
+		open OLDMAIL, $oldMailFile or FATAL! "open $oldMailFile : $!";
+		while (<OLDMAIL>) {
+			my ($eppn, $mail) = split;
+			if ($eppn) {
+				$oldMailETU{$eppn} = $mail;
+			}
+		}
+		close OLDMAIL;
+	}
+	
+	foreach my $etu (values %ListeETU) {
+		my $eppn = $etu->{id};
+		my $mail = $etu->{mail};
+		my $isNew = 1;
+		if ($oldTmpPath) {
+			my $oldMail = $oldMailETU{$eppn};
+			if ($oldMail) {
+				$isNew = 0;
+				if ($oldMail ne $mail) {
+					print SQL qq/update credential set email="$mail" where eppn="$eppn";/, "\n";
+				}
+			}
+		}
+		if ($isNew) {
+			print SQL qq/update credential set eppn="$eppn" where login = "$mail";/, "\n";	
+		}
+		print NEWMAIL "$eppn\t$mail\n";
 	}
 	close SQL;
+	close NEWMAIL;
+	
 }
 
 sub printInFormationFileETU {
