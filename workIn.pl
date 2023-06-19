@@ -182,6 +182,9 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 					}
 				}
 			}
+
+			#on creer le fichier SQL;
+			Traitement::writeAjoutSql("${workingDir}/${relativePath}${outSuffix}modifMail.sql");
 			
 			my $zipName = lc($relativePath). '.kapc.1.3.zip';
 
@@ -190,11 +193,15 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			#on memorise le new path
 			$dataProps->changeProperty($univ->id(),$newPath);
 			DEBUG! $univ->id, " <=", $newPath;
+
+			
 		}
 	} else {
 		ERROR! $univ->id(), " KO; newPath=$newPath; workinDir=$workingDir";
 	}
 }
+
+
 
 # on ecrit le dataFile
 open my $data, ">$dataFile" or FATAL! "error ecriture $dataFile: $!";

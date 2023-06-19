@@ -140,6 +140,18 @@ sub traitementSTAFF {
 
 my %ListeETU;
 
+sub writeAjoutSql {
+	my $fileName = shift;
+DEBUG! "open SQL, >$fileName" ;
+	open SQL, ">$fileName" or FATAL! $!;
+	foreach my $personne (values %ListeETU) {
+		my $eppn = $personne->{id};
+		my $mail = $personne->{mail};
+		print SQL qq/update credential set eppn="$eppn" where login = "$mail";/, "\n";
+	}
+	close SQL;
+}
+
 sub printInFormationFileETU {
 	my $etape = shift;
 	my $personne = shift;
@@ -149,7 +161,8 @@ sub printInFormationFileETU {
 			$csv->print($file, $personne->info());
 			print $file  "\n";
 			# verru pour le changement de mail
-			$listeETU{$personne->id} = $personne
+			$ListeETU{$personne->{id}} = $personne
+			
 		}
 	}
 }
