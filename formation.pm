@@ -75,8 +75,8 @@ sub new {
 	$cohorte = $libEtap;
 	$cohorte =~ s/(\W|_)+/_/g;
 
-	my $codeFormation = $label;
-	$codeFormation =~ s/(\W|_)+/_/g;
+	my $codeFormation = $codeSISE;
+#	$codeFormation =~ s/(\W|_)+/_/g;
 
 	$site =~ s/\W+/-/g;
 
@@ -223,7 +223,8 @@ sub writeFile {
 	print $file "\n";
 
 	foreach my $formation  (values %code2Formation) {
-		my @info = ($univ->id() . '_' . $formation->site(). '_' . $formation->code(), $univ->id() .'_' . $formation->site(). ' - ' . $formation->label );
+#		my @info = ($univ->id() . '_' . $formation->site(). '_' . $formation->code(), $univ->id() .'_' . $formation->site(). ' - ' . $formation->label );
+		my @info = ($formation->code(), $formation->label );
 		$csv->print($file, \@info );
 		print $file "\n";
 	}

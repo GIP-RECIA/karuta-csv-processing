@@ -128,7 +128,7 @@ sub traitementSTAFF {
 					next;
 				}
 				my @info = @{$personne->info};
-				my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->code;
+				my $formationLabel = $etape->formation->code;
 				unless ($personne->compteur($formationLabel)) {
 					@info[3]= $formationLabel;
 					DEBUG! @info;
