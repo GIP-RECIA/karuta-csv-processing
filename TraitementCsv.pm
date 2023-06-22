@@ -38,7 +38,7 @@ sub parseFile {
 
 	%fileName2file =();
 	%StaffFiles = ();
-	%ListeETU = ();
+	
 
 	my $fileName = sprintf("%s_%s_%s.csv", $univ->prefix, $dateFile, $type);
 
@@ -57,6 +57,7 @@ sub parseFile {
 	my $isEtu;
 	my $traitement;
 	if ($isEtu = $type eq 'ETU') {
+		%ListeETU = ();
 		$traitement = \&traitementETU;
 	} else {
 		$traitement = \&traitementSTAFF;
@@ -147,21 +148,22 @@ sub traitementSTAFF {
 
 sub mailEtu2sql {
 	my $class = shift;
-	my $tmpPath = shift;
-	my $diffPath = shift;
-	my $oldTmpPath = shift;
+	my $newPath = shift;
+	my $suffixPath = shift;
+	my $oldPath = shift;
+	
 
 	my $fileMail = "allMail.txt";
-	my $modifMailFile = $diffPath . "modifMail.sql";
-	my $newMailFile = $tmpPath . $fileMail;
-	my $oldMailFile = $oldTmpPath . $fileMail;
+	my $modifMailFile = $newPath . $suffixPath. "modifMail.sql";
+	my $newMailFile = $newPath . $suffixPath. $fileMail;
+	my $oldMailFile = $oldPath . $suffixPath.$fileMail;
 
 	DEBUG! "modifMailFile = $modifMailFile ; newMailFile = $newMailFile ; oldMailFile = $oldMailFile.";
 
 	open SQL, "> $modifMailFile" or FATAL! "open $modifMailFile : $!";
 	open NEWMAIL, "> $newMailFile" or FATAL! "open $newMailFile : $!";
 	
-	if ($oldTmpPath) {
+	if ($oldPath) {
 		%oldMailETU=();
 		open OLDMAIL, $oldMailFile or FATAL! "open $oldMailFile : $!";
 		while (<OLDMAIL>) {
@@ -172,10 +174,9 @@ sub mailEtu2sql {
 		}
 		close OLDMAIL;
 	} else {
-		DEBUG! "oldTmpPath est vide";
+		DEBUG! "oldPath est vide";
 	}
 
-	DEBUG! "" . Dumper(%ListeETU);
 	
 	foreach my $etu (values %ListeETU) {
 		my $eppn = $etu->{id};
@@ -184,7 +185,7 @@ sub mailEtu2sql {
 		DEBUG! "etu : $eppn\t$mail";
 		
 		my $isNew = 1;
-		if ($oldTmpPath) {
+		if ($oldPath) {
 			my $oldMail = $oldMailETU{$eppn};
 			if ($oldMail) {
 				$isNew = 0;

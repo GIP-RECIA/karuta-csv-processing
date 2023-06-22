@@ -184,7 +184,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			}
 
 			#on creer le fichier SQL;
-			TraitementCsv->mailEtu2sql($tmpRep, "${workingDir}/${relativePath}${outSuffix}", $lastPath);
+			TraitementCsv->mailEtu2sql("${workingDir}/${relativePath}", $outSuffix, $lastPath);
 			
 			my $zipName = lc($relativePath). '.kapc.1.3.zip';
 
