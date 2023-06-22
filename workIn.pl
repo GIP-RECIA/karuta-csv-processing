@@ -4,13 +4,13 @@ use utf8;
 use open qw( :encoding(utf8) :std );
 use File::Copy qw(copy);
 use FindBin;                    
-use lib $FindBin::Bin;  
+use lib $FindBin::Bin;
 use MyLogger;
 use Config::Properties;
 use univ;
 use download;
 use formation;
-use traitementCsv;
+use TraitementCsv;
 use DiffCsvHeap;
 
 MyLogger::level(5, 2);
@@ -153,14 +153,14 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				compareSortedFile($newFormationFile, $resRep, $lastPath,  1) or next TRAITEMENT;
 			}
 			
-			for (Traitement::parseFile('ETU', $univ ,  $dateFile, $annee, $tmpRep)) {
+			for (TraitementCsv->parseFile('ETU', $univ ,  $dateFile, $annee, $tmpRep)) {
 				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 3);
 				if ($lastPath) {
 					compareSortedFile($_, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
 				}
 			}
 
-			for (Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
+			for (TraitementCsv->parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
 				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 2);
 				if ($lastPath) {
 					compareSortedFile($_, $resRep, $lastPath,  3, 2) or next TRAITEMENT;
@@ -184,7 +184,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			}
 
 			#on creer le fichier SQL;
-			Traitement::mailEtu2sql($tmpRep, "${workingDir}/${relativePath}${outSuffix}", $lastPath);
+			TraitementCsv->mailEtu2sql($tmpRep, "${workingDir}/${relativePath}${outSuffix}", $lastPath);
 			
 			my $zipName = lc($relativePath). '.kapc.1.3.zip';
 

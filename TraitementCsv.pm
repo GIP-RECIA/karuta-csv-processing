@@ -1,16 +1,17 @@
 use strict;
 use utf8;
 use Text::CSV; # sudo apt-get install libtext-csv-perl
+
 use open qw( :encoding(utf8) :std );
 use IO::File;
-use Data::Dumper;
+
 
 use formation;
 use personne;
 use MyLogger;
 
-package Traitement;
-
+package TraitementCsv;
+use Data::Dumper;
 
 my %code2file;
 my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 1, always_quote => 1});
@@ -28,6 +29,7 @@ my %ListeETU;
 my %oldMailETU;
 
 sub parseFile {
+	my $class = shift;
 	$type = shift;
 	$univ = shift;
 	$dateFile = shift;
@@ -144,6 +146,7 @@ sub traitementSTAFF {
 
 
 sub mailEtu2sql {
+	my $class = shift;
 	my $tmpPath = shift;
 	my $diffPath = shift;
 	my $oldTmpPath = shift;
@@ -168,11 +171,18 @@ sub mailEtu2sql {
 			}
 		}
 		close OLDMAIL;
+	} else {
+		DEBUG! "oldTmpPath est vide";
 	}
+
+	DEBUG! "" . Dumper(%ListeETU);
 	
 	foreach my $etu (values %ListeETU) {
 		my $eppn = $etu->{id};
 		my $mail = $etu->{mail};
+
+		DEBUG! "etu : $eppn\t$mail";
+		
 		my $isNew = 1;
 		if ($oldTmpPath) {
 			my $oldMail = $oldMailETU{$eppn};
@@ -202,8 +212,8 @@ sub printInFormationFileETU {
 			$csv->print($file, $personne->info());
 			print $file  "\n";
 			# verru pour le changement de mail
-			$ListeETU{$personne->{id}} = $personne
-			
+			$ListeETU{$personne->{id}} = $personne;
+			DEBUG! "ListeETU add " . $personne->{id};
 		}
 	}
 }
@@ -230,7 +240,7 @@ sub openFile {
 
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 
-DEBUG! "openfile " . Data::Dumper::Dumper($etape);
+DEBUG! "openfile " . Dumper($etape);
 		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $typeFile)) {
 			my $finDeLigne = @$entete > 1 ? "\n" : ",\n";
 			$csv->print($file, $entete);
