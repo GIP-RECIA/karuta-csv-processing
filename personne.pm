@@ -111,7 +111,7 @@ sub entete {
 
 DEBUG! "entete ETU formation_label: $formation_label; $typeFile; $cohorte";
 	return (
-		["model_code","formation_code", "formation_label", "cohorte"],
+		["model_code","formation_code", "formation_label", "cohorte", "01/09/$annee"],
 		[	"ih2ef.batch-creer-etudiants",
 			$etape->codeSise, # $formation_code
 			"${formation_label}",
