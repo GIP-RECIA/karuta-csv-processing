@@ -15,6 +15,8 @@ use DiffCsvHeap;
 
 MyLogger::level(5, 2);
 
+my version = 'kapc.1.3';
+
 my $workingDir = shift;
 
 my $outSuffix = '_diff/';
@@ -186,7 +188,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			#on creer le fichier SQL;
 			TraitementCsv->mailEtu2sql("${workingDir}/${relativePath}", $outSuffix, $lastPath);
 			
-			my $zipName = lc($relativePath). '.kapc.1.3.zip';
+			my $zipName = lc($relativePath).$version . '.zip';
 
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
 
