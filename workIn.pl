@@ -15,6 +15,8 @@ use DiffCsvHeap;
 
 MyLogger::level(5, 2);
 
+my version = 'kapc.1.2';
+
 my $workingDir = shift;
 
 my $outSuffix = '_diff/';
@@ -183,7 +185,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			}
 			
 
-			my $zipName = lc($relativePath). '.zip';
+			my $zipName = lc($relativePath).$version . '.zip';
 			
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
 
