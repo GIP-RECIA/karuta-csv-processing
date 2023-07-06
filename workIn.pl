@@ -19,10 +19,17 @@ my version = 'kapc.1.2';
 
 my $workingDir = shift;
 
+
 my $outSuffix = '_diff/';
 
 unless ($workingDir) {
 	die "il manque le repertoire de travail \n";
+}
+
+if ($workingDir =~ /(kapc\.\d\.\d)/) {
+	if ($1 ne $version) {
+		die "Repertoire de travail de la mauvaise version : $1 != $version \n";
+	}
 }
 
 MyLogger::file "$workingDir/karuta.log";
