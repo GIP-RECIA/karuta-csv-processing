@@ -109,11 +109,11 @@ sub entete {
 	my $formation_code = $formation->code;
 	my $cohorte = $etape->cohorte;
 	return (
-		["model_code","formation_code", "formation_label", "cohorte"],
+		["model_code","formation_code", "formation_label", "cohorte",""],
 		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
 			"${univ}_${site}_${formation_code}",
 			"${univ}_${site} - ${formation_label}",
-			"${univ}_${typeFile}"
+			"${univ}_${typeFile}",""
 		],
 		["nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant", "loginEtudiant"]
 	)
@@ -157,14 +157,14 @@ sub entete {
 
 	if ($typeFile eq 'Formation') {
 		return (
-			[ "model_code"],
-			[ "kapc/7enseignants.batch-associer-enseignants-formations"],
+			[ "model_code","","",""],
+			[ "kapc/7enseignants.batch-associer-enseignants-formations","","",""],
 			[ "nomFamilleEnseignant","prenomEnseignant","loginEnseignant","formation_code"]
 		)
 	} else {
 		return (
-			["model_code"],
-			["kapc/7enseignants.batch-creer-enseignants-authentification-externe"],
+			["model_code","","",""],
+			["kapc/7enseignants.batch-creer-enseignants-authentification-externe","","",""],
 			["nomFamilleEnseignant","prenomEnseignant","loginEnseignant","courrielEnseignant"]
 		)
 	}

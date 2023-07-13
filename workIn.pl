@@ -15,7 +15,7 @@ use DiffCsvHeap;
 
 MyLogger::level(5, 2);
 
-my version = 'kapc.1.3';
+my $version = 'kapc.1.3';
 
 my $workingDir = shift;
 
