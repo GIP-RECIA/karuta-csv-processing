@@ -191,7 +191,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 					}
 				}
 			}
-			my $zipName = lc($relativePath).$version . '.zip';
+			my $zipName = lc($relativePath).".$version.zip";
 
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
 
