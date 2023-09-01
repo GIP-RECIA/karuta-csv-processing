@@ -15,7 +15,8 @@ use DiffCsvHeap;
 
 MyLogger::level(5, 2);
 
-my version = 'kapc.1.3';
+
+my $version = 'kapc.1.3';
 
 my $workingDir = shift;
 
@@ -26,10 +27,13 @@ unless ($workingDir) {
 	die "il manque le repertoire de travail \n";
 }
 
-if ($workingDir =~ /(kapc\.\d\.\d)/) {
+
+if ($workingDir =~ /IH2EF\.(kapc\.\d\.\d)/) {
 	if ($1 ne $version) {
 		die "Repertoire de travail de la mauvaise version : $1 != $version \n";
 	}
+} else {
+	die "Repertoire de travail doit contenir IH2EF.kapc...\n";
 }
 
 MyLogger::file "$workingDir/karuta.log";
