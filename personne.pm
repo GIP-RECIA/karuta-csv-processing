@@ -111,13 +111,13 @@ sub entete {
 
 DEBUG! "entete ETU formation_label: $formation_label; $typeFile; $cohorte";
 	return (
-		["model_code","formation_code", "formation_label", "cohorte", "debutFormation"],
-		[	"ih2ef.batch-creer-etudiants",
+		["model_code","formation_code", "formation_label", "cohorte", "debutFormation","","","",""],
+		[	"ih2ef/1stagiaire.batch-creer-etudiants",
 			$etape->codeSise, # $formation_code
 			"${formation_label}",
 			"$cohorte", # "${typeFile}"
-			"01/09/$annee"
-			#"$site"
+			"01/09/$annee",
+			"","","",""
 		],
 		["eppn","nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","civiliteEtudiant","loginEtudiant","academieEtudiant","fonctionEtudiant","naissanceEtudiant"]
 	)
@@ -169,14 +169,14 @@ sub entete {
 
 	if ($typeFile eq 'Formation') {
 		return (
-			[ "model_code"],
-			[ "kapc/7enseignants.batch-associer-enseignants-formations"],
+			[ "model_code","","",""],
+			[ "kapc/7enseignants.batch-associer-enseignants-formations","","",""],
 			[ "nomFamilleEnseignant","prenomEnseignant","loginEnseignant","formation_code"]
 		)
 	} else {
 		return (
-			["model_code"],
-			["kapc/7enseignants.batch-creer-enseignants-authentification-externe"],
+			["model_code","","",""],
+			["kapc/7enseignants.batch-creer-enseignants-authentification-externe","","",""],
 			["nomFamilleEnseignant","prenomEnseignant","loginEnseignant","courrielEnseignant"]
 		)
 	}
