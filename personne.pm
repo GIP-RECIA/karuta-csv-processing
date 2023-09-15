@@ -138,14 +138,27 @@ sub new {
 	my $academie = shift;
 	my $fonction = shift;
 		# identifiant + liste des infos en sortie dans csv
-	my $self = new Personne($eppn, $eppn, $nom, $prenom, $courriel, $civile, $courriel, $academie, $fonction, $naissance);
+
+	
+	my $self = new Personne($eppn, $eppn, $nom, $prenom, $courriel, $civile, $courriel, $academie, $fonction);
 	if ($self) {
 		$self->{univ} = $univ;
 		$self->setCodesEtape($univ, $codesEtape);
 		$self->{mail} = $courriel;
+
+		if ($naissance) {
+			if ($naissance =~ m(\d{2}/\d{2}/\d{4})) {
+				push @{$self->{info}}, $naissance;
+			} else {
+				WARN! "echec new etudiant  $eppn, $nom, $prenom  format date naissance : $naissance";
+				return 0;
+			}
+		} else {
+ 			push @{$self->{info}}, "";
+		}
 		return bless $self, $class;
 	} else {
-		WARN! "new etudiant ($eppn, $nom, $prenom, $courriel,  $eppn)";
+		WARN! "echec new etudiant ($eppn, $nom, $prenom, $courriel,  $eppn)";
 	}
 	return 0;
 }
@@ -191,6 +204,7 @@ sub new {
 	my $prenom = shift;
 	my $courriel = shift;
 		# identifiant + liste des infos en sortie dans csv
+		# attention la date de naissance doit être en dernier (ou vide) car on controle le format
 	my $self = new Personne($eppn, $nom, $prenom, $eppn, $courriel);
 	if ($self) {
 		$self->{univ} = $univ;
