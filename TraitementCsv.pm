@@ -156,7 +156,7 @@ sub mailEtu2sql {
 	my $fileMail = "allMail.txt";
 	my $modifMailFile = $newPath . $suffixPath. "modifMail.sql";
 	my $newMailFile = $newPath . $suffixPath. $fileMail;
-	my $oldMailFile = $oldPath . $suffixPath.$fileMail;
+	my $oldMailFile = $oldPath . $fileMail;
 
 	DEBUG! "modifMailFile = $modifMailFile ; newMailFile = $newMailFile ; oldMailFile = $oldMailFile.";
 
