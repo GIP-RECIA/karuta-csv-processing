@@ -61,6 +61,7 @@ sub parseFile {
 	while (<CSV>) {
 		$nbligne ++;
 		s/\"\;\"/\"\,\"/g; # on force les ,
+		s/,\s*$//; # on suprime le dernier champs vide
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
 			my $person;

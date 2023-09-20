@@ -102,6 +102,7 @@ unless ($modeTest) { # si on est en test pas de download
 			DEBUG! "new path = " . $univ->path() . "\n";
 		} else {
 			# on vide le path pour indiqué qu'il n'y a pas de nouveau fichier
+			INFO! "Pas de nouveau fichier sur le sftp";
 			$univ->path("");
 		}
 	}
