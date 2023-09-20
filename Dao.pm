@@ -28,16 +28,15 @@ sub new {
 			q/create table if not exists personnes (
 					univ char(10) ,
 					version char(10),
-					id varchar(256),
+					idPersonne varchar(256),
 					nom varchar(256),
 					prenom varchar(256),
 					mail varchar(256),
 					matricule varchar(256),
 					status char(5),
-					primary key (univ , version, id),
+					primary key (univ , version, idPersonne) ,
 					foreign key (univ, version) references univs,
-					unique (univ, version, status, id)
-					
+					unique (univ, version, status, idPersonne) on conflict fail
 				)
 			/;
 		$dbh->do($statement) or die $dbh->errstr;
@@ -49,7 +48,7 @@ sub new {
 					codeFormation varchar(256),
 					site varchar(256),
 					label varchar(256),
-					primary key (univ , version, codeFormation),
+					primary key (univ , version, codeFormation, site) on conflict fail,
 					foreign key (univ, version) references univs
 				)
 			/;
@@ -61,34 +60,42 @@ sub new {
 					codeEtape  varchar(10),
 					libEtape varchar(256),
 					codeFormation varchar(256),
-					primary key (univ , version, codeEtape),
+					site varchar(256),
+					primary key (univ , version, codeEtape, codeFormation, site) on conflict fail,
 					foreign key (univ, version, codeFormation) references formations
 				)
 			/;
 		$dbh->do($statement) or die $dbh->errstr;
 
+		$statement =
+			q/create table if not exists personneEtape (
+					univ char(10) ,
+					version char(10),
+					idPersonne varchar(256),
+					codeEtape  varchar(10),
+					codeFormation varchar(256),
+					site varchar(256),
+					primary key (univ , version, codeEtape, idPersonne, codeEtape, codeFormation, site) on conflict ignore,
+					foreign key (univ, version, idPersonne) references personnes,
+					foreign key (univ, version, codeEtape,codeFormation, site ) references etapes
+			)/;
 		$statement = q/insert into univs values ( ?, ?)/;
 		my $sth = $dbh->prepare($statement);
 		$sth ->execute($univ, $jour) or FATAL! $dbh->errstr;
 		my $self = {
-			db => $dbh,
+			DB => $dbh,
 			file => $dbFile,
-			jour => $jour,
-			univ => $univ
+			VERSION => $jour,
+			UNIV => $univ
 		};
 		return bless $self, $class;
 	}
 	ERROR! "connetion failed : $dbFile;";
 	return 0;
 }
-sub univ {
-	my $self = shift;
-	return $self->{'univ'},
-}
-sub version {
-	my $self = shift;
-	return $self->{'jour'},
-}
+PARAM! univ;
+PARAM! version;
+PARAM! db;
 
 sub addPerson {
 	my $self = shift;
@@ -100,8 +107,8 @@ sub addPerson {
 	my $matricule = shift;
 
 	WARN! $self->univ,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status";
-	my $dbh = $self->{'db'};
-	my $statement = q/select * from personnes where univ = ? and version = ? and id = ? and status = ?/;
+	my $dbh = $self->db;
+	my $statement = q/select * from personnes where univ = ? and version = ? and idPersonne = ? and status = ?/;
 	my $sth = $dbh->prepare($statement);
 	$sth->execute($self->univ, $self->version, $eppn, $status) or FATAL! $dbh->errstr;
 	my @t = $sth->fetchrow_array();
@@ -118,6 +125,63 @@ sub addPerson {
 	}
 };
 
+sub addFormation {
+	my $self = shift;
+	my ($code , $site, $label) = @_;
 
+	DEBUG! "addFormation : ", $self->univ,", ", $self->version,", $code , $site, $label";
+	my $dbh = $self->db;
+	
+	my $statement = q/insert into formations values (?, ?, ?, ?, ?)/;
+	my $sth = $dbh->prepare($statement);
+	unless ($sth ->execute($self->univ, $self->version, $code, $site, $label) ) {
+		if ($dbh->err == 19) {
+			$statement = q/select label from formations where univ = ? and version = ? and codeFormation = ? and site = ?/;
+			$sth = $dbh->prepare($statement);
+			$sth->execute($self->univ, $self->version, $code, $site) or FATAL! $dbh->errstr," : ", $dbh->err;
+			my @t = $sth->fetchrow_array();
+			if ($t[0] ne $label) {
+				ERROR! "formation : $code; avec différent labels :", $label, ":", $t[0] ,":"; 
+			}
+		} else {
+			ERROR! $dbh->errstr ," : ", $dbh->err;
+		}
+	};
+}
+
+
+sub addEtape {
+	my $self = shift;
+	my ($codeEtape, $libEtape, $codeFormation, $site) = @_;
+	DEBUG! "addEtap : ", $self->univ,", ", $self->version,",codeEtape, libEtape, codeFormation";
+
+	my $dbh = $self->db;
+	
+	my $statement = q/insert into etapes values (?, ?, ?, ?, ?, ?)/;
+	my $sth = $dbh->prepare($statement);
+	unless ($sth ->execute($self->univ, $self->version, $codeEtape, $libEtape, $codeFormation, $site) ) {
+		if ($dbh->err == 19) {
+			$statement = q/select libEtape from etapes where univ = ? and version = ? and  codeEtape = ? and codeFormation = ? and site = ?/;
+			$sth = $dbh->prepare($statement);
+			$sth->execute($self->univ, $self->version, $codeEtape, $codeFormation, $site) or FATAL! $dbh->errstr," : ", $dbh->err;
+			my @t = $sth->fetchrow_array();
+			if ($t[0] ne $libEtape) {
+				ERROR! "etape : $codeEtape; avec différent libélés :", $libEtape, ":", $t[0] ,":"; 
+			}
+		} else {
+			ERROR! $dbh->errstr ," : ", $dbh->err;
+		}
+	};
+}
+
+sub addPersonneEtap {
+	my $self = shift;
+	my ($idPersonne, $codeEtape, $codeFormation) = @_;
+	my $dbh = $self->db;
+	
+	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?)/;
+	my $sth = $dbh->prepare($statement);
+	$sth ->execute($self->univ, $self->version, $idPersonne, $codeEtape, $codeFormation) or ERROR! $dbh->errstr ," : ", $dbh->err;
+}
 
 1;

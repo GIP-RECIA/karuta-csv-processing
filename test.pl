@@ -6,9 +6,9 @@ use FindBin;
 use lib $FindBin::Bin;  
 use MyLogger;
 use Dao;
-MyLogger::file 'test.log';
+MyLogger->file('> test.log');
 
-#MyLogger::level(1 , 1);
+MyLogger::level(2 , 1);
 
 # MyLogger::file 'workIn.log';
 INFO! "test de info";
@@ -29,3 +29,6 @@ my $dao = new Dao("test.db", "tours", "20230919");
 
 $dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '123');
 $dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '1234');
+
+$dao->addFormation('codeF1', 'site1', 'formation11');
+$dao->addEtape('etap1', 'libetap1', 'codeF1', 'site1');
