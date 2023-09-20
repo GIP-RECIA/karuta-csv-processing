@@ -6,12 +6,31 @@ use MyLogger;
 
 package Dao;
 
+
+my $dao;
+
+sub getDb {
+	if ($dao) {
+		return $dao->db;
+	}
+	return 0;
+}
+
 sub new {
 	my $class = shift;
 	my $dbFile = shift;
 	my $univ = shift;
 	my $jour = shift;
 
+	unless ($jour) {
+		$jour = $univ->dateFile;
+		$univ = $univ->id;
+	}
+	
+	if ($dao) {
+		$dao->db->close;
+		$dao = 0;
+	}
 	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","");
 	if ($dbh) {
 		my $statement =
@@ -88,7 +107,8 @@ sub new {
 			VERSION => $jour,
 			UNIV => $univ
 		};
-		return bless $self, $class;
+		$dao = bless $self, $class;
+		return $dao;
 	}
 	ERROR! "connetion failed : $dbFile;";
 	return 0;
