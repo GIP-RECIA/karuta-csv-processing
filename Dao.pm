@@ -73,6 +73,7 @@ sub new {
 			/;
 		$dbh->do($statement) or die $dbh->errstr;
 		$statement =
+			
 			q/create table if not exists etapes (
 					univ char(10),
 					version char(10),
@@ -80,8 +81,8 @@ sub new {
 					libEtape varchar(256),
 					codeFormation varchar(256),
 					site varchar(256),
-					primary key (univ , version, codeEtape, codeFormation, site) on conflict fail,
-					foreign key (univ, version, codeFormation) references formations
+					primary key (univ , version, codeEtape) on conflict fail,
+					foreign key (univ, version, codeFormation, site) references formations
 				)
 			/;
 		$dbh->do($statement) or die $dbh->errstr;
@@ -181,12 +182,12 @@ sub addEtape {
 	my $sth = $dbh->prepare($statement);
 	unless ($sth ->execute($self->univ, $self->version, $codeEtape, $libEtape, $codeFormation, $site) ) {
 		if ($dbh->err == 19) {
-			$statement = q/select libEtape from etapes where univ = ? and version = ? and  codeEtape = ? and codeFormation = ? and site = ?/;
+			$statement = q/select libEtape from etapes where univ = ? and version = ? and  codeEtape = ? /;
 			$sth = $dbh->prepare($statement);
-			$sth->execute($self->univ, $self->version, $codeEtape, $codeFormation, $site) or FATAL! $dbh->errstr," : ", $dbh->err;
+			$sth->execute($self->univ, $self->version, $codeEtape ) or FATAL! $dbh->errstr," : ", $dbh->err;
 			my @t = $sth->fetchrow_array();
 			if ($t[0] ne $libEtape) {
-				ERROR! "etape : $codeEtape; avec différent libélés :", $libEtape, ":", $t[0] ,":"; 
+				ERROR! "etape : $codeEtape; non unique; libélés :", $libEtape, ":", $t[0] ,":"; 
 			}
 		} else {
 			ERROR! $dbh->errstr ," : ", $dbh->err;
@@ -196,12 +197,12 @@ sub addEtape {
 
 sub addPersonneEtap {
 	my $self = shift;
-	my ($idPersonne, $codeEtape, $codeFormation) = @_;
+	my ($idPersonne, $codeEtape) = @_;
 	my $dbh = $self->db;
 	
-	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?)/;
+	my $statement = q/insert into personneEtape values (?, ?, ?, ?)/;
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ, $self->version, $idPersonne, $codeEtape, $codeFormation) or ERROR! $dbh->errstr ," : ", $dbh->err;
+	$sth ->execute($self->univ, $self->version, $idPersonne, $codeEtape) or ERROR! $dbh->errstr ," : ", $dbh->err;
 }
 
 1;
