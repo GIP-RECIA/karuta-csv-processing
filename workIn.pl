@@ -12,6 +12,7 @@ use download;
 use formation;
 use TraitementCsv;
 use DiffCsvHeap;
+use Dao;
 
 MyLogger::level(5, 2);
 
@@ -32,9 +33,10 @@ if ($workingDir =~ /(kapc\.\d\.\d)/) {
 	}
 }
 
-MyLogger::file "$workingDir/karuta.log";
+MyLogger->file("$workingDir/karuta.log");
 
 my $configFile = "$workingDir/karuta.properties";
+my $dbFile =  "$workingDir/karuta.db";
 
 INFO! "Lecture des properties";
 my $properties = new Config::Properties( file => $configFile) or FATAL! "Properties $configFile : $!";
@@ -124,7 +126,7 @@ my %allNewPrefixFile;
 TRAITEMENT: foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
 	
-	INFO! ":$newPath", ": :${workingDir}:";
+	INFO! "newPath=$newPath", ": workinDir=${workingDir}:";
 	
 	my $lastPath = $univ->lastPath();
 
@@ -135,7 +137,8 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 		DEBUG! "ancien path ; NVL";
 	}
 	
-	if ($newPath =~ /^${workingDir}\/(.+)/) {
+	if ($newPath =~ /^${workingDir}\/(.+(\d{8}))$/) {
+		my $dao = new Dao($dbFile, $univ, $2);
 		my $relativePath=$1;
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
 		my $tmpRep = "${newPath}_tmp/";

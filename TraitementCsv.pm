@@ -123,7 +123,7 @@ sub traitementSTAFF {
 				my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->code;
 				unless ($personne->compteur($formationLabel)) {
 					@info[3]= $formationLabel;
-					DEBUG! @info;
+					DEBUG! map "$_, " ,@info;
 					$csv->print($file, \@info);
 					print $file  "\n";
 				}

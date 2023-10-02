@@ -3,6 +3,7 @@ use utf8;
 use Text::CSV; 
 use open qw( :encoding(utf8) :std );
 use MyLogger;
+use Dao;
 
 
 package HaveFiles;
@@ -101,6 +102,7 @@ sub new {
 
 				bless $self, $class;
 
+				Dao->dao->addEtape($codeEtap, $libEtap, $formation, $site );
 				$formation->etapes($self);
 
 				$codeEtap2etap{$codeEtap} = $self;
@@ -235,7 +237,7 @@ sub new {
 			}
 		return $formation;
 	} 
-
+	
 	if ($code =~ m/\S/) {
 		# on peut rencontrer plusieurs fois la même formation avec des codes etape differents
 		$formation = {
@@ -250,6 +252,9 @@ sub new {
 		WARN! ("Erreur codeForamation $code : $label");
 		return 0;
 	}
+
+	Dao->dao->addFormation($code, $site, $label);
+	
 	bless $formation, $class;
 	$code2Formation{$cle} = $formation;
 

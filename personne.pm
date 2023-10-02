@@ -1,6 +1,7 @@
 use strict;
 use utf8;
 use MyLogger;
+use Dao;
 
 #########
 #
@@ -47,7 +48,7 @@ sub setCodesEtape {
 	my $filtre = $univ->{filtreEtap};
 
 	if (@_ > 1 ) {
-		@codesEtape = map ({s/\s*(\S+)\s*/\1/; $_} @_);
+		@codesEtape = map ({s/\s*(\S+)\s*/$1/; $_} @_);
 		if ($filtre) {
 			DEBUG! " : ", @codesEtape;
 			@codesEtape = &$filtre(@codesEtape);
@@ -61,6 +62,7 @@ sub setCodesEtape {
 	}
 
 	$$self{codesEtape} = \@codesEtape;
+	return @codesEtape;
 }
 
 sub codesEtape {
@@ -130,9 +132,15 @@ sub new {
 	my $matricule = shift;
 		# identifiant + liste des infos en sortie dans csv
 	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule, $eppn);
+
 	if ($self) {
+		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, $matricule);
+
 		$self->{univ} = $univ;
-		$self->setCodesEtape($univ, @_);
+		foreach my $code ($self->setCodesEtape($univ, @_)) {
+			Dao->dao->addPersonneEtap($eppn, $code);
+		}
+
 		return bless $self, $class;
 	}
 	return 0;
@@ -181,8 +189,13 @@ sub new {
 		# identifiant + liste des infos en sortie dans csv
 	my $self = new Personne($eppn, $nom, $prenom, $eppn, $courriel);
 	if ($self) {
+		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, "");
+		
 		$self->{univ} = $univ;
-		$self->setCodesEtape($univ, @_);
+		foreach my $code ($self->setCodesEtape($univ, @_)) {
+			Dao->dao->addPersonneEtap($eppn, $code);
+		}
+		
 		return bless $self, $class;
 	}
 	return 0;
@@ -206,7 +219,7 @@ sub new {
 	my $nom = shift;
 	my $prenom = shift;
 	my $courriel = shift;
-	my $self = new Personne( $eppn, $nom, $prenom, $courriel);
+	my $self = new Personne($eppn, $nom, $prenom, $courriel);
 
 	if ($self) {
 		return bless $self, $class;

@@ -7,12 +7,15 @@ use MyLogger;
 package Dao;
 
 
-my $dao;
 
-sub getDb {
-	if ($dao) {
-		return $dao->db;
+#use vars      @EXPORT;
+my $dao_default;
+
+sub dao {
+	if ($dao_default) {
+		return $dao_default;
 	}
+	ERROR! "Dao non instancié";
 	return 0;
 }
 
@@ -22,14 +25,20 @@ sub new {
 	my $univ = shift;
 	my $jour = shift;
 
-	unless ($jour) {
-		$jour = $univ->dateFile;
+	if ($univ->isa('Univ')) {
+		if ($jour) {
+			$univ->dateFile($jour);
+		} else {
+			$jour = $univ->dateFile;
+		}
 		$univ = $univ->id;
 	}
+
+	FATAL! "Dao sans jour définit" unless $jour;
 	
-	if ($dao) {
-		$dao->db->close;
-		$dao = 0;
+	if ($dao_default) {
+		$dao_default->db->close;
+		$dao_default = 0;
 	}
 	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","");
 	if ($dbh) {
@@ -93,12 +102,12 @@ sub new {
 					version char(10),
 					idPersonne varchar(256),
 					codeEtape  varchar(10),
-					codeFormation varchar(256),
-					site varchar(256),
-					primary key (univ , version, codeEtape, idPersonne, codeEtape, codeFormation, site) on conflict ignore,
+					primary key (univ , version, codeEtape, idPersonne, codeEtape) on conflict ignore,
 					foreign key (univ, version, idPersonne) references personnes,
-					foreign key (univ, version, codeEtape,codeFormation, site ) references etapes
+					foreign key (univ, version, codeEtape) references etapes
 			)/;
+		$dbh->do($statement) or die $dbh->errstr;
+		
 		$statement = q/insert into univs values ( ?, ?)/;
 		my $sth = $dbh->prepare($statement);
 		$sth ->execute($univ, $jour) or FATAL! $dbh->errstr;
@@ -108,8 +117,8 @@ sub new {
 			VERSION => $jour,
 			UNIV => $univ
 		};
-		$dao = bless $self, $class;
-		return $dao;
+		$dao_default = bless $self, $class;
+		return $dao_default;
 	}
 	ERROR! "connetion failed : $dbFile;";
 	return 0;
@@ -127,7 +136,7 @@ sub addPerson {
 	my $mail = shift;
 	my $matricule = shift;
 
-	WARN! $self->univ,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status";
+	DEBUG! "addPersonn ",  $self->univ,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status";
 	my $dbh = $self->db;
 	my $statement = q/select * from personnes where univ = ? and version = ? and idPersonne = ? and status = ?/;
 	my $sth = $dbh->prepare($statement);
@@ -140,7 +149,7 @@ sub addPerson {
 		$sth ->execute($self->univ, $self->version, $eppn, $nom , $prenom, $mail, $matricule, $status) or FATAL! $dbh->errstr;
 	} else {
 		
-		if ($nom ne $t[3] or  $prenom ne $t[4], $mail ne $t[5], $matricule ne $t[6]) {
+		if ($nom ne $t[3] ||  $prenom ne $t[4] || $mail ne $t[5] || $matricule ne $t[6]) {
 			ERROR! "(", $self->univ,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status) != (", join(", " ,@t), ")" ;  
 		}
 	}

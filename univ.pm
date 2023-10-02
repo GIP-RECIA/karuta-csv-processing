@@ -1,4 +1,4 @@
-
+use MyLogger;
 
 package Univ;
 
@@ -6,22 +6,26 @@ my %UNIVS;
 
 sub new {
 	my ($class, $id, $ftpRep, $path, $filePrefix, $zipFilePrefix) = @_;
+
+	DEBUG! "new univ : $id, $ftpRep, $path, $filePrefix, $zipFilePrefix";
 	unless ($zipFilePrefix) {
 		$zipFilePrefix = $filePrefix;
 	}
+	
 	my $self = {
 		id => $id,
 		ftpRep => $ftpRep,
 		path => $path,
 		zipPrefix => $zipFilePrefix,
 		filePrefix => $filePrefix,
+		DATEFILE => '00000000',
 		sepChar => ','
 	};
 
 	if ($id eq "orleans") {
 		$self->{filtreEtap} =
 			sub {
-				return map({ s/^(\S{3})\S/\1I/; $_; }  @_);
+				return map({ s/^(\S{3})\S/$1I/; $_; }  @_);
 			} ;
 	}
 	
@@ -30,9 +34,16 @@ sub new {
 	return bless $self, $class;
 }
 
+PARAM! dateFile;
+
 sub id {
 	my $self = shift;
 	return $self->{id};
+}
+
+sub dateFile {
+	my $self = shift;
+	return $self->{dateFile};
 }
 
 sub path {
