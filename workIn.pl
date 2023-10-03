@@ -155,7 +155,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 		
 		if ($formationFile) {
 			
-			Formation::readFile($newPath, $formationFile, $univ->sepChar());
+			Formation::readFile($newPath, $formationFile, $univ);
 
 			my $newFormationFile = Formation::writeFile($univ, $dateFile, $tmpRep);
 			my $prefixFile;

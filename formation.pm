@@ -56,7 +56,7 @@ sub new {
 	# on creer aussi les formations correspondantes aux etapes.
 	# my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
 
-	my ($class, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site) = @_;
+	my ($class, $univ, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site) = @_;
 	
 	my $cohorte;
 
@@ -75,18 +75,19 @@ sub new {
 	$cohorte = $libEtap;
 	$cohorte =~ s/(\W|_)+/_/g;
 
+		
 	my $codeFormation = $label;
 	$codeFormation =~ s/(\W|_)+/_/g;
 
 	$site =~ s/\W+/-/g;
 
-
+	$cohorte = $univ . '_'. $site . "_" . $cohorte;
 	
 	my $self;
 	
 	if ($codeFormation =~ m/\w+/) {
 
-		my $formation = new  Formation($codeFormation, $label, $site);
+		my $formation = new  Formation($univ, $codeFormation, $label, $site);
 
 		if ($formation) {
 			my $nbEtap = 0;
@@ -102,7 +103,8 @@ sub new {
 
 				bless $self, $class;
 
-				Dao->dao->addEtape($codeEtap, $libEtap, $formation, $site );
+				Dao->dao->addEtape($codeEtap, $libEtap, $codeFormation, $site );
+				Dao->dao->addCohorte($codeFormation, $cohorte);
 				$formation->etapes($self);
 
 				$codeEtap2etap{$codeEtap} = $self;
@@ -112,7 +114,7 @@ sub new {
 		}
 		return 0;
 	} else {
-		ERROR! " codeFormation ", $codeFormation;
+		ERROR! " codeCormation ", $codeFormation;
 		return 0;
 	}
 }
@@ -156,7 +158,8 @@ sub getByCle {
 sub readFile {
 	my $path = shift;
 	my $fileName = shift;
-	my $sepChar = shift;
+	my $univ = shift;
+	my $sepChar = $univ->sepChar();
 
 	init();
 
@@ -178,7 +181,7 @@ sub readFile {
 		s/(;|\s)+$//;
 		if ($csv->parse($_) ){
 			my @fields = $csv->fields();
-			unless (new Etape(@fields)){
+			unless (new Etape($univ->id, @fields)){
 				WARN! "formation ligne $nbline : create object error !";
 				foreach my $elem (@fields) {
 					INFO! $elem;
@@ -218,7 +221,8 @@ sub writeFile {
 	print $file "\n";
 
 	foreach my $formation  (values %code2Formation) {
-		my @info = ($univ->id() . '_' . $formation->site(). '_' . $formation->code(), $univ->id() .'_' . $formation->site(). ' - ' . $formation->label );
+		my @info = ($formation->{'FormationCode'}, $formation->{'FormationLabel'});
+		Dao->dao->updateFormation($formation->code(), $formation->site(), @info);
 		$csv->print($file, \@info );
 		print $file "\n";
 	}
@@ -227,10 +231,13 @@ sub writeFile {
 }
 
 sub new {
-	my ($class, $code , $label, $site) = @_;
+	my ($class, $univ, $code , $label, $site) = @_;
 
 	my $cle="${site}_${code}";
 	my $formation = getByCle($cle);
+
+	
+	
 	if ($formation) {
 		if ($formation->label ne $label) {
 				WARN! "formation ($cle) avec plusieurs label: $label ", $formation->label;
@@ -240,12 +247,15 @@ sub new {
 	
 	if ($code =~ m/\S/) {
 		# on peut rencontrer plusieurs fois la même formation avec des codes etape differents
+		
 		$formation = {
 			code => $code,
 			label => $label,
 			etapes => [],
 			site => $site,
-			files => {}
+			files => {},
+			FormationCode => $univ . '_' . $site. '_' . $code,
+			FormationLabel => $univ . '_' . $site. ' - ' . $label,
 		};
 		
 	} else {

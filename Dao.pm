@@ -42,6 +42,7 @@ sub new {
 	}
 	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","");
 	if ($dbh) {
+
 		my $statement =
 			q/create table if not exists univs (
 					univ char(10),
@@ -51,6 +52,8 @@ sub new {
 			/;
 			
 		$dbh->do($statement) or die $dbh->errstr;
+
+# les tables des entrées
 
 		$statement =
 			q/create table if not exists personnes (
@@ -73,10 +76,13 @@ sub new {
 			q/create table if not exists formations (
 					univ char(10),
 					version char(10),
-					codeFormation varchar(256),
+					code varchar(256),
 					site varchar(256),
 					label varchar(256),
-					primary key (univ , version, codeFormation, site) on conflict fail,
+					formationCode varchar(256), 
+					formationLabel varchar(256),
+					primary key (univ , version, code, site) on conflict fail,
+					unique (univ , version, formationCode) on conflict fail,
 					foreign key (univ, version) references univs
 				)
 			/;
@@ -108,6 +114,19 @@ sub new {
 			)/;
 		$dbh->do($statement) or die $dbh->errstr;
 		
+# les tables des cohortes injectés dans karuta pas sur quelle soit isomorphe à personne etap
+		$statement = 
+			q/create table if not exists cohorte (
+				univ char(10),
+				version char(10),
+				fileName varchar(256),
+				formationCode varchar(256),
+				cohorteCode varchar(256),
+				primary key (univ, version,  cohorteCode) on conflict ignore,
+				foreign key (univ, version, formationCode) references formations
+			)/;
+		$dbh->do($statement) or die $dbh->errstr;
+
 		$statement = q/insert into univs values ( ?, ?)/;
 		my $sth = $dbh->prepare($statement);
 		$sth ->execute($univ, $jour) or FATAL! $dbh->errstr;
@@ -162,11 +181,11 @@ sub addFormation {
 	DEBUG! "addFormation : ", $self->univ,", ", $self->version,", $code , $site, $label";
 	my $dbh = $self->db;
 	
-	my $statement = q/insert into formations values (?, ?, ?, ?, ?)/;
+	my $statement = q/insert into formations values (?, ?, ?, ?, ?, null, null)/;
 	my $sth = $dbh->prepare($statement);
 	unless ($sth ->execute($self->univ, $self->version, $code, $site, $label) ) {
 		if ($dbh->err == 19) {
-			$statement = q/select label from formations where univ = ? and version = ? and codeFormation = ? and site = ?/;
+			$statement = q/select label from formations where univ = ? and version = ? and code = ? and site = ?/;
 			$sth = $dbh->prepare($statement);
 			$sth->execute($self->univ, $self->version, $code, $site) or FATAL! $dbh->errstr," : ", $dbh->err;
 			my @t = $sth->fetchrow_array();
@@ -177,6 +196,16 @@ sub addFormation {
 			ERROR! $dbh->errstr ," : ", $dbh->err;
 		}
 	};
+}
+
+sub updateFormation {
+	my $self = shift;
+	my ($code , $site, $formationCode, $formationLabel) = @_;
+	my $dbh = $self->db;
+	my $statement = q/update formations set formationCode = ?, formationLabel = ? where univ = ? and version = ? and code = ? and site = ?/;
+
+	my $sth = $dbh->prepare($statement);
+	$sth ->execute($formationCode, $formationLabel, $self->univ, $self->version, $code, $site) or  FATAL! $dbh->errstr;
 }
 
 
@@ -202,6 +231,15 @@ sub addEtape {
 			ERROR! $dbh->errstr ," : ", $dbh->err;
 		}
 	};
+}
+
+sub addCohorte {
+	my $self = shift;
+	my ($formationCode, $cohorteCode ) = @_;
+	my $dbh = $self->db;
+	my $statement = q/insert into cohorte values (?, ?, null, ?, ?)/;
+	my $sth = $dbh->prepare($statement);
+	$sth ->execute($self->univ, $self->version, $formationCode, $cohorteCode) or FATAL! $dbh->errstr;
 }
 
 sub addPersonneEtap {

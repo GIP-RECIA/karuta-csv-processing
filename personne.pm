@@ -105,17 +105,17 @@ sub entete {
 	my $annee = shift;
 	my $etape = shift;
 	my $typeFile = shift;
-	my $site = $etape->site;
+#	my $site = $etape->site;
 	my $formation = $etape->formation;
-	my $formation_label = $formation->label;
-	my $formation_code = $formation->code;
-	my $cohorte = $etape->cohorte;
+	my $formation_label = $formation->{'FormationLabel'};
+	my $formation_code = $formation->{'FormationCode'};
+#	my $cohorte = $etape->cohorte;
 	return (
 		["model_code","formation_code", "formation_label", "cohorte",""],
 		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
-			"${univ}_${site}_${formation_code}",
-			"${univ}_${site} - ${formation_label}",
-			"${univ}_${typeFile}",""
+			"${formation_code}",
+			"${formation_label}",
+			"${typeFile}",""
 		],
 		["nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant", "loginEtudiant"]
 	)

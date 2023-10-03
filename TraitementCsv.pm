@@ -168,6 +168,7 @@ sub openFile {
 		DEBUG! "write file  $fileName\n";
 
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+
 		
 		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $typeFile)) {
 			my $finDeLigne = @$entete > 1 ? "\n" : ",\n";
@@ -176,7 +177,7 @@ sub openFile {
 		}
 
 		$fileName2file{$fileName} = $file;
-		return $file;
+		return ($file, $fileName);
 	}
 	return 0;
 }
@@ -187,8 +188,9 @@ sub getFileSTAFF {
 	my $file;
 
 	$file = $StaffFiles{$typeFile};
+	my $fname;
 	unless ($file) {
-		$file = openFile($typeFile, 'STAFF' , "");
+		($file, $fname) = openFile($typeFile, 'STAFF' , "");
 		if ($file) {
 			$StaffFiles{$typeFile} = $file;
 		}
@@ -204,12 +206,13 @@ sub getFileETU {
 	my $formation = $etape->formation;
 	
 	$haveFiles = $etape;
-	$typeFile = $etape->site . "_" . $etape->cohorte;
+	$typeFile = $etape->cohorte;
 
 	$haveFiles->getFile('ETU');
-	
+
+	my $fname;
 	unless ($file) {
-		$file = openFile($typeFile, 'ETU' , $etape);
+		($file , $fname) = openFile($typeFile, 'ETU' , $etape);
 		if ($file) {
 			$haveFiles->setFile($file, 'ETU');
 		}
