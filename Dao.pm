@@ -241,6 +241,17 @@ sub addCohorte {
 	my $sth = $dbh->prepare($statement);
 	$sth ->execute($self->univ, $self->version, $formationCode, $cohorteCode) or FATAL! $dbh->errstr;
 }
+sub updateCohorte {
+	my $self = shift;
+	my $cohorte = shift;
+	my $fileName = shift;
+	if ($fileName) {
+		my $dbh = $self->db;
+		my $statement = q/update cohorte set fileName = ? where univ = ? and version = ? and cohorteCode = ?/;
+		my $sth = $dbh->prepare($statement);
+		$sth ->execute($fileName, $self->univ, $self->version, $cohorte) or  FATAL! $dbh->errstr;
+	}
+}
 
 sub addPersonneEtap {
 	my $self = shift;

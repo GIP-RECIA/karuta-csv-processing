@@ -214,6 +214,7 @@ sub getFileETU {
 	unless ($file) {
 		($file , $fname) = openFile($typeFile, 'ETU' , $etape);
 		if ($file) {
+			Dao->dao->updateCohorte($etape->{'cohorte'}, $fname);
 			$haveFiles->setFile($file, 'ETU');
 		}
 	}
