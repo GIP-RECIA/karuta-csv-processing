@@ -96,6 +96,8 @@ sub new {
 					libEtape varchar(256),
 					codeFormation varchar(256),
 					site varchar(256),
+					cohorteCode varchar(256),
+					cohorteFile varchar(256),
 					primary key (univ , version, codeEtape) on conflict fail,
 					foreign key (univ, version, codeFormation, site) references formations
 				)
@@ -114,18 +116,18 @@ sub new {
 			)/;
 		$dbh->do($statement) or die $dbh->errstr;
 		
-# les tables des cohortes injectés dans karuta pas sur quelle soit isomorphe à personne etap
-		$statement = 
-			q/create table if not exists cohorte (
-				univ char(10),
-				version char(10),
-				fileName varchar(256),
-				formationCode varchar(256),
-				cohorteCode varchar(256),
-				primary key (univ, version,  cohorteCode) on conflict ignore,
-				foreign key (univ, version, formationCode) references formations
-			)/;
-		$dbh->do($statement) or die $dbh->errstr;
+# les tables des cohortes injectés dans karuta pas sur quelle soit isomorphe à etap
+#		$statement = 
+#			q/create table if not exists cohorte (
+#				univ char(10),
+#				version char(10),
+#				fileName varchar(256),
+#				formationCode varchar(256),
+#				cohorteCode varchar(256),
+#				primary key (univ, version,  cohorteCode) on conflict ignore,
+#				foreign key (univ, version, formationCode) references formations
+#			)/;
+#		$dbh->do($statement) or die $dbh->errstr;
 
 		$statement = q/insert into univs values ( ?, ?)/;
 		my $sth = $dbh->prepare($statement);
@@ -211,14 +213,14 @@ sub updateFormation {
 
 sub addEtape {
 	my $self = shift;
-	my ($codeEtape, $libEtape, $codeFormation, $site) = @_;
+	my ($codeEtape, $libEtape, $codeFormation, $site, $cohorte) = @_;
 	DEBUG! "addEtap : ", $self->univ,", ", $self->version,",codeEtape, libEtape, codeFormation";
 
 	my $dbh = $self->db;
 	
-	my $statement = q/insert into etapes values (?, ?, ?, ?, ?, ?)/;
+	my $statement = q/insert into etapes values (?, ?, ?, ?, ?, ?, ?, null)/;
 	my $sth = $dbh->prepare($statement);
-	unless ($sth ->execute($self->univ, $self->version, $codeEtape, $libEtape, $codeFormation, $site) ) {
+	unless ($sth ->execute($self->univ, $self->version, $codeEtape, $libEtape, $codeFormation, $site, $cohorte) ) {
 		if ($dbh->err == 19) {
 			$statement = q/select libEtape from etapes where univ = ? and version = ? and  codeEtape = ? /;
 			$sth = $dbh->prepare($statement);
@@ -233,23 +235,15 @@ sub addEtape {
 	};
 }
 
-sub addCohorte {
-	my $self = shift;
-	my ($formationCode, $cohorteCode ) = @_;
-	my $dbh = $self->db;
-	my $statement = q/insert into cohorte values (?, ?, null, ?, ?)/;
-	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ, $self->version, $formationCode, $cohorteCode) or FATAL! $dbh->errstr;
-}
 sub updateCohorte {
 	my $self = shift;
-	my $cohorte = shift;
+	my $etapCode = shift;
 	my $fileName = shift;
 	if ($fileName) {
 		my $dbh = $self->db;
-		my $statement = q/update cohorte set fileName = ? where univ = ? and version = ? and cohorteCode = ?/;
+		my $statement = q/update etapes set cohorteFile = ? where univ = ? and version = ? and codeEtape = ?/;
 		my $sth = $dbh->prepare($statement);
-		$sth ->execute($fileName, $self->univ, $self->version, $cohorte) or  FATAL! $dbh->errstr;
+		$sth ->execute($fileName, $self->univ, $self->version, $etapCode) or  FATAL! $dbh->errstr;
 	}
 }
 

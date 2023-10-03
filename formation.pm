@@ -103,8 +103,8 @@ sub new {
 
 				bless $self, $class;
 
-				Dao->dao->addEtape($codeEtap, $libEtap, $codeFormation, $site );
-				Dao->dao->addCohorte($codeFormation, $cohorte);
+				Dao->dao->addEtape($codeEtap, $libEtap, $codeFormation, $site, $cohorte);
+
 				$formation->etapes($self);
 
 				$codeEtap2etap{$codeEtap} = $self;
