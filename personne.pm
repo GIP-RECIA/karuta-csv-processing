@@ -138,7 +138,7 @@ sub new {
 
 		$self->{univ} = $univ;
 		foreach my $code ($self->setCodesEtape($univ, @_)) {
-			Dao->dao->addPersonneEtap($eppn, $code);
+			Dao->dao->addPersonneEtap($eppn, $code, type());
 		}
 
 		return bless $self, $class;
@@ -193,7 +193,7 @@ sub new {
 		
 		$self->{univ} = $univ;
 		foreach my $code ($self->setCodesEtape($univ, @_)) {
-			Dao->dao->addPersonneEtap($eppn, $code);
+			Dao->dao->addPersonneEtap($eppn, $code, type());
 		}
 		
 		return bless $self, $class;

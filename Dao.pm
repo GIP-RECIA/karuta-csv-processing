@@ -65,7 +65,7 @@ sub new {
 					mail varchar(256),
 					matricule varchar(256),
 					status char(5),
-					primary key (univ , version, idPersonne) ,
+					primary key (univ , version, idPersonne, status) ,
 					foreign key (univ, version) references univs,
 					unique (univ, version, status, idPersonne) on conflict fail
 				)
@@ -110,8 +110,9 @@ sub new {
 					version char(10),
 					idPersonne varchar(256),
 					codeEtape  varchar(10),
-					primary key (univ , version, codeEtape, idPersonne, codeEtape) on conflict ignore,
-					foreign key (univ, version, idPersonne) references personnes,
+					status char(5),
+					primary key (univ , version, status, codeEtape, idPersonne) on conflict ignore,
+					foreign key (univ, version, idPersonne, status) references personnes,
 					foreign key (univ, version, codeEtape) references etapes
 			)/;
 		$dbh->do($statement) or die $dbh->errstr;
@@ -147,6 +148,25 @@ sub new {
 PARAM! univ;
 PARAM! version;
 PARAM! db;
+
+# fixe la version précedante pour les diffs , vérifie qu'elle existe.
+sub lastVersion {
+	my $self = shift;
+	my $oldV = shift;
+	unless ($oldV) {
+		return  $self->{LASTVERSION};
+	}
+	my $dbh = $self->db;
+	my $statement = q/select * from univs where univ = ? and version = ?/;
+	my $sth = $dbh->prepare($statement);
+	$sth ->execute($self->univ, $oldV) or FATAL! $dbh->errstr;
+	if ($sth->fetchrow_array()) {
+		$self->{LASTVERSION} = $oldV;
+	} else {
+		$oldV = 0;
+	}
+}
+
 
 sub addPerson {
 	my $self = shift;
@@ -249,12 +269,42 @@ sub updateCohorte {
 
 sub addPersonneEtap {
 	my $self = shift;
-	my ($idPersonne, $codeEtape) = @_;
+	my ($idPersonne, $codeEtape, $status) = @_;
 	my $dbh = $self->db;
 	
-	my $statement = q/insert into personneEtape values (?, ?, ?, ?)/;
+	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?)/;
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ, $self->version, $idPersonne, $codeEtape) or ERROR! $dbh->errstr ," : ", $dbh->err;
+	$sth ->execute($self->univ, $self->version, $idPersonne, $codeEtape, $status) or ERROR! $dbh->errstr ," : ", $dbh->err;
 }
 
+
+######## pour les comparaisons:
+
+sub execDiffPersonEtap {
+	my $dbh = shift;
+	my $sth = shift;
+	$sth->execute(@_) or ERROR! $dbh->errstr ," : ", $dbh->err;
+	my %res;
+	while (my @tuple = $sth->fetchrow_array) {
+		 push @{$res{$tuple[0]}}, $tuple[1];
+	}
+	return \%res;
+}
+
+sub diffPersonneEtap {
+	my $self = shift;
+	my $status = shift;
+	my $dbh = $self->db;
+
+	my $statement =
+		q/select idPersonne, codeEtape from personneEtape where univ = ?1 and version = ?3 and status = ?2
+		except
+		  select idPersonne, codeEtape from personneEtape where univ = ?1 and version = ?4 and status = ?2/;
+	my $sth = $dbh->prepare($statement);
+	DEBUG! $statement;
+	return (
+		execDiffPersonEtap($dbh, $sth, $self->univ, $status, $self->version, $self->lastVersion),
+		execDiffPersonEtap($dbh, $sth, $self->univ, $status, $self->lastVersion, $self->version)
+		);
+}
 1;

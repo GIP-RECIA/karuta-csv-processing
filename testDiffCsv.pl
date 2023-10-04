@@ -7,9 +7,9 @@ use FindBin;
 use lib $FindBin::Bin;  
 
 use MyLogger;
-
+use Data::Dumper;
 use DiffCsvHeap;
-
+use Dao;
 MyLogger::level(4, 2);
 my $name1 = 'tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv';
 
@@ -23,6 +23,17 @@ my $name1 = 'tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv';
 
 #DiffCsv::sort ($csv1, $sorted,  3, 1, 3);
 #DiffCsv::sort ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv', 3, 1, 3);
+
+my $dao = new Dao('testOrleans/karuta.db', 'orleans', '20230630');
+
+$dao->lastVersion('20230322');
+
+my ($new, $old) = $dao->diffPersonneEtap('ETU');
+
+print "nouveau  ", Dumper($new);
+print "partie " , Dumper($old); 
+
+__END__
 
 
 my $name2 = 'trier_tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv';
