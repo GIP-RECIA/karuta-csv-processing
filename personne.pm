@@ -137,8 +137,9 @@ sub new {
 		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, $matricule);
 
 		$self->{univ} = $univ;
+		my $nbEtap;
 		foreach my $code ($self->setCodesEtape($univ, @_)) {
-			Dao->dao->addPersonneEtap($eppn, $code, type());
+			Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
 		}
 
 		return bless $self, $class;
@@ -192,8 +193,9 @@ sub new {
 		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, "");
 		
 		$self->{univ} = $univ;
+		my $nbEtap;
 		foreach my $code ($self->setCodesEtape($univ, @_)) {
-			Dao->dao->addPersonneEtap($eppn, $code, type());
+			Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
 		}
 		
 		return bless $self, $class;

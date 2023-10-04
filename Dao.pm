@@ -111,6 +111,7 @@ sub new {
 					idPersonne varchar(256),
 					codeEtape  varchar(10),
 					status char(5),
+					ordre integer(100),
 					primary key (univ , version, status, codeEtape, idPersonne) on conflict ignore,
 					foreign key (univ, version, idPersonne, status) references personnes,
 					foreign key (univ, version, codeEtape) references etapes
@@ -269,12 +270,12 @@ sub updateCohorte {
 
 sub addPersonneEtap {
 	my $self = shift;
-	my ($idPersonne, $codeEtape, $status) = @_;
+	my ($idPersonne, $codeEtape, $status, $ordre) = @_;
 	my $dbh = $self->db;
 	
-	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?)/;
+	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?, ?)/;
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ, $self->version, $idPersonne, $codeEtape, $status) or ERROR! $dbh->errstr ," : ", $dbh->err;
+	$sth ->execute($self->univ, $self->version, $idPersonne, $codeEtape, $status, $ordre) or ERROR! $dbh->errstr ," : ", $dbh->err;
 }
 
 
