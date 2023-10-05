@@ -155,13 +155,16 @@ sub mailEtu2sql {
 
 	my $fileMail = "allMail.txt";
 	my $modifMailFile = $newPath . $suffixPath. "modifMail.sql";
+	my $addEppnFile = $newPath . $suffixPath. "addEppn.sql";
 	my $newMailFile = $newPath . $suffixPath. $fileMail;
 	my $oldMailFile = $oldPath . $fileMail;
 
 	DEBUG! "modifMailFile = $modifMailFile ; newMailFile = $newMailFile ; oldMailFile = $oldMailFile.";
 
-	open SQL, "> $modifMailFile" or FATAL! "open $modifMailFile : $!";
+	open SQLMAIL, "> $modifMailFile" or FATAL! "open $modifMailFile : $!";
+	open SQLEPPN, "> $addEppnFile" or FATAL! "open $addEppnFile : $!";
 	open NEWMAIL, "> $newMailFile" or FATAL! "open $newMailFile : $!";
+	
 	
 	if ($oldPath) {
 		%oldMailETU=();
@@ -190,18 +193,17 @@ sub mailEtu2sql {
 			if ($oldMail) {
 				$isNew = 0;
 				if ($oldMail ne $mail) {
-					print SQL qq/update credential set email="$mail" where eppn="$eppn";/, "\n";
+					print SQLMAIL qq/update credential set email="$mail" where eppn="$eppn";/, "\n";
 				}
 			}
 		}
 		if ($isNew) {
-			print SQL qq/update credential set eppn="$eppn" where login = "$mail";/, "\n";	
+			print SQLEPPN qq/update credential set eppn="$eppn" where login = "$mail";/, "\n";	
 		}
 		print NEWMAIL "$eppn\t$mail\n";
 	}
-	close SQL;
+	close SQLMAIL;
 	close NEWMAIL;
-	
 }
 
 sub printInFormationFileETU {
