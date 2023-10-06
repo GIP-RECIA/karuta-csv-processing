@@ -3,6 +3,7 @@ use utf8;
 use DBI;
 
 use MyLogger;
+use personne;
 
 package Dao;
 
@@ -197,6 +198,29 @@ sub addPerson {
 	}
 };
 
+	
+sub getPersonne {
+	my $self = shift;
+	my $idPersonne = shift;
+	my $status = shift;
+	my $dbh = $self->db;
+
+	my $statement = q/select univ, idPersonne, nom, prenom, mail, matricule from personnes
+					where univ = ? and version = ? and idPersonne = ? and status = ?/;
+	my $sth = $dbh->prepare($statement);
+	$sth ->execute($self->univ, $self->version, $idPersonne, $status) or ERROR! $dbh->errstr ," : ", $dbh->err;
+
+	my $personne;
+	@tuple = $sth->fetchrow_array;
+	if ($tatus == 'ETU') {
+		$personne = init Etudiant(@tuple);
+	} elsif ($status == 'STAFF' ) {
+		$personne = init Staff(@tuple);
+	}
+	return $personne;
+}
+
+
 sub addFormation {
 	my $self = shift;
 	my ($code , $site, $label) = @_;
@@ -287,7 +311,10 @@ sub execDiffPersonEtap {
 	$sth->execute(@_) or ERROR! $dbh->errstr ," : ", $dbh->err;
 	my %res;
 	while (my @tuple = $sth->fetchrow_array) {
-		 push @{$res{$tuple[0]}}, $tuple[1];
+		# push @{$res{$tuple[0]}}, ($tuple[1], $tuple[2]) ;
+#		push @{$res{shift @tuple}}, {@tuple}; # un hash de tableau non ordoné
+#		$res{$tuple[0]}->{$tuple[1]} = $tuple[2]; # hash de hash
+		$res{$tuple[0]}[$tuple[2]-1] = $tuple[1]; # hash de tableau ordonné
 	}
 	return \%res;
 }
@@ -298,9 +325,9 @@ sub diffPersonneEtap {
 	my $dbh = $self->db;
 
 	my $statement =
-		q/select idPersonne, codeEtape from personneEtape where univ = ?1 and version = ?3 and status = ?2
-		except
-		  select idPersonne, codeEtape from personneEtape where univ = ?1 and version = ?4 and status = ?2/;
+		q/select idPersonne, codeEtape, ordre from personneEtape pe1 where univ = ?1 and version = ?3 and status = ?2
+		and not exists (select idPersonne, codeEtape from personneEtape pe2 where univ = ?1 and version = ?4 and status = ?2 and idPersonne = pe1.idPersonne and codeEtape = pe1.codeEtape) /;
+
 	my $sth = $dbh->prepare($statement);
 	DEBUG! $statement;
 	return (
@@ -308,4 +335,6 @@ sub diffPersonneEtap {
 		execDiffPersonEtap($dbh, $sth, $self->univ, $status, $self->lastVersion, $self->version)
 		);
 }
+
+
 1;

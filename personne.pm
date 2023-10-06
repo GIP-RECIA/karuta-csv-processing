@@ -131,19 +131,32 @@ sub new {
 	my $courriel = shift;
 	my $matricule = shift;
 		# identifiant + liste des infos en sortie dans csv
-	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule, $eppn);
+	
+	$self = init ($class , $univ ,$eppn, $nom ,$prenom , $courriel , $matricule); 
 
 	if ($self) {
 		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, $matricule);
-
-		$self->{univ} = $univ;
 		my $nbEtap;
 		foreach my $code ($self->setCodesEtape($univ, @_)) {
 			Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
 		}
-
-		return bless $self, $class;
+		return $self;
 	}
+	return 0;
+}
+
+sub init {
+	my $class = shift;
+	my $univ = shift;
+	my $eppn = shift;
+	my $nom = shift;
+	my $prenom = shift;
+	my $courriel = shift;
+	my $matricule = shift;
+	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule, $eppn);
+	if ($self) {
+		$self->{univ} = $univ;
+		return bless $self, $class;
 	return 0;
 }
 
@@ -188,16 +201,29 @@ sub new {
 	my $prenom = shift;
 	my $courriel = shift;
 		# identifiant + liste des infos en sortie dans csv
-	my $self = new Personne($eppn, $nom, $prenom, $eppn, $courriel);
+	my $self = init($class,  $univ, $eppn, $nom, $prenom, $eppn, $courriel);
 	if ($self) {
 		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, "");
-		
-		$self->{univ} = $univ;
 		my $nbEtap;
 		foreach my $code ($self->setCodesEtape($univ, @_)) {
 			Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
 		}
 		
+		return bless $self, $class;
+	}
+	return 0;
+}
+
+sub init {
+	my $class = shift;
+	my $univ = shift;
+	my $eppn = shift;
+	my $nom = shift;
+	my $prenom = shift;
+	my $courriel = shift;
+	my $self = new Personne($eppn, $nom, $prenom, $eppn, $courriel);
+	if ($self) {
+		$self->{univ} = $univ;
 		return bless $self, $class;
 	}
 	return 0;

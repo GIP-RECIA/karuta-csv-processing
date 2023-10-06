@@ -46,9 +46,7 @@ PARAM! annee;
 PARAM! tmp;
 
 
-
 # on cherche les ETU qui ont changé de cohorte (étap)
-
 sub compareEtapEtu {
 	my ($id, $olds, $news, $iO, $iN) = @_;
 
@@ -112,6 +110,7 @@ my $self;
 sub compareCohorte {
 	$self = shift;
 	Traitement::init('ETU', $self->univ, $self->date2, $self->annee, $self->tmp);
+	
 	my ($new, $old) = $self->dao->diffPersonneEtap('ETU');
 	while (my ($idPersonne, $newEtapes ) = each %$new ) {
 		my $oldEtapes = $$old{$idPersonne};
@@ -127,72 +126,6 @@ sub compareCohorte {
 	}
 }
 
-sub compareCohorteIt {
-	my $self = shift;
-	my ($new, $old) = $self->dao->diffPersonneEtap('ETU');
-
-	while (my ($idPersonne, $newEtapes ) = each %$new ) {
-		my $oldEtapes = $$old{$idPersonne};
-		DEBUG! "$idPersonne";
-		if ($oldEtapes && @$oldEtapes) {
-			# cas il y a une liste ordonnée d'ancienne etapes la liste peut comprende des elements vide (correspondant sans doute a des etapes existante encore).
-			my $idxNew = 0;
-			my $idxOld = 0;
-			while (($idxNew < @$newEtapes) && ($idxOld < @$oldEtapes)) {
-				my $newE = $$newEtapes[$idxNew];
-				my $oldE = $$oldEtapes[$idxOld];
-				DEBUG! "$oldE ($idxOld) => $newE ($idxNew)";
-				if ($newE) {
-					if ($oldE) {
-						#TODO newE remplace oldE
-						DEBUG! "$idPersonne change $oldE par $newE";
- 						$idxNew ++;
-					} 
-					$idxOld++;
-				} else {
-					$idxNew ++;
-				}
-			}
-			while ($idxNew++ < @$newEtapes) {
-				my $newE = $$newEtapes[$idxNew];
-				if ($newE) {
-					#TODO
-					DEBUG! "$idPersonne add $newE";
-				}
-			}
-			while ($idxOld++ < @$oldEtapes) {
-				my $oldE = $$oldEtapes[$idxOld];
-				if ($oldE) {
-					#TODO oldE
-					DEBUG! "$idPersonne supprime $oldE";
-				}
-			}
-			#suppression du old car deja traité 
-			delete $$old{$idPersonne};
-		} else {
-			my $idx;
-			foreach my $newE (@$newEtapes) {
-				$idx++;
-				if ($newE) {
-					if ($idx == 1) {
-						DEBUG! "nouveau $idPersonne avec  $newE";
-					} else {
-						DEBUG! "$idPersonne ajout  $newE";
-					}
-				}
-			}
-		}
-	}
-	while (my ($idPersonne, $oldEtapes ) = each %$old ) {
-		foreach my $oldE (@$oldEtapes) {
-			DEBUG! "delete $idPersonne";
-			my $idx++;
-			if ($oldE) {
-				DEBUG! " 	suppression $oldE"; 
-			}
-		}
-	}
-}
 
 sub getFileCohorte {
 	my $etap = shift;

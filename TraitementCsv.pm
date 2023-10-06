@@ -24,19 +24,24 @@ my %fileName2file;
 
 my %StaffFiles;
 
-sub parseFile {
+
+sub init {
 	$type = shift;
 	$univ = shift;
 	$dateFile = shift;
 	$annee = shift;
 	$tmp = shift; #le repertoire temporaire de travail;
-
 	%fileName2file =();
 	%StaffFiles = ();
+	$path = $univ->path;
+}
+
+sub parseFile {
+	init(@_);
 
 	my $fileName = sprintf("%s_%s_%s.csv", $univ->prefix, $dateFile, $type);
 
-	$path = $univ->path;
+
 
 	my $fileNameLog = "${path}.log";
 
