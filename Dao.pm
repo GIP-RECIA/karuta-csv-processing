@@ -4,7 +4,7 @@ use DBI;
 
 use MyLogger;
 use personne;
-
+use formation;
 package Dao;
 
 
@@ -26,13 +26,16 @@ sub new {
 	my $univ = shift;
 	my $jour = shift;
 
+	my $univId;
 	if ($univ->isa('Univ')) {
 		if ($jour) {
 			$univ->dateFile($jour);
 		} else {
 			$jour = $univ->dateFile;
 		}
-		$univ = $univ->id;
+		$univId = $univ->id;
+	} else {
+		FATAL! "$univ not Univ object";
 	}
 
 	FATAL! "Dao sans jour définit" unless $jour;
@@ -134,7 +137,7 @@ sub new {
 
 		$statement = q/insert into univs values ( ?, ?)/;
 		my $sth = $dbh->prepare($statement);
-		$sth ->execute($univ, $jour) or FATAL! $dbh->errstr;
+		$sth ->execute($univId, $jour) or FATAL! $dbh->errstr;
 		my $self = {
 			DB => $dbh,
 			file => $dbFile,
@@ -161,7 +164,7 @@ sub lastVersion {
 	my $dbh = $self->db;
 	my $statement = q/select * from univs where univ = ? and version = ?/;
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ, $oldV) or FATAL! $dbh->errstr;
+	$sth ->execute($self->univ->id, $oldV) or FATAL! $dbh->errstr;
 	if ($sth->fetchrow_array()) {
 		$self->{LASTVERSION} = $oldV;
 	} else {
@@ -179,21 +182,21 @@ sub addPerson {
 	my $mail = shift;
 	my $matricule = shift;
 
-	DEBUG! "addPersonn ",  $self->univ,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status";
+	DEBUG! "addPersonn ",  $self->univ->id,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status";
 	my $dbh = $self->db;
 	my $statement = q/select * from personnes where univ = ? and version = ? and idPersonne = ? and status = ?/;
 	my $sth = $dbh->prepare($statement);
-	$sth->execute($self->univ, $self->version, $eppn, $status) or FATAL! $dbh->errstr;
+	$sth->execute($self->univ->id, $self->version, $eppn, $status) or FATAL! $dbh->errstr;
 	my @t = $sth->fetchrow_array();
 	
 	unless (@t) {
 		$statement = q/insert into personnes values (?, ?, ?, ?, ?, ?, ?, ?)/;
 		$sth = $dbh->prepare($statement);
-		$sth ->execute($self->univ, $self->version, $eppn, $nom , $prenom, $mail, $matricule, $status) or FATAL! $dbh->errstr;
+		$sth ->execute($self->univ->id, $self->version, $eppn, $nom , $prenom, $mail, $matricule, $status) or FATAL! $dbh->errstr;
 	} else {
 		
 		if ($nom ne $t[3] ||  $prenom ne $t[4] || $mail ne $t[5] || $matricule ne $t[6]) {
-			ERROR! "(", $self->univ,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status) != (", join(", " ,@t), ")" ;  
+			ERROR! "(", $self->univ->id,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status) != (", join(", " ,@t), ")" ;  
 		}
 	}
 };
@@ -208,7 +211,7 @@ sub getPersonne {
 	my $statement = q/select univ, idPersonne, nom, prenom, mail, matricule from personnes
 					where univ = ? and version = ? and idPersonne = ? and status = ?/;
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ, $self->version, $idPersonne, $status) or ERROR! $dbh->errstr ," : ", $dbh->err;
+	$sth ->execute($self->univ->id, $self->version, $idPersonne, $status) or ERROR! $dbh->errstr ," : ", $dbh->err;
 
 	my $personne;
 	my @tuple = $sth->fetchrow_array;
@@ -225,16 +228,16 @@ sub addFormation {
 	my $self = shift;
 	my ($code , $site, $label) = @_;
 
-	DEBUG! "addFormation : ", $self->univ,", ", $self->version,", $code , $site, $label";
+	DEBUG! "addFormation : ", $self->univ->id,", ", $self->version,", $code , $site, $label";
 	my $dbh = $self->db;
 	
 	my $statement = q/insert into formations values (?, ?, ?, ?, ?, null, null)/;
 	my $sth = $dbh->prepare($statement);
-	unless ($sth ->execute($self->univ, $self->version, $code, $site, $label) ) {
+	unless ($sth ->execute($self->univ->id, $self->version, $code, $site, $label) ) {
 		if ($dbh->err == 19) {
 			$statement = q/select label from formations where univ = ? and version = ? and code = ? and site = ?/;
 			$sth = $dbh->prepare($statement);
-			$sth->execute($self->univ, $self->version, $code, $site) or FATAL! $dbh->errstr," : ", $dbh->err;
+			$sth->execute($self->univ->id, $self->version, $code, $site) or FATAL! $dbh->errstr," : ", $dbh->err;
 			my @t = $sth->fetchrow_array();
 			if ($t[0] ne $label) {
 				ERROR! "formation : $code; avec différent labels :", $label, ":", $t[0] ,":"; 
@@ -252,24 +255,24 @@ sub updateFormation {
 	my $statement = q/update formations set formationCode = ?, formationLabel = ? where univ = ? and version = ? and code = ? and site = ?/;
 
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($formationCode, $formationLabel, $self->univ, $self->version, $code, $site) or  FATAL! $dbh->errstr;
+	$sth ->execute($formationCode, $formationLabel, $self->univ->id, $self->version, $code, $site) or  FATAL! $dbh->errstr;
 }
 
 
 sub addEtape {
 	my $self = shift;
 	my ($codeEtape, $libEtape, $codeFormation, $site, $cohorte) = @_;
-	DEBUG! "addEtap : ", $self->univ,", ", $self->version,",codeEtape, libEtape, codeFormation";
+	DEBUG! "addEtap : ", $self->univ->id,", ", $self->version,",codeEtape, libEtape, codeFormation";
 
 	my $dbh = $self->db;
 	
 	my $statement = q/insert into etapes values (?, ?, ?, ?, ?, ?, ?, null)/;
 	my $sth = $dbh->prepare($statement);
-	unless ($sth ->execute($self->univ, $self->version, $codeEtape, $libEtape, $codeFormation, $site, $cohorte) ) {
+	unless ($sth ->execute($self->univ->id, $self->version, $codeEtape, $libEtape, $codeFormation, $site, $cohorte) ) {
 		if ($dbh->err == 19) {
 			$statement = q/select libEtape from etapes where univ = ? and version = ? and  codeEtape = ? /;
 			$sth = $dbh->prepare($statement);
-			$sth->execute($self->univ, $self->version, $codeEtape ) or FATAL! $dbh->errstr," : ", $dbh->err;
+			$sth->execute($self->univ->id, $self->version, $codeEtape ) or FATAL! $dbh->errstr," : ", $dbh->err;
 			my @t = $sth->fetchrow_array();
 			if ($t[0] ne $libEtape) {
 				ERROR! "etape : $codeEtape; non unique; libélés :", $libEtape, ":", $t[0] ,":"; 
@@ -280,7 +283,20 @@ sub addEtape {
 	};
 }
 
+sub getEtape {
+	my $self = shift;
+	my $codeEtap = shift;
+	my $dbh = $self->db;
+	my $statement = q/select * from etapes where univ = ? , version = ?, codeEtape =?/;
+	my $sth = $dbh->prepare($statement);
+	$sth->execute($self->univ->id, $self->version, $codeEtape ) or FATAL! $dbh->errstr," : ", $dbh->err;
+	my @t = $sth->fetchrow_array();
 
+	new Etape()
+	
+
+	
+}
 sub updateCohorte {
 	my $self = shift;
 	my $etapCode = shift;
@@ -289,7 +305,7 @@ sub updateCohorte {
 		my $dbh = $self->db;
 		my $statement = q/update etapes set cohorteFile = ? where univ = ? and version = ? and codeEtape = ?/;
 		my $sth = $dbh->prepare($statement);
-		$sth ->execute($fileName, $self->univ, $self->version, $etapCode) or  FATAL! $dbh->errstr;
+		$sth ->execute($fileName, $self->univ->id, $self->version, $etapCode) or  FATAL! $dbh->errstr;
 	}
 }
 
@@ -300,7 +316,7 @@ sub addPersonneEtap {
 	
 	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?, ?)/;
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ, $self->version, $idPersonne, $codeEtape, $status, $ordre) or ERROR! $dbh->errstr ," : ", $dbh->err;
+	$sth ->execute($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre) or ERROR! $dbh->errstr ," : ", $dbh->err;
 }
 
 
@@ -332,8 +348,8 @@ sub diffPersonneEtap {
 	my $sth = $dbh->prepare($statement);
 	DEBUG! $statement;
 	return (
-		execDiffPersonEtap($dbh, $sth, $self->univ, $status, $self->version, $self->lastVersion),
-		execDiffPersonEtap($dbh, $sth, $self->univ, $status, $self->lastVersion, $self->version)
+		execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->version, $self->lastVersion),
+		execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->lastVersion, $self->version)
 		);
 }
 
