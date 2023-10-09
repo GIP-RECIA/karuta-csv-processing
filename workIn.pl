@@ -166,14 +166,14 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				compareSortedFile($newFormationFile, $resRep, $lastPath,  1) or next TRAITEMENT;
 			}
 			
-			for (Traitement::parseFile('ETU', $univ ,  $dateFile, $annee, $tmpRep)) {
+			for (TraitementCsv::parseFile('ETU', $univ ,  $dateFile, $annee, $tmpRep)) {
 				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 3);
 				if ($lastPath) {
 					compareSortedFile($_, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
 				}
 			}
 
-			for (Traitement::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
+			for (TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
 				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 2);
 				if ($lastPath) {
 					compareSortedFile($_, $resRep, $lastPath,  3, 2) or next TRAITEMENT;

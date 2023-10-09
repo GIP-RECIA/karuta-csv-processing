@@ -8,7 +8,7 @@ use formation;
 use personne;
 use MyLogger;
 
-package Traitement;
+package TraitementCsv;
 
 
 my %code2file;
@@ -101,7 +101,7 @@ sub traitementETU {
 	foreach my $codeEtap (@{$personne->codesEtape()}) {
 		my $etape = Etape::getByCodeEtap($codeEtap);
 		if ($etape) {
-			printInFormationFileETU($etape, $personne);
+			printInformationFileETU($etape, $personne);
 		} else {
 			WARN! ("pas d'etape pour ce codeEtap : $codeEtap !");
 			print LOG "codeEtape erreur: $codeEtap !\n";
@@ -140,7 +140,7 @@ sub traitementSTAFF {
 
 
 
-sub printInFormationFileETU {
+sub printInformationFileETU {
 	my $etape = shift;
 	my $personne = shift;
 	my $file  = getFileETU($etape);
