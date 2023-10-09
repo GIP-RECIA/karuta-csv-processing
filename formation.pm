@@ -37,9 +37,13 @@ sub init {
 	%codeEtap2etap = ();
 }
 
-sub getByCodeEtap {
+sub byCode {
 	my $codeEtap = shift;
-	return $codeEtap2etap{$codeEtap};
+	my $etap = shift;
+	unless ($etap) {
+		return $codeEtap2etap{$codeEtap};
+	} 
+	$codeEtap2etap{$codeEtap} = $etap;
 }
 
 #cohorte = $typeFormation_$sigleFormation_$parcoursFormation_$anneeFormation
@@ -55,6 +59,9 @@ sub new {
 	my ($class, $univ, $codeEtap, $libEtap, $site, $cohorte, $codeFormation, $labelFormation, $formation) = @_;
 	my $self;
 	unless ($formation) {
+		unless ($labelFormation) {
+			$labelFormation = "";
+		}
 		$formation = new Formation($univ, $codeFormation, $labelFormation, $site);
 	}
 	if ($formation) {
@@ -72,7 +79,7 @@ sub new {
 
 		$formation->etapes($self);
 
-		$codeEtap2etap{$codeEtap} = $self;
+		byCode($codeEtap,$self);
 			
 		return $self;
 	}
@@ -120,13 +127,14 @@ sub create {
 		if ($formation) {
 			my $nbEtap = 0;
 			foreach my $codeEtap (split('@',$codesEtaps)) {
-				$self = new Etape ($univ, $codeEtap,  $libEtap,  $site, $cohorte, $codeFormation, $label, $formation);
+				$self = byCode($codeEtap);
+				unless ($self) {
+					$self = new Etape ($univ, $codeEtap,  $libEtap,  $site, $cohorte, $codeFormation, $label, $formation);
+					if ($self) {
+						Dao->dao->addEtape($codeEtap, $libEtap, $codeFormation, $site, $cohorte);
+					}
+				}
 
-				Dao->dao->addEtape($codeEtap, $libEtap, $codeFormation, $site, $cohorte);
-
-				$formation->etapes($self);
-
-				$codeEtap2etap{$codeEtap} = $self;
 				$nbEtap++;
 			}
 			return $nbEtap;
@@ -169,9 +177,15 @@ sub init {
 
 
 #la cle est $site_$code
-sub getByCle {
-	my $cle = shift;
-	return $code2Formation{$cle};
+sub byCle {
+	my $site = shift;
+	my $code = shift;
+	my $formation = shift;
+	my $cle = "${site}_${code}";
+	if ($formation) {
+		return $code2Formation{$cle};
+	}
+	$code2Formation{$cle} = $formation;
 }
 
 sub readFile {
@@ -251,15 +265,19 @@ sub writeFile {
 
 sub new {
 	my ($class, $univ, $code , $label, $site) = @_;
-	my $cle="${site}_${code}";
-	my $formation = getByCle($cle);
+	
+	my $formation = byCle($site, $code);
 
 	if ($formation) {
-		if ($formation->label ne $label) {
-				WARN! "formation ($cle) avec plusieurs label: $label ", $formation->label;
+		if ($label && $formation->label ne $label) {
+				WARN! "formation ($site, $code) avec plusieurs label: $label ", $formation->label;
 			}
 		return $formation;
-	} 
+	}
+	unless ($label) {
+		WARN! "formation $formation sans label";
+		return 0
+	}
 	
 	$formation = {
 		code => $code,
@@ -272,7 +290,7 @@ sub new {
 	};
 
 	bless $formation, $class;
-	$code2Formation{$cle} = $formation;
+	byCle($site, $code, $formation);
 
 	return $formation;
 }

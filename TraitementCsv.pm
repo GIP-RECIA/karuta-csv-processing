@@ -211,7 +211,7 @@ sub getFileETU {
 	my $typeFile; # contient  site_cohorte/formation .
 	
 	unless ($etape->isa('Etape') ) {
-		$etape = Etape::getByCodeEtap($etape);
+		$etape = Etape::byCode($etape);
 		DEBUG! Dumper($etape);
 	}
 	
