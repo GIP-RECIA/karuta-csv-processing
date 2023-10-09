@@ -211,11 +211,11 @@ sub getPersonne {
 	$sth ->execute($self->univ, $self->version, $idPersonne, $status) or ERROR! $dbh->errstr ," : ", $dbh->err;
 
 	my $personne;
-	@tuple = $sth->fetchrow_array;
-	if ($tatus == 'ETU') {
-		$personne = init Etudiant(@tuple);
+	my @tuple = $sth->fetchrow_array;
+	if ($status == 'ETU') {
+		$personne = new Etudiant(@tuple);
 	} elsif ($status == 'STAFF' ) {
-		$personne = init Staff(@tuple);
+		$personne = new Staff(@tuple);
 	}
 	return $personne;
 }
@@ -279,6 +279,7 @@ sub addEtape {
 		}
 	};
 }
+
 
 sub updateCohorte {
 	my $self = shift;

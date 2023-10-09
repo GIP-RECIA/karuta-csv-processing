@@ -8,8 +8,9 @@ use formation;
 use personne;
 use MyLogger;
 
-package TraitementCsv;
 
+package TraitementCsv;
+use Data::Dumper;
 
 my %code2file;
 my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 1, always_quote => 1});
@@ -71,9 +72,9 @@ sub parseFile {
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
 			my $person;
 			if ($isEtu) {
-				$person = new Etudiant($univ, $csv->fields());
+				$person = create Etudiant($univ, $csv->fields());
 			} else {
-				$person = new Staff($univ, $csv->fields());
+				$person = create Staff($univ, $csv->fields());
 			}
 			if ($person) {
 				if (&$traitement($person)) {
@@ -208,7 +209,14 @@ sub getFileETU {
 	my $file;
 	my $haveFiles;
 	my $typeFile; # contient  site_cohorte/formation .
+	
+	unless ($etape->isa('Etape') ) {
+		$etape = Etape::getByCodeEtap($etape);
+		DEBUG! Dumper($etape);
+	}
+	
 	my $formation = $etape->formation;
+	
 	
 	$haveFiles = $etape;
 	$typeFile = $etape->cohorte;

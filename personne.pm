@@ -121,7 +121,7 @@ sub entete {
 	)
 }
 
-sub new {
+sub create {
 	my $class = shift;
 	my $univ = shift;
 		# liste des données en entrée du csv
@@ -132,7 +132,7 @@ sub new {
 	my $matricule = shift;
 		# identifiant + liste des infos en sortie dans csv
 	
-	$self = init ($class , $univ ,$eppn, $nom ,$prenom , $courriel , $matricule); 
+	my $self = new ($class , $univ ,$eppn, $nom ,$prenom , $courriel , $matricule); 
 
 	if ($self) {
 		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, $matricule);
@@ -145,7 +145,7 @@ sub new {
 	return 0;
 }
 
-sub init {
+sub new {
 	my $class = shift;
 	my $univ = shift;
 	my $eppn = shift;
@@ -157,6 +157,7 @@ sub init {
 	if ($self) {
 		$self->{univ} = $univ;
 		return bless $self, $class;
+	}
 	return 0;
 }
 
@@ -192,7 +193,7 @@ sub entete {
 	}
 }
 
-sub new {
+sub create {
 	my $class = shift;
 	my $univ = shift;
 			# liste des données en entrée du csv
@@ -201,20 +202,20 @@ sub new {
 	my $prenom = shift;
 	my $courriel = shift;
 		# identifiant + liste des infos en sortie dans csv
-	my $self = init($class,  $univ, $eppn, $nom, $prenom, $eppn, $courriel);
+	my $self = new ($class,  $univ, $eppn, $nom, $prenom, $eppn, $courriel);
+
 	if ($self) {
 		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, "");
 		my $nbEtap;
 		foreach my $code ($self->setCodesEtape($univ, @_)) {
 			Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
 		}
-		
-		return bless $self, $class;
+		return $self;
 	}
 	return 0;
 }
 
-sub init {
+sub new {
 	my $class = shift;
 	my $univ = shift;
 	my $eppn = shift;
