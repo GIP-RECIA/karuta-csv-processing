@@ -2,12 +2,12 @@ use strict;
 use utf8;
 use MyLogger;
 use Dao;
-
+use TraitementCsv;
 
 package Compare;
 
 sub new {
-	my ($class, $dao, $oldDate, $newDate, $annee, $tmpRep) = @_;
+	my ($class, $univ, $dao, $annee, $tmpRep, $oldDate, $newDate) = @_;
 
 	if ($newDate) {
 		$dao->version($newDate);
@@ -26,7 +26,7 @@ sub new {
 	
 	my $self = {
 		DAO => $dao,
-		UNIV => $dao->univ,
+		UNIV => $univ,
 		DATE1 => $oldDate,
 		DATE2 => $newDate,
 		ANNEE => $annee,
@@ -36,23 +36,26 @@ sub new {
 }
 
 
-# on cherche les ETU qui ont changé de cohorte (étap)
+# on cherche les ETU qui ont changés de cohorte (étap)
 
 PARAM! dao;
 PARAM! univ;
 PARAM! date1;
-PARAM! data2;
+PARAM! date2;
 PARAM! annee;
 PARAM! tmp;
 
+my $self;
 
 # on cherche les ETU qui ont changé de cohorte (étap)
 sub compareEtapEtu {
 	my ($id, $olds, $news, $iO, $iN) = @_;
 
 	if ($iN < @$news ) {
+		#il reste des nouvelles étapes
 		my $newE = $$news[$iN];
 		if ($iO < @$olds ) {
+			#il reste des anciennes etapes
 			DEBUG! "$id $iN $iO";
 			my $oldE = $$olds[$iO];
 			if ($newE) {
@@ -67,9 +70,12 @@ sub compareEtapEtu {
 			return compareEtapEtu($id, $olds, $news, $iO+1, $iN+1);
 			
 		}
+		# il n'y plus d'ancienne etape
+		my $etap1 = $self->dao->getEtapeEtu($id);
 		
-		addEtaps($id, @$news[$iN .. $#$news]);
+		addEtaps($id, $etap1, @$news[$iN .. $#$news]);
 	} elsif ($iO < $olds ) {
+		# il n'y plus que des aciennes étapes
 		delEtaps($id, @$olds[$iO .. $#$olds]);
 	}
 }
@@ -81,19 +87,26 @@ sub modifEtap {
 
 sub addEtaps {
 	my $id = shift;
-	foreach my $etap (@_) {
-		if ($etap) {
-			DEBUG! "$id add $etap";
+	my $etap1 = shift;
+	foreach my $etapCod (@_) {
+		if ($etapCod) {
+			TraitementCsv::printAddEtapETU($id, $etap1, $self->dao->getEtape($etapCod));
 		}
 	}
 }
 
+
 sub addEtu {
 	my $id = shift;
-	my $etape = shift;
-	DEBUG! "add personne $id etap = $etape";
-	getFileCohorte($etape);
-	addEtaps($id, @_);
+	my $etapeCod = shift;
+	DEBUG! "add personne $id etap = $etapeCod";
+	my $personne = $self->dao->getPersonne($id, 'ETU');
+
+	my $etape = $self->dao->getEtape($etapeCod);
+	TraitementCsv::printInformationFileETU($etape, $personne);
+	if (@_) {
+		addEtaps($id, $etape, @_);
+	}
 }
 
 sub delEtaps {
@@ -106,12 +119,14 @@ sub delEtaps {
 }
 
 
-my $self;
+
 sub compareCohorte {
 	$self = shift;
-	Traitement::init('ETU', $self->univ, $self->date2, $self->annee, $self->tmp);
+	DEBUG! "compareCohorte";
+	TraitementCsv::init('ETU', $self->univ, $self->date2, $self->annee, $self->tmp);
 	
 	my ($new, $old) = $self->dao->diffPersonneEtap('ETU');
+	
 	while (my ($idPersonne, $newEtapes ) = each %$new ) {
 		my $oldEtapes = $$old{$idPersonne};
 		if ($oldEtapes && @$oldEtapes) {
@@ -127,9 +142,5 @@ sub compareCohorte {
 }
 
 
-sub getFileCohorte {
-	my $etap = shift;
-	$self->dao->
-}
 
 1;

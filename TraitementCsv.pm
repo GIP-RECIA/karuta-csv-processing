@@ -153,6 +153,12 @@ sub printInformationFileETU {
 	}
 }
 
+sub printAddEtapFileETU {
+	my $etape = shift;
+	my $personne = shift;
+	
+}
+
 
 sub openFile {
 	my $typeFile = shift;
@@ -234,4 +240,35 @@ sub getFileETU {
 	return $file;
 }
 
+########## les ajouts pour les diffs :
+
+
+sub getFileAddEtapETU {
+	my $etapeOrg = shift;
+	my $etapeAdd = shift;
+
+	DEBUG! "getFileAddEtapETU :" . Dumper($etapeOrg) . "\n" . Dumper($etapeAdd);
+	my $fileName = sprintf("%s_ADD_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeAdd->lib, $annee, $dateFile);
+	
+	my $file = $fileName2file{$fileName};
+	if ($file) {
+		return $file;
+	}
+	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+	$csv->say($file, ['model_code','formationOriginale_code', 'cohorteOriginale', 'formationSupplementaire_code']);
+	$csv->say($file, ['kapc/8etudiants.batch-ajouter-etudiants-formation-supplementaire', $etapeOrg->formation->code, $etapeOrg->cohorte, $etapeAdd->formation->code]);
+	$csv->say($file, ['loginEtudiant']);
+	return $file;
+}
+
+sub printAddEtapETU {
+	my $idPersonne = shift;
+	my $etapeOrg = shift;
+	my $etapeAdd = shift;
+
+	my $file = getFileAddEtapETU($etapeOrg, $etapeAdd, $idPersonne);
+
+	$csv->say($file, [$idPersonne]);
+	
+}
 1;

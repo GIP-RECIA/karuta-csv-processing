@@ -6,6 +6,7 @@ use MyLogger;
 use personne;
 use formation;
 package Dao;
+use Data::Dumper;
 
 
 
@@ -117,6 +118,7 @@ sub new {
 					status char(5),
 					ordre integer(100),
 					primary key (univ , version, status, codeEtape, idPersonne) on conflict ignore,
+					unique (univ , version, status, idPersonne, ordre) on conflict fail, 
 					foreign key (univ, version, idPersonne, status) references personnes,
 					foreign key (univ, version, codeEtape) references etapes
 			)/;
@@ -258,6 +260,20 @@ sub updateFormation {
 	$sth ->execute($formationCode, $formationLabel, $self->univ->id, $self->version, $code, $site) or  FATAL! $dbh->errstr;
 }
 
+sub getFormation {
+	my $self = shift;
+	my $codeFormation = shift;
+	my $site = shift;
+	my $dbh = $self->db;
+
+	my $statement = q/select label, site from formations where univ = ? and version = ? and code = ? and site = ?/;
+	my $sth = $dbh->prepare($statement);
+	$sth->execute($self->univ->id, $self->version, $codeFormation, $site ) or FATAL! $dbh->errstr," : ", $dbh->err;
+	my @t = $sth->fetchrow_array();
+
+	return new Formation($self->univ->id, $codeFormation, @t);
+}
+
 
 sub addEtape {
 	my $self = shift;
@@ -283,20 +299,34 @@ sub addEtape {
 	};
 }
 
+
+
+sub createEtap {
+	my $self = shift;
+	my ($site, $codeF) = @_[2,4];
+	my $formation = Formation::byCle($site, $codeF);
+	DEBUG! "$site,$codeF ", Dumper($formation);
+	unless ($formation) {
+		$formation = $self->getFormation($codeF, $site);
+	}
+	DEBUG! Dumper($formation);
+	return new Etape($self->univ, @_, $formation->label, $formation);
+}
+
 sub getEtape {
 	my $self = shift;
 	my $codeEtap = shift;
 	my $dbh = $self->db;
-	my $statement = q/select * from etapes where univ = ? , version = ?, codeEtape =?/;
+	my $statement = q/select codeEtape, libEtape, site, cohorteCode, codeFormation from etapes where univ = ? and version = ? and codeEtape =?/;
 	my $sth = $dbh->prepare($statement);
-	$sth->execute($self->univ->id, $self->version, $codeEtape ) or FATAL! $dbh->errstr," : ", $dbh->err;
+	$sth->execute($self->univ->id, $self->version, $codeEtap ) or FATAL! $dbh->errstr," : ", $dbh->err;
 	my @t = $sth->fetchrow_array();
-
-	new Etape()
-	
-
-	
+# $univ, $codeEtap, $libEtap, $site, $cohorte, $codeFormation, $labelFormation, $formation
+	if (@t) {
+		return $self->createEtap(@t);
+	}
 }
+
 sub updateCohorte {
 	my $self = shift;
 	my $etapCode = shift;
@@ -317,6 +347,31 @@ sub addPersonneEtap {
 	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?, ?)/;
 	my $sth = $dbh->prepare($statement);
 	$sth ->execute($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre) or ERROR! $dbh->errstr ," : ", $dbh->err;
+}
+
+
+sub getEtapeEtu{
+	my $self = shift;
+	my ($idPersonne, $rang) = @_;
+	#recupere l'étape principale d'une personne;
+	unless ($rang) {
+		$rang = 1;
+	}
+	my $dbh = $self->db;
+	my $statement = q/select e.codeEtape, e.libEtape, e.site, e.cohorteCode, e.codeFormation
+					from etapes e, personneEtape p
+					where e.univ = ? and e.version = ? and e.codeEtape = p.codeEtape
+					and p.univ = e.univ and p.version = e.version and p.idPersonne = ? and p.ordre = ? and p.status = 'ETU'
+					/;
+	my $sth = $dbh->prepare($statement);
+	$sth ->execute($self->univ->id, $self->version, $idPersonne, $rang);
+
+	my @t = $sth->fetchrow_array();
+	if (@t) {
+		return $self->createEtap(@t);
+	}
+	FATAL! "etape introuvable ($idPersonne, $rang)";
+	
 }
 
 

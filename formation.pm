@@ -150,7 +150,10 @@ sub site {
 	my $self = shift;
 	return $self->{site};
 }
-
+sub lib {
+	my $self = shift;
+	return $self->{lib};
+}
 sub cohorte {
 	my  $self = shift;
 	return $self->{cohorte}
@@ -264,7 +267,7 @@ sub writeFile {
 }
 
 sub new {
-	my ($class, $univ, $code , $label, $site) = @_;
+	my ($class, $univId, $code , $label, $site) = @_;
 	
 	my $formation = byCle($site, $code);
 
@@ -285,8 +288,8 @@ sub new {
 		etapes => [],
 		site => $site,
 		files => {},
-		FormationCode => $univ . '_' . $site. '_' . $code,
-		FormationLabel => $univ . '_' . $site. ' - ' . $label,
+		FormationCode => $univId . '_' . $site. '_' . $code,
+		FormationLabel => $univId . '_' . $site. ' - ' . $label,
 	};
 
 	bless $formation, $class;
@@ -294,6 +297,7 @@ sub new {
 
 	return $formation;
 }
+
 
 sub create {
 	my ($class, $univ, $code , $label, $site) = @_;
