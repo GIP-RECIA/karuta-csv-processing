@@ -208,6 +208,7 @@ sub getPersonne {
 	my $self = shift;
 	my $idPersonne = shift;
 	my $status = shift;
+
 	my $dbh = $self->db;
 
 	my $statement = q/select univ, idPersonne, nom, prenom, mail, matricule from personnes
@@ -352,10 +353,13 @@ sub addPersonneEtap {
 
 sub getEtapeEtu{
 	my $self = shift;
-	my ($idPersonne, $rang) = @_;
-	#recupere l'étape principale d'une personne;
+	my ($idPersonne, $rang, $version) = @_;
+	#recupere l'étape principale d'une personne rang et version sont facultatif;
 	unless ($rang) {
 		$rang = 1;
+	}
+	unless ($version) {
+		$version = $self->version
 	}
 	my $dbh = $self->db;
 	my $statement = q/select e.codeEtape, e.libEtape, e.site, e.cohorteCode, e.codeFormation
@@ -364,7 +368,7 @@ sub getEtapeEtu{
 					and p.univ = e.univ and p.version = e.version and p.idPersonne = ? and p.ordre = ? and p.status = 'ETU'
 					/;
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ->id, $self->version, $idPersonne, $rang);
+	$sth ->execute($self->univ->id, $version, $idPersonne, $rang);
 
 	my @t = $sth->fetchrow_array();
 	if (@t) {

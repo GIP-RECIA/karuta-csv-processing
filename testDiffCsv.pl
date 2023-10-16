@@ -38,7 +38,11 @@ my ($new, $old) = $dao->diffPersonneEtap('ETU');
 DEBUG! "nouveau  ", Dumper($new);
 DEBUG! "partie " , Dumper($old); 
 
-my $comp = new Compare($dao);
+my $tmpRep = 'testOrleans/dircompare';
+unless ( -d $tmpRep) {
+			mkdir $tmpRep, 0775;
+		}
+my $comp = new Compare($u, $dao, '2023', $tmpRep);
 $comp->compareCohorte;
 __END__
 

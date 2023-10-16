@@ -258,6 +258,8 @@ sub getFileAddEtapETU {
 	$csv->say($file, ['model_code','formationOriginale_code', 'cohorteOriginale', 'formationSupplementaire_code']);
 	$csv->say($file, ['kapc/8etudiants.batch-ajouter-etudiants-formation-supplementaire', $etapeOrg->formation->code, $etapeOrg->cohorte, $etapeAdd->formation->code]);
 	$csv->say($file, ['loginEtudiant']);
+
+	$fileName2file{$fileName} = $file;
 	return $file;
 }
 
@@ -271,4 +273,77 @@ sub printAddEtapETU {
 	$csv->say($file, [$idPersonne]);
 	
 }
+
+sub getFileDelEtapETU {
+	my $etapeOrg = shift;
+	my $etapeDel = shift;
+
+	DEBUG! "getFileDelEtapETU :" . Dumper($etapeOrg) . "\n" . Dumper($etapeDel);
+	my $fileName = sprintf("%s_DELL_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
+	
+	my $file = $fileName2file{$fileName};
+	if ($file) {
+		return $file;
+	}
+	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+	$csv->say($file, ['model_code','formationOriginale_code', 'cohorteOriginale', 'formationSupplementaire_code']);
+	$csv->say($file, ['kapc/8etudiants.batch-retirer-etudiants-formation-supplementaire', $etapeOrg->formation->code, $etapeOrg->cohorte, $etapeDel->formation->code]);
+	$csv->say($file, ['loginEtudiant']);
+
+	$fileName2file{$fileName} = $file;
+	return $file;
+}
+sub printDelEtapETU {
+	my $idPersonne = shift;
+	my $etapeOrg = shift;
+	my $etapeDel = shift;
+
+	my $file = getFileDelEtapETU($etapeOrg, $etapeDel, $idPersonne);
+
+	$csv->say($file, [$idPersonne]);
+}
+
+sub getFileModifEtapETU {
+	my $etapeOld = shift;
+	my $etapeNew = shift;
+
+	DEBUG! "getFileModifEtapETU :" . Dumper($etapeOld) . "\n" . Dumper($etapeNew);
+	my $fileName = sprintf("%s_UPDATE_%s_%s_%s_%s.csv", $etapeOld->cohorte, $etapeOld->formation->code, $etapeNew->cohorte, $annee, $dateFile);
+	
+	my $file = $fileName2file{$fileName};
+	if ($file) {
+		return $file;
+	}
+	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+	$csv->say($file, ['model_code','ancienneFormation_code', 'ancienneCohorte', 'nouvelleFormation_code','nouvelleFormation_label','nouvelleCohorte']);
+	$csv->say($file, ['kapc/8etudiants.batch-changer-formation-etudiants', $etapeOld->formation->code, $etapeOld->cohorte, $etapeNew->formation->code, $etapeNew->formation->label, $etapeNew->cohorte]);
+	$csv->say($file, ['nomFamilleEtudiant','prenomEtudiant','loginEtudiant']);
+
+	$fileName2file{$fileName} = $file;
+	return $file;
+}
+
+my $etuCourant;
+
+sub getEtu {
+	my $idEtu = shift;
+	unless ($etuCourant && $etuCourant->id eq $idEtu) {
+		$etuCourant = Dao->dao->getPersonne($idEtu, 'ETU');
+		FATAL! "etudiant introuvable " unless $etuCourant;
+	}
+	return $etuCourant;
+}
+
+sub printModifEtapETU {
+	my $idEtu = shift;
+	my $etapeOld = shift;
+	my $etapeNew = shift;
+
+	my $etu = getEtu($idEtu); 
+
+	my $file = getFileModifEtapETU($etapeOld, $etapeNew);
+
+	$csv->say($file, [$etu->nom, $etu->prenom, $idEtu]);
+}
+
 1;

@@ -107,8 +107,8 @@ sub entete {
 	my $typeFile = shift;
 #	my $site = $etape->site;
 	my $formation = $etape->formation;
-	my $formation_label = $formation->{'FormationLabel'};
-	my $formation_code = $formation->{'FormationCode'};
+	my $formation_label = $formation->formationLabel;
+	my $formation_code = $formation->formationCode;
 #	my $cohorte = $etape->cohorte;
 	return (
 		["model_code","formation_code", "formation_label", "cohorte",""],
@@ -153,10 +153,12 @@ sub new {
 	my $prenom = shift;
 	my $courriel = shift;
 	my $matricule = shift;
-	my $self = new Personne($eppn, $nom, $prenom, $courriel, $matricule, $eppn);
+	my $self = Personne::new($class, $eppn, $nom, $prenom, $courriel, $matricule, $eppn);
 	if ($self) {
 		$self->{univ} = $univ;
-		return bless $self, $class;
+		$self->{NOM} = $nom;
+		$self->{PRENOM} = $prenom;
+		return  $self;
 	}
 	return 0;
 }
@@ -164,6 +166,9 @@ sub new {
 sub type {
 	return 'ETU';
 }
+
+PARAM! nom;
+PARAM! prenom;
 
 ###############
 #

@@ -3,7 +3,7 @@ use IO::Select;
 use Symbol 'gensym';
 
 # 
-my $version="4.2";
+my $version="4.3";
 
 package MyLogger;
 use Filter::Simple;
@@ -110,6 +110,13 @@ sub erreur {
 
 sub fatal {
 	erreur @_;
+	if (is(4)) {
+		my $i = 1;
+		erreur " ", "Stack Trace";
+		while  ((my ($file, $line, $sub) = (caller($i++))[1,2,3])) {
+			erreur "\t" , $file, $line, $sub;
+		}
+	}
 	close MyLoggerFile;
 	exit 1;
 }

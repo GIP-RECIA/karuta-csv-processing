@@ -76,13 +76,14 @@ sub compareEtapEtu {
 		addEtaps($id, $etap1, @$news[$iN .. $#$news]);
 	} elsif ($iO < $olds ) {
 		# il n'y plus que des aciennes étapes
-		delEtaps($id, @$olds[$iO .. $#$olds]);
+		my $etap1 = $self->dao->getEtapeEtu($id);
+		delEtaps($id, $etap1, @$olds[$iO .. $#$olds]);
 	}
 }
 
 sub modifEtap {
 	my ($id, $old, $new) = @_;
-	DEBUG! "$id  $old => $new";
+	TraitementCsv::printModifEtapETU($id, $self->dao->getEtape($old), $self->dao->getEtape($new));
 }
 
 sub addEtaps {
@@ -111,12 +112,15 @@ sub addEtu {
 
 sub delEtaps {
 	my $id = shift;
-	foreach my $etap (@_) {
-		if ($etap) {
-			DEBUG! "$id del $etap";
+	my $etap1 = shift;
+	foreach my $etapCod (@_) {
+		if ($etapCod) {
+			DEBUG! "$id del $etapCod";
+			TraitementCsv::printDelEtapETU($id, $etap1, $self->dao->getEtape($etapCod));
 		}
 	}
 }
+
 
 
 
@@ -137,7 +141,8 @@ sub compareCohorte {
 		}
 	}
 	while (my ($idPersonne, $oldEtapes ) = each %$old ) {
-		delEtaps($idPersonne, @$oldEtapes)
+		my $etap1 = $self->dao->getEtapeEtu($idPersonne, 1, $self->date1);
+		delEtaps($idPersonne, $etap1, @$oldEtapes)
 	}
 }
 

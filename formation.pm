@@ -257,7 +257,7 @@ sub writeFile {
 	print $file "\n";
 
 	foreach my $formation  (values %code2Formation) {
-		my @info = ($formation->{'FormationCode'}, $formation->{'FormationLabel'});
+		my @info = ($formation->formationCode, $formation->formationLabel);
 		Dao->dao->updateFormation($formation->code(), $formation->site(), @info);
 		$csv->print($file, \@info );
 		print $file "\n";
@@ -288,8 +288,8 @@ sub new {
 		etapes => [],
 		site => $site,
 		files => {},
-		FormationCode => $univId . '_' . $site. '_' . $code,
-		FormationLabel => $univId . '_' . $site. ' - ' . $label,
+		FORMATIONCODE => $univId . '_' . $site. '_' . $code,
+		FORMATIONLABEL => $univId . '_' . $site. ' - ' . $label,
 	};
 
 	bless $formation, $class;
@@ -298,6 +298,8 @@ sub new {
 	return $formation;
 }
 
+PARAM! formationCode;
+PARAM! formationLabel;
 
 sub create {
 	my ($class, $univ, $code , $label, $site) = @_;
