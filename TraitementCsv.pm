@@ -256,7 +256,7 @@ sub getFileAddEtapETU {
 	}
 	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 	$csv->say($file, ['model_code','formationOriginale_code', 'cohorteOriginale', 'formationSupplementaire_code']);
-	$csv->say($file, ['kapc/8etudiants.batch-ajouter-etudiants-formation-supplementaire', $etapeOrg->formation->code, $etapeOrg->cohorte, $etapeAdd->formation->code]);
+	$csv->say($file, ['kapc/8etudiants.batch-ajouter-etudiants-formation-supplementaire', $etapeOrg->formation->code, $etapeOrg->cohorte, $etapeAdd->formation->formationCode]);
 	$csv->say($file, ['loginEtudiant']);
 
 	$fileName2file{$fileName} = $file;
@@ -279,15 +279,16 @@ sub getFileDelEtapETU {
 	my $etapeDel = shift;
 
 	DEBUG! "getFileDelEtapETU :" . Dumper($etapeOrg) . "\n" . Dumper($etapeDel);
-	my $fileName = sprintf("%s_DELL_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
 	
+	my $fileName = sprintf("%s_DELL_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
+	DEBUG! "fileName = $fileName";
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
 	}
 	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 	$csv->say($file, ['model_code','formationOriginale_code', 'cohorteOriginale', 'formationSupplementaire_code']);
-	$csv->say($file, ['kapc/8etudiants.batch-retirer-etudiants-formation-supplementaire', $etapeOrg->formation->code, $etapeOrg->cohorte, $etapeDel->formation->code]);
+	$csv->say($file, ['kapc/8etudiants.batch-retirer-etudiants-formation-supplementaire', $etapeOrg->formation->formationCode, $etapeOrg->cohorte, $etapeDel->formation->formationCode]);
 	$csv->say($file, ['loginEtudiant']);
 
 	$fileName2file{$fileName} = $file;
@@ -308,7 +309,7 @@ sub getFileModifEtapETU {
 	my $etapeNew = shift;
 
 	DEBUG! "getFileModifEtapETU :" . Dumper($etapeOld) . "\n" . Dumper($etapeNew);
-	my $fileName = sprintf("%s_UPDATE_%s_%s_%s_%s.csv", $etapeOld->cohorte, $etapeOld->formation->code, $etapeNew->cohorte, $annee, $dateFile);
+	my $fileName = sprintf("%s_UPDATE_%s_%s_%s.csv", $etapeOld->cohorte, $etapeNew->cohorte, $annee, $dateFile);
 	
 	my $file = $fileName2file{$fileName};
 	if ($file) {
@@ -316,11 +317,34 @@ sub getFileModifEtapETU {
 	}
 	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 	$csv->say($file, ['model_code','ancienneFormation_code', 'ancienneCohorte', 'nouvelleFormation_code','nouvelleFormation_label','nouvelleCohorte']);
-	$csv->say($file, ['kapc/8etudiants.batch-changer-formation-etudiants', $etapeOld->formation->code, $etapeOld->cohorte, $etapeNew->formation->code, $etapeNew->formation->label, $etapeNew->cohorte]);
+	$csv->say($file, ['kapc/8etudiants.batch-changer-formation-etudiants', $etapeOld->formation->formationCode, $etapeOld->cohorte, $etapeNew->formation->formationCode, $etapeNew->formation->formationLabel, $etapeNew->cohorte]);
 	$csv->say($file, ['nomFamilleEtudiant','prenomEtudiant','loginEtudiant']);
 
 	$fileName2file{$fileName} = $file;
 	return $file;
+}
+
+
+sub getFileDelETU {
+	my $etapeOld = shift;
+	my $fileName = sprintf("%s_SUPPRIMER_ETU_%s_%s.csv", $etapeOld->cohorte, $annee, $dateFile);
+	my $file = $fileName2file{$fileName};
+	if ($file) {
+		return $file;
+	}
+	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+	$csv->say($file, ['model_code','formation_code','cohorte']);
+	$csv->say($file, ['kapc/8etudiants.batch-supprimer-etudiants', $etapeOld->formation->formationCode, $etapeOld->cohorte ]);
+	$csv->say($file, [ 'loginEtudiant' ]);
+	$fileName2file{$fileName} = $file;
+	return $file;
+}
+sub printDelETU {
+	my $idPersonne = shift;
+	my $etapeOld = shift;
+
+	my $file = getFileDelETU($etapeOld);
+	$csv->say($file, [$idPersonne]);
 }
 
 my $etuCourant;

@@ -283,10 +283,10 @@ sub new {
 	}
 	
 	$formation = {
-		code => $code,
-		label => $label,
+		CODE => $code,
+		LABEL => $label,
 		etapes => [],
-		site => $site,
+		SITE => $site,
 		files => {},
 		FORMATIONCODE => $univId . '_' . $site. '_' . $code,
 		FORMATIONLABEL => $univId . '_' . $site. ' - ' . $label,
@@ -300,6 +300,9 @@ sub new {
 
 PARAM! formationCode;
 PARAM! formationLabel;
+PARAM! code;
+PARAM! site;
+PARAM! label;
 
 sub create {
 	my ($class, $univ, $code , $label, $site) = @_;
@@ -328,19 +331,8 @@ sub etapes {
 
 
 
-sub code {
-	my $self = shift;
-	return $self->{code};
-}
 
-sub site {
-	my $self = shift;
-	return $self->{site};
-}
-sub label {
-	my $self = shift;
-	return $self->{label};
-}
+
 
 
 

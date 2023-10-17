@@ -48,7 +48,7 @@ PARAM! tmp;
 my $self;
 
 # on cherche les ETU qui ont changé de cohorte (étap)
-sub compareEtapEtu {
+sub compareEtapEtu1 {
 	my ($id, $olds, $news, $iO, $iN) = @_;
 
 	if ($iN < @$news ) {
@@ -79,6 +79,38 @@ sub compareEtapEtu {
 		my $etap1 = $self->dao->getEtapeEtu($id);
 		delEtaps($id, $etap1, @$olds[$iO .. $#$olds]);
 	}
+}
+
+sub compareEtapEtu {
+	my ($id, $olds, $news) = @_;
+	my $principaleNew = $self->dao->getEtapeEtu($id);
+	my $principaleOld = $self->dao->getEtapeEtu($id, 1, $self->date2);
+
+
+	#la  nouvelles étape principale
+	my $newE = $$news[0];
+	my $oldE = $$olds[0];
+	if ($newE) {
+				
+		if ($oldE) {
+			$$olds[0] = '';
+		} else {
+			$oldE = $principaleOld->etap;
+		}
+		$$news[0] = '';
+		modifEtap($id, $oldE, $newE);
+	} elsif ($oldE) {
+		$newE = $principaleNew->{etap};
+		modifEtap($id, $oldE, $newE);
+	} else {
+		$newE = $principaleNew->{etap};
+		$oldE = $principaleOld->{etap};
+		if ($newE ne $oldE ) {
+			modifEtap($id, $oldE, $newE);
+		}
+	}
+	delEtaps($id, $principaleOld, @$olds);
+	addEtaps($id, $principaleNew, @$news);
 }
 
 sub modifEtap {
@@ -121,6 +153,11 @@ sub delEtaps {
 	}
 }
 
+sub delEtu {
+	my $id = shift;
+	my $etap1 = shift;
+	TraitementCsv::printDelETU($id, $etap1);
+}
 
 
 
@@ -134,7 +171,7 @@ sub compareCohorte {
 	while (my ($idPersonne, $newEtapes ) = each %$new ) {
 		my $oldEtapes = $$old{$idPersonne};
 		if ($oldEtapes && @$oldEtapes) {
-			compareEtapEtu($idPersonne, $oldEtapes, $newEtapes, 0, 0);
+			compareEtapEtu($idPersonne, $oldEtapes, $newEtapes);
 			delete $$old{$idPersonne};
 		} else {
 			addEtu($idPersonne, @$newEtapes);
@@ -142,7 +179,8 @@ sub compareCohorte {
 	}
 	while (my ($idPersonne, $oldEtapes ) = each %$old ) {
 		my $etap1 = $self->dao->getEtapeEtu($idPersonne, 1, $self->date1);
-		delEtaps($idPersonne, $etap1, @$oldEtapes)
+		delEtaps($idPersonne, $etap1, @$oldEtapes);
+		delEtu($idPersonne, $etap1);
 	}
 }
 
