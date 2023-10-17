@@ -9,7 +9,7 @@ my $csvSep = '","';
 
 
 package DiffCsv;
-
+use Data::Dumper;
 
 
 #
@@ -185,6 +185,19 @@ sub trieFile {
 	$out->close;
 }
 
+sub copySup {
+		#copy fichier1 dans fichier2 en modifiant l'entète
+	my $f1 = shift;
+	my $f2 = shift;
+	my ($in, $out);
+	open $in, "$f1" or die $!;
+	open $out,">$f2" or die $!;
+
+	while (<$in>) {
+		s/stagiaires\.batch-creer-etudiants/stagiaires\.batch-supprimer-compte-portfolio/;
+		print $out $_; 
+	}
+}
 # prend 2 DiffCsvReader à comparer; les 2 fichiers doivent être triés.
 # et 3 DiffCsvWriter resultat
 # les suppressions (ce qui est dans file1 mais pas dans file2)
@@ -207,7 +220,10 @@ sub compareFile {
 			$diff->push($f2->val);
 		}
 		$entete = $f1->val;
-		$supp->push($f1->pull);
+		my $old = $f1->pull;
+		DEBUG! "Dumpe Old" , Dumper($old);
+		$$old[0] =~ s/stagiaires\.batch-creer-etudiants/stagiaires\.batch-supprimer-compte-portfolio/;
+		$supp->push($old);
 		$add->push($f2->pull);
 	}
 	

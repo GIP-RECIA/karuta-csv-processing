@@ -190,7 +190,8 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 							INFO!  "nouveau fichier inexistant ! l'ancien étant : $oldFile\n";
 							my $newFile = $oldFile;
 							$newFile =~ s/.csv$/.supp.csv/;
-							copy $lastPath . $oldFile, $resRep . $newFile;
+							DiffCsv::copySup $lastPath . $oldFile, $resRep . $newFile;
+							
 						}
 					}
 				}
