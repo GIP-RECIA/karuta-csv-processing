@@ -62,7 +62,7 @@ sub new {
 		unless ($labelFormation) {
 			$labelFormation = "";
 		}
-		$formation = new Formation($univ, $codeFormation, $labelFormation, $site);
+		($formation) = new Formation($univ, $codeFormation, $labelFormation, $site);
 	}
 	if ($formation) {
 		
@@ -98,7 +98,7 @@ sub create {
 	unless ($site) {
 		ERROR! "Etape ($codesEtaps) sans site\n";
 		foreach my $elem (@_) {
-			DEBUG! "newEtap:  $elem";
+		#DEBUG! "newEtap:  $elem";
 		}
 		return 0;
 	}
@@ -185,10 +185,10 @@ sub byCle {
 	my $code = shift;
 	my $formation = shift;
 	my $cle = "${site}_${code}";
-	if ($formation) {
+	unless ($formation) {
 		return $code2Formation{$cle};
 	}
-	$code2Formation{$cle} = $formation;
+	return $code2Formation{$cle} = $formation;
 }
 
 sub readFile {
@@ -201,7 +201,7 @@ sub readFile {
 
 	
 	my $fileNameLog = "${path}.log";
-	DEBUG! "open  $path/$fileName \n";
+#DEBUG! "open  $path/$fileName \n";
 
 	open (FORMATION, "<$path/$fileName") || FATAL!  "$path/$fileName " . $! . "\n";
 	binmode(FORMATION, ":encoding(utf8)");
@@ -275,7 +275,7 @@ sub new {
 		if ($label && $formation->label ne $label) {
 				WARN! "formation ($site, $code) avec plusieurs label: $label ", $formation->label;
 			}
-		return $formation;
+		return ($formation, 0);
 	}
 	unless ($label) {
 		WARN! "formation $formation sans label";
@@ -295,7 +295,7 @@ sub new {
 	bless $formation, $class;
 	byCle($site, $code, $formation);
 
-	return $formation;
+	return ($formation, 1);
 }
 
 PARAM! formationCode;
@@ -308,16 +308,17 @@ sub create {
 	my ($class, $univ, $code , $label, $site) = @_;
 
 	my $formation;
+	my $isNew = 0;
 	if ($code =~ m/\S/) {
 
-		$formation = new Formation($class, $univ, $code , $label, $site);
+		($formation, $isNew) = new Formation($class, $univ, $code , $label, $site);
 		
 	} else {
 		WARN! ("Erreur codeForamation $code : $label");
 		return 0;
 	}
 	
-	Dao->dao->addFormation($code, $site, $label);
+	Dao->dao->addFormation($code, $site, $label) if $isNew;
 
 	return $formation;
 }
