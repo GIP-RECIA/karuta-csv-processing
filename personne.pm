@@ -2,7 +2,7 @@ use strict;
 use utf8;
 use MyLogger;
 use Dao;
-
+use Data::Dumper;
 #########
 #
 #
@@ -50,7 +50,6 @@ sub setCodesEtape {
 	if (@_ > 1 ) {
 		@codesEtape = map ({s/\s*(\S+)\s*/$1/; $_} @_);
 		if ($filtre) {
-			DEBUG! " : ", @codesEtape;
 			@codesEtape = &$filtre(@codesEtape);
 		}
 	} else {
@@ -97,7 +96,7 @@ sub getEntete {
 #
 package Etudiant;
 use base qw(Personne);
-
+use Data::Dumper;
 
 sub entete {
 	my $class = shift;
@@ -109,13 +108,18 @@ sub entete {
 	my $formation = $etape->formation;
 	my $formation_label = $formation->formationLabel;
 	my $formation_code = $formation->formationCode;
+
+	my $cohorte = $etape->cohorte; 
+
 #	my $cohorte = $etape->cohorte;
+	
+	DEBUG! Dumper($etape);
 	return (
 		["model_code","formation_code", "formation_label", "cohorte",""],
 		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
 			"${formation_code}",
 			"${formation_label}",
-			"${typeFile}",""
+			"${cohorte}",""
 		],
 		["nomFamilleEtudiant","prenomEtudiant","courrielEtudiant","matriculeEtudiant", "loginEtudiant"]
 	)
@@ -182,7 +186,7 @@ sub entete {
 	my $annee = shift;  # attention $annee et $etap ne sont pas utilisé mais sont transmise
 	my $etape = shift;
 	my $typeFile = shift; # 2 typeFile  ... et Formation
-
+DEBUG! "$univ $annee $etape $typeFile";
 	if ($typeFile eq 'Formation') {
 		return (
 			[ "model_code","","",""],

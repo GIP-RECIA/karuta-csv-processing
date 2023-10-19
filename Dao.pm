@@ -45,7 +45,8 @@ sub new {
 		$dao_default->db->close;
 		$dao_default = 0;
 	}
-	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","");
+	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","", {PrintError => 0 });
+	$dbh->do("PRAGMA foreign_keys = ON"); 
 	if ($dbh) {
 
 		my $statement =
@@ -184,7 +185,6 @@ sub addPerson {
 	my $mail = shift;
 	my $matricule = shift;
 
-	DEBUG! "addPersonn ",  $self->univ->id,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status";
 	my $dbh = $self->db;
 	my $statement = q/select * from personnes where univ = ? and version = ? and idPersonne = ? and status = ?/;
 	my $sth = $dbh->prepare($statement);
@@ -231,24 +231,26 @@ sub addFormation {
 	my $self = shift;
 	my ($code , $site, $label) = @_;
 
-	DEBUG! "addFormation : ", $self->univ->id,", ", $self->version,", $code , $site, $label";
 	my $dbh = $self->db;
 	
 	my $statement = q/insert into formations values (?, ?, ?, ?, ?, null, null)/;
 	my $sth = $dbh->prepare($statement);
-	unless ($sth ->execute($self->univ->id, $self->version, $code, $site, $label) ) {
-		if ($dbh->err == 19) {
+
+	
+	my $res = $sth->execute($self->univ->id, $self->version, $code, $site, $label);
+	if ($sth->err) {
+		if ($sth->err == 19) {
 			$statement = q/select label from formations where univ = ? and version = ? and code = ? and site = ?/;
 			$sth = $dbh->prepare($statement);
 			$sth->execute($self->univ->id, $self->version, $code, $site) or FATAL! $dbh->errstr," : ", $dbh->err;
 			my @t = $sth->fetchrow_array();
 			if ($t[0] ne $label) {
 				ERROR! "formation : $code; avec différent labels :", $label, ":", $t[0] ,":"; 
-			}
+			} 
 		} else {
-			ERROR! $dbh->errstr ," : ", $dbh->err;
+			ERROR! $sth->errstr ," : ", $sth->err;
 		}
-	};
+	} 
 }
 
 sub updateFormation {
@@ -272,14 +274,13 @@ sub getFormation {
 	$sth->execute($self->univ->id, $self->version, $codeFormation, $site ) or FATAL! $dbh->errstr," : ", $dbh->err;
 	my @t = $sth->fetchrow_array();
 
-	return new Formation($self->univ->id, $codeFormation, @t);
+	return (new Formation($self->univ->id, $codeFormation, @t))[0];
 }
 
 
 sub addEtape {
 	my $self = shift;
 	my ($codeEtape, $libEtape, $codeFormation, $site, $cohorte) = @_;
-	DEBUG! "addEtap : ", $self->univ->id,", ", $self->version,",codeEtape, libEtape, codeFormation";
 
 	my $dbh = $self->db;
 	
@@ -306,11 +307,9 @@ sub createEtap {
 	my $self = shift;
 	my ($site, $codeF) = @_[2,4];
 	my $formation = Formation::byCle($site, $codeF);
-	DEBUG! "$site,$codeF ", Dumper($formation);
 	unless ($formation) {
 		$formation = $self->getFormation($codeF, $site);
 	}
-	DEBUG! Dumper($formation);
 	return new Etape($self->univ, @_, $formation->label, $formation);
 }
 
@@ -405,7 +404,6 @@ sub diffPersonneEtap {
 		and not exists (select idPersonne, codeEtape from personneEtape pe2 where univ = ?1 and version = ?4 and status = ?2 and idPersonne = pe1.idPersonne and codeEtape = pe1.codeEtape) /;
 
 	my $sth = $dbh->prepare($statement);
-	DEBUG! $statement;
 	return (
 		execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->version, $self->lastVersion),
 		execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->lastVersion, $self->version)

@@ -4,7 +4,7 @@ use Text::CSV;
 use open qw( :encoding(utf8) :std );
 use MyLogger;
 use Dao;
-
+use Data::Dumper;
 
 package HaveFiles;
 
@@ -67,6 +67,7 @@ sub new {
 	if ($formation) {
 		
 		$self = {
+			UNIVID => $univ,
 			etap => $codeEtap,
 			lib => $libEtap,
 			site => $site,
@@ -86,19 +87,20 @@ sub new {
 	return 0;
 }
 
+PARAM! univId;
+
 sub create {
 	# Attention on peut créer plusieurs etap on renvoie donc le nombre d'étap créés
 	# on creer aussi les formations correspondantes aux etapes.
 	# my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
 
 	my ($class, $univ, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site) = @_;
-	
+	DEBUG! "$univ, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site";
 	my $cohorte;
 
 	unless ($site) {
 		ERROR! "Etape ($codesEtaps) sans site\n";
 		foreach my $elem (@_) {
-		#DEBUG! "newEtap:  $elem";
 		}
 		return 0;
 	}
@@ -116,7 +118,9 @@ sub create {
 
 	$site =~ s/\W+/-/g;
 
+	
 	$cohorte = $univ . '_'. $site . "_" . $cohorte;
+	#$cohorte =  $site . "_" . $cohorte;
 	
 	my $self;
 	
@@ -166,7 +170,7 @@ sub formation {
 
 package Formation;
 use base qw(HaveFiles);
-
+use Data::Dumper;
 my %code2Formation;
 
 my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0, always_quote => 1 });
@@ -201,7 +205,6 @@ sub readFile {
 
 	
 	my $fileNameLog = "${path}.log";
-#DEBUG! "open  $path/$fileName \n";
 
 	open (FORMATION, "<$path/$fileName") || FATAL!  "$path/$fileName " . $! . "\n";
 	binmode(FORMATION, ":encoding(utf8)");
@@ -215,6 +218,7 @@ sub readFile {
 		$nbline++;
 		s/\"\;\"/\"\,\"/g; #on force les ,
 		s/(;|\s)+$//;
+		DEBUG! $_;
 		if ($csv->parse($_) ){
 			my @fields = $csv->fields();
 			unless (create Etape($univ->id, @fields)){
@@ -271,6 +275,7 @@ sub new {
 	
 	my $formation = byCle($site, $code);
 
+	DEBUG! "univ=$univId", "code=$code" , "label=$label", "site=$site";
 	if ($formation) {
 		if ($label && $formation->label ne $label) {
 				WARN! "formation ($site, $code) avec plusieurs label: $label ", $formation->label;
@@ -294,7 +299,6 @@ sub new {
 
 	bless $formation, $class;
 	byCle($site, $code, $formation);
-
 	return ($formation, 1);
 }
 
@@ -306,12 +310,11 @@ PARAM! label;
 
 sub create {
 	my ($class, $univ, $code , $label, $site) = @_;
-
 	my $formation;
 	my $isNew = 0;
 	if ($code =~ m/\S/) {
 
-		($formation, $isNew) = new Formation($class, $univ, $code , $label, $site);
+		($formation, $isNew) = new Formation($univ, $code , $label, $site);
 		
 	} else {
 		WARN! ("Erreur codeForamation $code : $label");

@@ -47,7 +47,6 @@ sub parseFile {
 	my $fileNameLog = "${path}.log";
 
 	 #$csv->sep_char($univ->sepChar());
-	 DEBUG! "open $path/$fileName \n";
 	open (CSV, "<$path/$fileName") || FATAL!  "$path/$fileName  " . $!;
 	open (LOG, ">>$fileNameLog");
 	unless ( -d $tmp) {
@@ -67,7 +66,7 @@ sub parseFile {
 	while (<CSV>) {
 		$nbligne ++;
 		s/\"\;\"/\"\,\"/g; # on force les ,
-		s/,\s*$//; # on suprime le dernier champs vide
+		s/,?\s*$//; # on suprime le dernier champs vide
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
 			my $person;
@@ -84,7 +83,7 @@ sub parseFile {
 				print LOG "$fileName rejet : $_\n";
 			}
 		} else {
-			DEBUG! "csv no parse line : ", $nbligne, " $fileName: $_\n";
+		 WARN! "csv no parse line : ",  $fileName,"(",$nbligne,") : $_\n";
 		}
 	}
 	foreach my $file (values %fileName2file) {
@@ -100,7 +99,7 @@ sub traitementETU {
 	my $personne = shift;
 	my $nberr = 0;
 	foreach my $codeEtap (@{$personne->codesEtape()}) {
-		my $etape = Etape::getByCodeEtap($codeEtap);
+		my $etape = Etape::byCode($codeEtap);
 		if ($etape) {
 			printInformationFileETU($etape, $personne);
 		} else {
@@ -124,12 +123,11 @@ sub traitementSTAFF {
 		$file = getFileSTAFF('Formation');
 		if ($file) {
 			foreach my $codeEtap (@{$personne->codesEtape()}) {
-				my $etape = Etape::getByCodeEtap($codeEtap);
+				my $etape = Etape::byCode($codeEtap);
 				my @info = @{$personne->info};
 				my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->code;
 				unless ($personne->compteur($formationLabel)) {
 					@info[3]= $formationLabel;
-					DEBUG! map "$_, " ,@info;
 					$csv->print($file, \@info);
 					print $file  "\n";
 				}
@@ -177,7 +175,6 @@ sub openFile {
 			$file = new IO::File;
 		}
 
-		DEBUG! "write file  $fileName\n";
 
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
 
@@ -218,15 +215,16 @@ sub getFileETU {
 	
 	unless ($etape->isa('Etape') ) {
 		$etape = Etape::byCode($etape);
-		DEBUG! Dumper($etape);
 	}
+	my $univId = $etape->univId;
 	
 	my $formation = $etape->formation;
 	
 	
 	$haveFiles = $etape;
-	$typeFile = $etape->cohorte;
-
+	$typeFile = $etape->cohorte ;
+	$typeFile =~ s/${univId}_//g; #on enleve l'univ de la cohorte
+	
 	$haveFiles->getFile('ETU');
 
 	my $fname;
@@ -247,7 +245,6 @@ sub getFileAddEtapETU {
 	my $etapeOrg = shift;
 	my $etapeAdd = shift;
 
-	DEBUG! "getFileAddEtapETU :" . Dumper($etapeOrg) . "\n" . Dumper($etapeAdd);
 	my $fileName = sprintf("%s_ADD_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeAdd->lib, $annee, $dateFile);
 	
 	my $file = $fileName2file{$fileName};
@@ -278,10 +275,8 @@ sub getFileDelEtapETU {
 	my $etapeOrg = shift;
 	my $etapeDel = shift;
 
-	DEBUG! "getFileDelEtapETU :" . Dumper($etapeOrg) . "\n" . Dumper($etapeDel);
 	
 	my $fileName = sprintf("%s_DELL_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
-	DEBUG! "fileName = $fileName";
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
@@ -308,7 +303,6 @@ sub getFileModifEtapETU {
 	my $etapeOld = shift;
 	my $etapeNew = shift;
 
-	DEBUG! "getFileModifEtapETU :" . Dumper($etapeOld) . "\n" . Dumper($etapeNew);
 	my $fileName = sprintf("%s_UPDATE_%s_%s_%s.csv", $etapeOld->cohorte, $etapeNew->cohorte, $annee, $dateFile);
 	
 	my $file = $fileName2file{$fileName};
