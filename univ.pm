@@ -7,7 +7,6 @@ my %UNIVS;
 sub new {
 	my ($class, $id, $ftpRep, $path, $filePrefix, $zipFilePrefix) = @_;
 
-	DEBUG! "new univ : $id, $ftpRep, $path, $filePrefix, $zipFilePrefix";
 	unless ($zipFilePrefix) {
 		$zipFilePrefix = $filePrefix;
 	}

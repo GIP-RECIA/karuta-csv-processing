@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 use strict;
 use utf8;
 use open qw( :encoding(utf8) :std );
@@ -33,7 +32,6 @@ sub sort {
 		if ($lastEntete) {
 			INFO! $lastEntete;
 			@colAutre = &colNoKey($lastEntete, @cleeTab);
-			DEBUG! map({"$_ "} @cleeTab) ;
 		}
 		$trier = sub {sort {&compareLigne($a, $b, @cleeTab, @colAutre)} @data};
 	} else {

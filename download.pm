@@ -65,7 +65,6 @@ sub initRepZip {
 	
 	foreach my $file (values %newZipByPrefix) { # en fait il ne devrait avoir qu'un zip 
 		ftpGet("$ftpRep/$file", $repZip);
-		DEBUG! "test $file pour unzip\n";
 		if ($file =~ /(univ-)?(.+).zip/) {
 			my $newRep = "$repZip/".$2;
 			INFO! "mkdir $newRep \n";
@@ -122,16 +121,13 @@ sub openFtp {
 sub closeFtp {
 	close $FTPin;
 	close $FTPout;
-	DEBUG! "wait for close ftp";
 	waitpid $ftpPid, 0;
-	DEBUG! "ftp closed";
 }
 
 sub ftpGet {
 	my $file = shift;
 	my $localRep = shift;
 
-	DEBUG! " ftp get $file $localRep"; 
 	print $FTPout "get $file $localRep \n\n";
 	while (<$FTPin>) {
 		last if /^$ftpPrompt$/;
@@ -159,7 +155,6 @@ sub ftpRead {
 	# dans l'ordre le plus recent en premier.
 	# attention entraine la suppression des plus vieux (ne pas changer le -t).
 	my $arg = "$ftpRep/${zipPrefix}_????????.zip";
-	DEBUG! qq{ls -t $arg\n};
 	print $FTPout "ls  -t  $arg\n\n";
 	$_ = <$FTPin>;
 

@@ -56,7 +56,6 @@ sub compareEtapEtu1 {
 		my $newE = $$news[$iN];
 		if ($iO < @$olds ) {
 			#il reste des anciennes etapes
-			DEBUG! "$id $iN $iO";
 			my $oldE = $$olds[$iO];
 			if ($newE) {
 				if ($oldE) {
@@ -132,7 +131,6 @@ sub addEtaps {
 sub addEtu {
 	my $id = shift;
 	my $etapeCod = shift;
-	DEBUG! "add personne $id etap = $etapeCod";
 	my $personne = $self->dao->getPersonne($id, 'ETU');
 
 	my $etape = $self->dao->getEtape($etapeCod);
@@ -147,7 +145,6 @@ sub delEtaps {
 	my $etap1 = shift;
 	foreach my $etapCod (@_) {
 		if ($etapCod) {
-			DEBUG! "$id del $etapCod";
 			TraitementCsv::printDelEtapETU($id, $etap1, $self->dao->getEtape($etapCod));
 		}
 	}
@@ -163,7 +160,6 @@ sub delEtu {
 
 sub compareCohorte {
 	$self = shift;
-	DEBUG! "compareCohorte";
 	TraitementCsv::init('ETU', $self->univ, $self->date2, $self->annee, $self->tmp);
 	
 	my ($new, $old) = $self->dao->diffPersonneEtap('ETU');

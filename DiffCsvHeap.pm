@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 use strict;
 use utf8;
 use open qw( :encoding(utf8) :std );
@@ -160,7 +159,7 @@ sub depileHeap {
 
 sub trieFile {
 	my ($fileName, $origine, $destination, $nbFileHeader, @cle) = @_;
-
+	DEBUG! "trieFile $fileName";
 	my $heap ;
 	my $nbCle = @cle;
 	my @colNoKey ;

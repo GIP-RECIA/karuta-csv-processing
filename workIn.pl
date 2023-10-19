@@ -76,14 +76,12 @@ foreach my $univ (split(" ", $listUniv) ){
 	my $u = new Univ($univ, $ftpRep, $workingDir, $filePrefix);
 	
 	if ($newPathTest) {
-		DEBUG! "newPathTest = " , $newPathTest;
 		$modeTest = 1;
 		$u->path($newPathTest);
 		$u->lastPath($properties->getProperty("${univ}.test.lastPath"));
 	} else {
 		$u->lastPath($dataProps->getProperty($univ));
 	}
-	DEBUG! "$univ last path = ", $u->lastPath,";";
 }
 
 my $ftp = "/usr/bin/sftp -b- $ftpAddr";
@@ -101,7 +99,6 @@ unless ($modeTest) { # si on est en test pas de download
 		my $newPath = Download::initRepZip($univ->path, $univ->ftpRep, $univ->zipPrefix);
 		if ($newPath) {
 			$univ->path($newPath);
-			DEBUG! "new path = " . $univ->path() . "\n";
 		} else {
 			# on vide le path pour indiqué qu'il n'y a pas de nouveau fichier
 			INFO! "Pas de nouveau fichier sur le sftp";
@@ -132,9 +129,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 
 	if ($lastPath) {
 		$lastPath .= $outSuffix;
-		DEBUG! "ancien path : $lastPath";
 	} else {
-		DEBUG! "ancien path ; NVL";
 	}
 	
 	if ($newPath =~ /^${workingDir}\/(.+(\d{8}))$/) {
@@ -195,13 +190,15 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 					}
 				}
 			}
+
+			#
+			
 			my $zipName = lc($relativePath).".$version.zip";
 
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
 
 			#on memorise le new path
 			$dataProps->changeProperty($univ->id(),$newPath);
-			DEBUG! $univ->id, " <=", $newPath;
 		}
 	} else {
 		ERROR! $univ->id(), " KO; $workingDir";
@@ -239,7 +236,6 @@ sub compareSortedFile {
 	$diffFile =~ s/_\d{8}.csv$/$lastDate.diff.csv/;
 	
 	if ( -f $oldFile) {
-		DEBUG! "openAndCompareFile($oldFile, $newFile, $addFile, $suppFile, $diffFile, $enteteSize ..)";
 		DiffCsv::openAndCompareFile($oldFile, $newFile, $addFile, $suppFile, $diffFile, $enteteSize, @cle);
 	} else {
 		# l'ancien fichier n'existe pas => le nouveau n'est qu'ajouts;
