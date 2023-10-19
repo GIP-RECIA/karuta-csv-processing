@@ -21,7 +21,7 @@ my $version = 'kapc.1.3';
 my $workingDir = shift;
 
 
-my $outSuffix = '_diff/';
+my $diffSuffix = '_diff/';
 
 unless ($workingDir) {
 	die "il manque le repertoire de travail \n";
@@ -128,7 +128,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 	my $lastPath = $univ->lastPath();
 
 	if ($lastPath) {
-		$lastPath .= $outSuffix;
+		$lastPath .= $diffSuffix;
 	} else {
 	}
 	
@@ -142,10 +142,10 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			mkdir $tmpRep, 0775;
 		}
 		
-		my $resRep = ${newPath}. $outSuffix ;
+		my $diffRep = ${newPath}. $diffSuffix ;
 
-		unless ( -d $resRep) {
-			mkdir $resRep, 0775;
+		unless ( -d $diffRep) {
+			mkdir $diffRep, 0775;
 		}
 		
 		if ($formationFile) {
@@ -155,23 +155,23 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			my $newFormationFile = Formation::writeFile($univ, $dateFile, $tmpRep);
 			my $prefixFile;
 
-			DiffCsv::trieFile($newFormationFile, $tmpRep, $resRep, 1 );
+			DiffCsv::trieFile($newFormationFile, $tmpRep, $diffRep, 1 );
 
 			if ($lastPath) {
-				compareSortedFile($newFormationFile, $resRep, $lastPath,  1) or next TRAITEMENT;
+				compareSortedFile($newFormationFile, $diffRep, $lastPath,  1) or next TRAITEMENT;
 			}
 			
 			for (TraitementCsv::parseFile('ETU', $univ ,  $dateFile, $annee, $tmpRep)) {
-				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 3);
+				DiffCsv::trieFile($_, $tmpRep, $diffRep, 3, 3);
 				if ($lastPath) {
-					compareSortedFile($_, $resRep, $lastPath,  3, 3) or next TRAITEMENT;
+					compareSortedFile($_, $diffRep, $lastPath,  3, 3) or next TRAITEMENT;
 				}
 			}
 
 			for (TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
-				DiffCsv::trieFile($_, $tmpRep, $resRep, 3, 2);
+				DiffCsv::trieFile($_, $tmpRep, $diffRep, 3, 2);
 				if ($lastPath) {
-					compareSortedFile($_, $resRep, $lastPath,  3, 2) or next TRAITEMENT;
+					compareSortedFile($_, $diffRep, $lastPath,  3, 2) or next TRAITEMENT;
 				}
 			}
 
@@ -185,7 +185,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 							INFO!  "nouveau fichier inexistant ! l'ancien étant : $oldFile\n";
 							my $newFile = $oldFile;
 							$newFile =~ s/.csv$/.supp.csv/;
-							copy $lastPath . $oldFile, $resRep . $newFile;
+							copy $lastPath . $oldFile, $diffRep . $newFile;
 						}
 					}
 				}
@@ -195,7 +195,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			
 			my $zipName = lc($relativePath).".$version.zip";
 
-			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${outSuffix} ${relativePath}.log");
+			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${diffSuffix} ${relativePath}.log");
 
 			#on memorise le new path
 			$dataProps->changeProperty($univ->id(),$newPath);
