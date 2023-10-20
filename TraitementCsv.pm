@@ -117,8 +117,7 @@ sub traitementSTAFF {
 	my $file = getFileSTAFF('Personne');
 	if ($file) {
 		unless ($personne->inFile($file) ) {
-			$csv->print($file, $personne->info());
-			print $file  "\n";
+			$csv->say($file, $personne->info());
 		}
 		$file = getFileSTAFF('Formation');
 		if ($file) {
@@ -145,8 +144,7 @@ sub printInformationFileETU {
 	my $file  = getFileETU($etape);
 	if ($file) {
 		unless ($personne->inFile($file) ) {
-			$csv->print($file, $personne->info());
-			print $file  "\n";
+			$csv->say($file, $personne->info());
 		}
 	}
 }

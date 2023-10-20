@@ -3,8 +3,10 @@ use utf8;
 use MyLogger;
 use Dao;
 use TraitementCsv;
+use open qw( :encoding(utf8) :std );
 
 package Compare;
+use Data::Dumper;
 
 sub new {
 	my ($class, $univ, $dao, $annee, $tmpRep, $oldDate, $newDate) = @_;
@@ -20,10 +22,7 @@ sub new {
 	} else {
 		$oldDate = $dao->lastVersion;
 	}
-	
 
-	
-	
 	my $self = {
 		DAO => $dao,
 		UNIV => $univ,
@@ -134,6 +133,7 @@ sub addEtu {
 	my $personne = $self->dao->getPersonne($id, 'ETU');
 
 	my $etape = $self->dao->getEtape($etapeCod);
+	
 	TraitementCsv::printInformationFileETU($etape, $personne);
 	if (@_) {
 		addEtaps($id, $etape, @_);
@@ -180,6 +180,15 @@ sub compareCohorte {
 	}
 }
 
+sub initCohorte {
+	$self = shift;
+	TraitementCsv::init('ETU', $self->univ, $self->date2, $self->annee, $self->tmp);
+	my $new = $self->dao->allPersonneEtap('ETU');
+	while (my ($idPersonne, $newEtapes ) = each %$new ) {
+	#	FATAL! Dumper($newEtapes)  if ($idPersonne eq '22204658t@univ-tours.fr') ;
+		addEtu($idPersonne, @$newEtapes);
+	}
+}
 
 
 1;

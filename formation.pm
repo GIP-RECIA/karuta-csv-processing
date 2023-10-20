@@ -95,7 +95,6 @@ sub create {
 	# my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
 
 	my ($class, $univ, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site) = @_;
-	DEBUG! "$univ, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site";
 	my $cohorte;
 
 	unless ($site) {
@@ -218,7 +217,6 @@ sub readFile {
 		$nbline++;
 		s/\"\;\"/\"\,\"/g; #on force les ,
 		s/(;|\s)+$//;
-		DEBUG! $_;
 		if ($csv->parse($_) ){
 			my @fields = $csv->fields();
 			unless (create Etape($univ->id, @fields)){
@@ -275,7 +273,6 @@ sub new {
 	
 	my $formation = byCle($site, $code);
 
-	DEBUG! "univ=$univId", "code=$code" , "label=$label", "site=$site";
 	if ($formation) {
 		if ($label && $formation->label ne $label) {
 				WARN! "formation ($site, $code) avec plusieurs label: $label ", $formation->label;

@@ -5,10 +5,11 @@ use DBI;
 use MyLogger;
 use personne;
 use formation;
+
 package Dao;
 use Data::Dumper;
 
-
+#use open qw( :encoding(utf8) :std );
 
 #use vars      @EXPORT;
 my $dao_default;
@@ -45,8 +46,9 @@ sub new {
 		$dao_default->db->close;
 		$dao_default = 0;
 	}
-	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","", {PrintError => 0 });
-	$dbh->do("PRAGMA foreign_keys = ON"); 
+	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","", {PrintError => 0, sqlite_unicode => 1 });
+	$dbh->do("PRAGMA foreign_keys = ON");
+	
 	if ($dbh) {
 
 		my $statement =
@@ -220,6 +222,8 @@ sub getPersonne {
 	my @tuple = $sth->fetchrow_array;
 	if ($status == 'ETU') {
 		$personne = new Etudiant(@tuple);
+#		if ($personne->{id} eq '22204658t@univ-tours.fr') {DEBUG! Dumper($personne), Dumper(@tuple);}
+		
 	} elsif ($status == 'STAFF' ) {
 		$personne = new Staff(@tuple);
 	}
@@ -310,7 +314,7 @@ sub createEtap {
 	unless ($formation) {
 		$formation = $self->getFormation($codeF, $site);
 	}
-	return new Etape($self->univ, @_, $formation->label, $formation);
+	return Etape->new($self->univ, @_, $formation->label, $formation);
 }
 
 sub getEtape {
@@ -408,6 +412,16 @@ sub diffPersonneEtap {
 		execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->version, $self->lastVersion),
 		execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->lastVersion, $self->version)
 		);
+}
+
+sub allPersonneEtap {
+	my $self = shift;
+	my $status = shift;
+	my $dbh = $self->db;
+	my $statement = q/select idPersonne, codeEtape, ordre from personneEtape pe1 where univ = ?1 and version = ?3 and status = ?2/;
+
+	my $sth = $dbh->prepare($statement);
+	return execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->version);
 }
 
 

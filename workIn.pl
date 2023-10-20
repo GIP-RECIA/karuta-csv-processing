@@ -13,10 +13,11 @@ use formation;
 use TraitementCsv;
 use DiffCsvHeap;
 use Dao;
+use Compare;
 
 MyLogger::level(5, 2);
 
-my $version = 'kapc.1.3';
+my $version = 'kapc.1.3.5';
 
 my $workingDir = shift;
 
@@ -27,9 +28,9 @@ unless ($workingDir) {
 	die "il manque le repertoire de travail \n";
 }
 
-if ($workingDir =~ /(kapc\.\d\.\d)/) {
+if ($workingDir =~ /(kapc\.\d\.\d.\d)/) {
 	if ($1 ne $version) {
-		die "Repertoire de travail de la mauvaise version : $1 != $version \n";
+		FATAL! "Repertoire de travail de la mauvaise version : $1 != $version \n";
 	}
 }
 
@@ -143,9 +144,13 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 		}
 		
 		my $diffRep = ${newPath}. $diffSuffix ;
+		my $outputRep = ${newPath} . "_$version";
 
 		unless ( -d $diffRep) {
 			mkdir $diffRep, 0775;
+		}
+		unless ( -d $outputRep) {
+			mkdir $outputRep, 0775;
 		}
 		
 		if ($formationFile) {
@@ -168,12 +173,13 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				}
 			}
 
-			for (TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
-				DiffCsv::trieFile($_, $tmpRep, $diffRep, 3, 2);
-				if ($lastPath) {
-					compareSortedFile($_, $diffRep, $lastPath,  3, 2) or next TRAITEMENT;
-				}
-			}
+			TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $outputRep);
+		#	for (TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
+		#		DiffCsv::trieFile($_, $tmpRep, $diffRep, 3, 2);
+		#		if ($lastPath) {
+		#			compareSortedFile($_, $diffRep, $lastPath,  3, 2) or next TRAITEMENT;
+		#		}
+		#	}
 
 			if ($lastPath) {
 				#on parcourt l'ancien repertoire pour voir si l'on n'a pas des fichiers absents dans le nouveau.
@@ -190,9 +196,15 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 					}
 				}
 			}
-
+			# pour la comparaison nouvelle formule
+			my $comp = new Compare($univ, $dao, $annee, $outputRep);
 			#
 			
+			if ($lastPath) {
+				
+			} else {
+				$comp->initCohorte;
+			}
 			my $zipName = lc($relativePath).".$version.zip";
 
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${diffSuffix} ${relativePath}.log");

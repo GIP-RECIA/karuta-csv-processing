@@ -2,7 +2,6 @@ use strict;
 use utf8;
 use MyLogger;
 use Dao;
-use Data::Dumper;
 #########
 #
 #
@@ -96,7 +95,7 @@ sub getEntete {
 #
 package Etudiant;
 use base qw(Personne);
-use Data::Dumper;
+
 
 sub entete {
 	my $class = shift;
@@ -113,7 +112,6 @@ sub entete {
 
 #	my $cohorte = $etape->cohorte;
 	
-	DEBUG! Dumper($etape);
 	return (
 		["model_code","formation_code", "formation_label", "cohorte",""],
 		[	"kapc/8etudiants.batch-creer-etudiants-authentification-externe",
@@ -135,7 +133,7 @@ sub create {
 	my $courriel = shift;
 	my $matricule = shift;
 		# identifiant + liste des infos en sortie dans csv
-	
+
 	my $self = new ($class , $univ ,$eppn, $nom ,$prenom , $courriel , $matricule); 
 
 	if ($self) {
@@ -186,7 +184,6 @@ sub entete {
 	my $annee = shift;  # attention $annee et $etap ne sont pas utilisé mais sont transmise
 	my $etape = shift;
 	my $typeFile = shift; # 2 typeFile  ... et Formation
-DEBUG! "$univ $annee $etape $typeFile";
 	if ($typeFile eq 'Formation') {
 		return (
 			[ "model_code","","",""],
@@ -211,8 +208,8 @@ sub create {
 	my $prenom = shift;
 	my $courriel = shift;
 		# identifiant + liste des infos en sortie dans csv
-	my $self = new ($class,  $univ, $eppn, $nom, $prenom, $eppn, $courriel);
-
+	my $self = new ($class,  $univ, $eppn, $nom, $prenom, $courriel);
+	
 	if ($self) {
 		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, "");
 		my $nbEtap;
