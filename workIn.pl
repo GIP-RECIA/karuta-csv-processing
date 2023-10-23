@@ -188,7 +188,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 					my $oldFile = $_;
 					if (s/_\d{8}.csv$//) {
 						unless ($allNewPrefixFile{$_}) {
-							INFO!  "nouveau fichier inexistant ! l'ancien étant : $oldFile\n";
+		#					INFO!  "nouveau fichier inexistant ! l'ancien étant : $oldFile\n";
 							my $newFile = $oldFile;
 							$newFile =~ s/.csv$/.supp.csv/;
 							copy $lastPath . $oldFile, $diffRep . $newFile;
@@ -201,8 +201,12 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			#
 			
 			if ($lastPath) {
-				
+				unless ($lastPath =~ /(\d{8})/) {FATAL! "lastPath sans version $lastPath";} 
+				$dao->lastVersion($1);
+				DEBUG! "compareCohorte";
+				$comp->compareCohorte;
 			} else {
+				DEBUG! "initCohorte";
 				$comp->initCohorte;
 			}
 			my $zipName = lc($relativePath).".$version.zip";
@@ -251,7 +255,7 @@ sub compareSortedFile {
 		DiffCsv::openAndCompareFile($oldFile, $newFile, $addFile, $suppFile, $diffFile, $enteteSize, @cle);
 	} else {
 		# l'ancien fichier n'existe pas => le nouveau n'est qu'ajouts;
-		INFO! "Comparaison ($fileName): Ancien fichier inexistant: $oldFile";
+#		INFO! "Comparaison ($fileName): Ancien fichier inexistant: $oldFile";
 
 		copy $newFile, $addFile;
 	}
