@@ -271,14 +271,19 @@ sub getFormation {
 	my $self = shift;
 	my $codeFormation = shift;
 	my $site = shift;
+	my $version = shift;
+
+	unless ($version) {
+		$version = $self->version;
+	}
 	my $dbh = $self->db;
 
 	my $statement = q/select label, site from formations where univ = ? and version = ? and code = ? and site = ?/;
 	my $sth = $dbh->prepare($statement);
-	$sth->execute($self->univ->id, $self->version, $codeFormation, $site ) or FATAL! $dbh->errstr," : ", $dbh->err;
+	$sth->execute($self->univ->id, $version, $codeFormation, $site ) or FATAL! $dbh->errstr," : ", $dbh->err;
 	my @t = $sth->fetchrow_array();
 
-	return (new Formation($self->univ->id, $codeFormation, @t))[0];
+	return (Formation->new($self->univ->id, $codeFormation, @t))[0];
 }
 
 
@@ -309,10 +314,11 @@ sub addEtape {
 
 sub createEtap {
 	my $self = shift;
+	my $version = shift;
 	my ($site, $codeF) = @_[2,4];
 	my $formation = Formation::byCle($site, $codeF);
 	unless ($formation) {
-		$formation = $self->getFormation($codeF, $site);
+		$formation = $self->getFormation($codeF, $site, $version);
 	}
 	return Etape->new($self->univ, @_, $formation->label, $formation);
 }
@@ -320,14 +326,19 @@ sub createEtap {
 sub getEtape {
 	my $self = shift;
 	my $codeEtap = shift;
+	my $version = shift;
 	my $dbh = $self->db;
 	my $statement = q/select codeEtape, libEtape, site, cohorteCode, codeFormation from etapes where univ = ? and version = ? and codeEtape =?/;
 	my $sth = $dbh->prepare($statement);
-	$sth->execute($self->univ->id, $self->version, $codeEtap ) or FATAL! $dbh->errstr," : ", $dbh->err;
+
+	unless ($version) {
+		$version = $self->version;
+	}
+	$sth->execute($self->univ->id, $version, $codeEtap ) or FATAL! $dbh->errstr," : ", $dbh->err;
 	my @t = $sth->fetchrow_array();
 # $univ, $codeEtap, $libEtap, $site, $cohorte, $codeFormation, $labelFormation, $formation
 	if (@t) {
-		return $self->createEtap(@t);
+		return $self->createEtap($version, @t);
 	}
 }
 
@@ -375,9 +386,9 @@ sub getEtapeEtu{
 
 	my @t = $sth->fetchrow_array();
 	if (@t) {
-		return $self->createEtap(@t);
+		return $self->createEtap($version, @t);
 	}
-	FATAL! "etape introuvable ($idPersonne, $rang)";
+	FATAL! "etape introuvable ($idPersonne, $rang, $version)";
 	
 }
 
@@ -408,10 +419,12 @@ sub diffPersonneEtap {
 		and not exists (select idPersonne, codeEtape from personneEtape pe2 where univ = ?1 and version = ?4 and status = ?2 and idPersonne = pe1.idPersonne and codeEtape = pe1.codeEtape) /;
 
 	my $sth = $dbh->prepare($statement);
+	#DEBUG! "univ=", $self->univ->id , ", status=$status, version=",$self->version,", lastversion=", $self->lastVersion;
+
 	return (
-		execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->version, $self->lastVersion),
-		execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->lastVersion, $self->version)
-		);
+			execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->version, $self->lastVersion),
+			execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->lastVersion, $self->version)
+		) ;
 }
 
 sub allPersonneEtap {

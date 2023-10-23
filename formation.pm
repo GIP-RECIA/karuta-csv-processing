@@ -281,6 +281,7 @@ sub new {
 	}
 	unless ($label) {
 		WARN! "formation $formation sans label";
+		FATAL! "$univId, $code , $label, $site";
 		return 0
 	}
 	

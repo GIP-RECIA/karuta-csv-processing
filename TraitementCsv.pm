@@ -274,7 +274,7 @@ sub getFileDelEtapETU {
 	my $etapeDel = shift;
 
 	
-	my $fileName = sprintf("retirer_%s_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
+	my $fileName = sprintf("retirer_ETU_%s_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
@@ -301,7 +301,7 @@ sub getFileModifEtapETU {
 	my $etapeOld = shift;
 	my $etapeNew = shift;
 
-	my $fileName = sprintf("changer_%s__%s_%s_%s.csv", $etapeOld->cohorte, $etapeNew->cohorte, $annee, $dateFile);
+	my $fileName = sprintf("changer_ETU_%s__%s_%s_%s.csv", $etapeOld->cohorte, $etapeNew->cohorte, $annee, $dateFile);
 	
 	my $file = $fileName2file{$fileName};
 	if ($file) {
@@ -316,10 +316,25 @@ sub getFileModifEtapETU {
 	return $file;
 }
 
+sub printDelEtapSTAFF {
+	my $idPersonne = shift;
+	my $etapeDel = shift;
+
+	my $fileName = sprintf("retirer_STAFF_FORMATION_%s_%s.csv", $annee, $dateFile);
+	my $file = $fileName2file{$fileName};
+	unless ($file) {
+		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+		$csv->say($file, ['model_code','']);
+		$csv->say($file, ['kapc/7enseignants.batch-retirer-enseignants-formations', '']);
+		$csv->say($file, ['loginEnseignant', 'formation_code']);
+		$fileName2file{$fileName} = $file;
+	}
+	$csv->say($file, [$idPersonne, $etapeDel->formation->formationCode]);
+}
 
 sub getFileDelETU {
 	my $etapeOld = shift;
-	my $fileName = sprintf("supprimer_%s_ETU_%s_%s.csv", $etapeOld->cohorte, $annee, $dateFile);
+	my $fileName = sprintf("supprimer_ETU_%s_%s_%s.csv", $etapeOld->cohorte, $annee, $dateFile);
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
@@ -339,6 +354,19 @@ sub printDelETU {
 	$csv->say($file, [$idPersonne]);
 }
 
+sub printDelSTAFF {
+	my $idPersonne = shift;
+	my $fileName = sprintf("supprimer_STAFF_%s_%s.csv", $annee, $dateFile);
+	my $file = $fileName2file{$fileName};
+	unless ($file) {
+		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+		$csv->say($file, ['model_code','Suppression enseignants']);
+		$csv->say($file, ['kapc/7enseignants.batch-supprimer-enseignants', '' ]);
+		$csv->say($file, [ 'loginEnseignant' ]);
+		$fileName2file{$fileName} = $file;
+	}
+	$csv->say($file, [$idPersonne]);
+}
 my $etuCourant;
 
 sub getEtu {

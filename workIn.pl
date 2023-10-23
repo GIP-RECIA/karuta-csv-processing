@@ -201,10 +201,12 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			#
 			
 			if ($lastPath) {
-				unless ($lastPath =~ /(\d{8})/) {FATAL! "lastPath sans version $lastPath";} 
+				unless ($lastPath =~ /(\d{8})/) {FATAL! "lastPath sans version $lastPath";}
+				$comp->date1($1);
 				$dao->lastVersion($1);
 				DEBUG! "compareCohorte";
 				$comp->compareCohorte;
+				$comp->compareStaff;
 			} else {
 				DEBUG! "initCohorte";
 				$comp->initCohorte;

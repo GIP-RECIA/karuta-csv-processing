@@ -113,7 +113,10 @@ sub compareEtapEtu {
 
 sub modifEtap {
 	my ($id, $old, $new) = @_;
-	TraitementCsv::printModifEtapETU($id, $self->dao->getEtape($old), $self->dao->getEtape($new));
+
+	my $etapOld = $self->dao->getEtape($old, $self->date1);
+	my $etapNew = $self->dao->getEtape($new);
+	TraitementCsv::printModifEtapETU($id, $etapOld, $etapNew);
 }
 
 sub addEtaps {
@@ -145,7 +148,7 @@ sub delEtaps {
 	my $etap1 = shift;
 	foreach my $etapCod (@_) {
 		if ($etapCod) {
-			TraitementCsv::printDelEtapETU($id, $etap1, $self->dao->getEtape($etapCod));
+			TraitementCsv::printDelEtapETU($id, $etap1, $self->dao->getEtape($etapCod, $self->date1));
 		}
 	}
 }
@@ -161,11 +164,12 @@ sub delEtu {
 sub compareCohorte {
 	$self = shift;
 	TraitementCsv::init('ETU', $self->univ, $self->date2, $self->annee, $self->tmp);
-	
+
 	my ($new, $old) = $self->dao->diffPersonneEtap('ETU');
-	
+
 	while (my ($idPersonne, $newEtapes ) = each %$new ) {
 		my $oldEtapes = $$old{$idPersonne};
+
 		if ($oldEtapes && @$oldEtapes) {
 			compareEtapEtu($idPersonne, $oldEtapes, $newEtapes);
 			delete $$old{$idPersonne};
@@ -190,5 +194,25 @@ sub initCohorte {
 	}
 }
 
+sub compareStaff {
+	$self = shift;
+	TraitementCsv::init('STAFF', $self->univ, $self->date2, $self->annee, $self->tmp);
+	my ($new, $old) = $self->dao->diffPersonneEtap('STAFF');
 
+	while (my ($idPersonne, $oldEtapes ) = each %$old) {
+		foreach my $etapCod (@$oldEtapes) {
+			if ($etapCod) {
+				TraitementCsv::printDelEtapSTAFF($idPersonne, $self->dao->getEtape($etapCod, $self->date1));
+			}
+		}
+		unless (exists $$new{$idPersonne}) {
+			TraitementCsv::printDelSTAFF($idPersonne)
+		}
+	}
+}
+
+
+
+#22200947t@univ-tours.fr T01TB2MRC => T01TB2MMV
+#21703031t@univ-tours.fr B30BB3DES ajouté
 1;
