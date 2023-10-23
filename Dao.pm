@@ -320,7 +320,7 @@ sub createEtap {
 	unless ($formation) {
 		$formation = $self->getFormation($codeF, $site, $version);
 	}
-	return Etape->new($self->univ, @_, $formation->label, $formation);
+	return Etape->new($self->univ->id, @_, $formation->label, $formation);
 }
 
 sub getEtape {

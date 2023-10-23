@@ -4,7 +4,7 @@ use utf8;
 use open qw( :encoding(utf8) :std );
 use File::Copy qw(copy);
 use FindBin;                    
-use lib $FindBin::Bin;  
+use lib $FindBin::Bin;
 use MyLogger;
 use Config::Properties;
 use univ;
@@ -161,7 +161,8 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			my $prefixFile;
 
 			DiffCsv::trieFile($newFormationFile, $tmpRep, $diffRep, 1 );
-
+			copy $diffRep . $newFormationFile, $outputRep or FATAL! "Copy failed: $!";
+			
 			if ($lastPath) {
 				compareSortedFile($newFormationFile, $diffRep, $lastPath,  1) or next TRAITEMENT;
 			}
@@ -173,13 +174,14 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				}
 			}
 
-			TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $outputRep);
-		#	for (TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
-		#		DiffCsv::trieFile($_, $tmpRep, $diffRep, 3, 2);
-		#		if ($lastPath) {
-		#			compareSortedFile($_, $diffRep, $lastPath,  3, 2) or next TRAITEMENT;
-		#		}
-		#	}
+		#	TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $outputRep);
+			for (TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
+				DiffCsv::trieFile($_, $tmpRep, $diffRep, 3, 2);
+				copy $diffRep . $_, $outputRep or FATAL! "Copy failed: $!";
+				if ($lastPath) {
+					compareSortedFile($_, $diffRep, $lastPath,  3, 2) or next TRAITEMENT;
+				}
+			}
 
 			if ($lastPath) {
 				#on parcourt l'ancien repertoire pour voir si l'on n'a pas des fichiers absents dans le nouveau.
@@ -210,6 +212,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			} else {
 				DEBUG! "initCohorte";
 				$comp->initCohorte;
+
 			}
 			my $zipName = lc($relativePath).".$version.zip";
 
