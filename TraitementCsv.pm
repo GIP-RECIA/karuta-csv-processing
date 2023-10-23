@@ -243,7 +243,7 @@ sub getFileAddEtapETU {
 	my $etapeOrg = shift;
 	my $etapeAdd = shift;
 
-	my $fileName = sprintf("%s_ADD_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeAdd->lib, $annee, $dateFile);
+	my $fileName = sprintf("ajouter_%s_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeAdd->lib, $annee, $dateFile);
 	
 	my $file = $fileName2file{$fileName};
 	if ($file) {
@@ -274,7 +274,7 @@ sub getFileDelEtapETU {
 	my $etapeDel = shift;
 
 	
-	my $fileName = sprintf("%s_DELL_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
+	my $fileName = sprintf("retirer_%s_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
@@ -301,7 +301,7 @@ sub getFileModifEtapETU {
 	my $etapeOld = shift;
 	my $etapeNew = shift;
 
-	my $fileName = sprintf("%s_UPDATE_%s_%s_%s.csv", $etapeOld->cohorte, $etapeNew->cohorte, $annee, $dateFile);
+	my $fileName = sprintf("changer_%s__%s_%s_%s.csv", $etapeOld->cohorte, $etapeNew->cohorte, $annee, $dateFile);
 	
 	my $file = $fileName2file{$fileName};
 	if ($file) {
@@ -319,7 +319,7 @@ sub getFileModifEtapETU {
 
 sub getFileDelETU {
 	my $etapeOld = shift;
-	my $fileName = sprintf("%s_SUPPRIMER_ETU_%s_%s.csv", $etapeOld->cohorte, $annee, $dateFile);
+	my $fileName = sprintf("supprimer_%s_ETU_%s_%s.csv", $etapeOld->cohorte, $annee, $dateFile);
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
@@ -343,7 +343,7 @@ my $etuCourant;
 
 sub getEtu {
 	my $idEtu = shift;
-	unless ($etuCourant && $etuCourant->id eq $idEtu) {
+	unless ($etuCourant && $etuCourant->{id} eq $idEtu) {
 		$etuCourant = Dao->dao->getPersonne($idEtu, 'ETU');
 		FATAL! "etudiant introuvable " unless $etuCourant;
 	}
