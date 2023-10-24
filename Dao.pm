@@ -398,7 +398,7 @@ sub getEtapeEtu{
 sub execDiffPersonEtap {
 	my $dbh = shift;
 	my $sth = shift;
-	$sth->execute(@_) or ERROR! $dbh->errstr ," : ", $dbh->err;
+	$sth->execute(@_) or FATAL! $dbh->errstr ," : ", $dbh->err;
 	my %res;
 	while (my @tuple = $sth->fetchrow_array) {
 		# push @{$res{$tuple[0]}}, ($tuple[1], $tuple[2]) ;
@@ -414,11 +414,31 @@ sub diffPersonneEtap {
 	my $status = shift;
 	my $dbh = $self->db;
 
+	# la complication vient que pour un même codeEtape le codeFormation peut changer d'une version a l'autre
 	my $statement =
-		q/select idPersonne, codeEtape, ordre from personneEtape pe1 where univ = ?1 and version = ?3 and status = ?2
-		and not exists (select idPersonne, codeEtape from personneEtape pe2 where univ = ?1 and version = ?4 and status = ?2 and idPersonne = pe1.idPersonne and codeEtape = pe1.codeEtape) /;
+		q/select pe1.idPersonne, pe1.codeEtape, pe1.ordre
+		from personneEtape pe1, etapes e1
+		where pe1.univ = ?1
+		and pe1.version = ?3
+		and pe1.status = ?2
+		and e1.codeEtape = pe1.codeEtape
+		and e1.univ = ?1
+		and e1.version = ?3 
+		and not exists
+			(select pe2.idPersonne, pe2.codeEtape
+			from personneEtape pe2, etapes e2
+			where pe2.univ = ?1
+			and pe2.version = ?4
+			and pe2.status = ?2
+			and pe2.idPersonne = pe1.idPersonne
+			and pe2.codeEtape = pe1.codeEtape
+			and e2.codeEtape = pe1.codeEtape
+			and e2.codeFormation = e1.codeFormation
+			and e2.univ = ?1
+			and e2.version = ?4) /;
 
-	my $sth = $dbh->prepare($statement);
+
+	my $sth = $dbh->prepare($statement) or FATAL! "$statement\n",  $dbh->errstr ," : ", $dbh->err;
 	#DEBUG! "univ=", $self->univ->id , ", status=$status, version=",$self->version,", lastversion=", $self->lastVersion;
 
 	return (

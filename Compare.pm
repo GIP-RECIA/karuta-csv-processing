@@ -101,10 +101,9 @@ sub compareEtapEtu {
 		$newE = $principaleNew->{etap};
 		modifEtap($id, $oldE, $newE);
 	} else {
-		$newE = $principaleNew->{etap};
-		$oldE = $principaleOld->{etap};
-		if ($newE ne $oldE ) {
-			modifEtap($id, $oldE, $newE);
+		#cas ou l'on permute l'etape principale avec une déjà existante
+		if ( $principaleNew->diffEtapFormation($oldE)) {
+			modifEtap($id, $principaleOld, $principaleNew );
 		}
 	}
 	delEtaps($id, $principaleOld, @$olds);
@@ -113,10 +112,13 @@ sub compareEtapEtu {
 
 sub modifEtap {
 	my ($id, $old, $new) = @_;
-
-	my $etapOld = $self->dao->getEtape($old, $self->date1);
-	my $etapNew = $self->dao->getEtape($new);
-	TraitementCsv::printModifEtapETU($id, $etapOld, $etapNew);
+	unless ($old->isa('Etape')) {
+		$old = $self->dao->getEtape($old, $self->date1);
+	}
+	unless ($new->isa('Etape')) {
+	   $new = $self->dao->getEtape($new);
+	}
+	TraitementCsv::printModifEtapETU($id, $old, $new);
 }
 
 sub addEtaps {

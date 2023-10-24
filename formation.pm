@@ -166,6 +166,18 @@ sub formation {
 	return $self->{formation}
 }
 
+sub diffEtapFormation {
+	my  $self = shift;
+	my  $autre = shift;
+	if ($self->{etap} eq $autre->{etap}) {
+		if ($self->formation->formationCode eq $autre->formation->formationCode) {
+			return 0;
+		}
+		return 1;
+	}
+	return -1;
+}
+
 
 package Formation;
 use base qw(HaveFiles);
