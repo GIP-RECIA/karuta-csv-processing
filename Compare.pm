@@ -98,7 +98,7 @@ sub compareEtapEtu {
 		$$news[0] = '';
 		modifEtap($id, $oldE, $newE);
 	} elsif ($oldE) {
-		$newE = $principaleNew->{etap};
+		$newE = $principaleNew->code;
 		modifEtap($id, $oldE, $newE);
 	} else {
 		#cas ou l'on permute l'etape principale avec une déjà existante

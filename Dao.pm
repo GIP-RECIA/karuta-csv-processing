@@ -4,7 +4,7 @@ use DBI;
 
 use MyLogger;
 use personne;
-use formation;
+use Formation;
 
 package Dao;
 use Data::Dumper;

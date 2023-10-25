@@ -4,7 +4,7 @@ use Text::CSV; # sudo apt-get install libtext-csv-perl
 use open qw( :encoding(utf8) :std );
 use IO::File;
 
-use formation;
+use Formation;
 use personne;
 use MyLogger;
 
@@ -229,7 +229,7 @@ sub getFileETU {
 	unless ($file) {
 		($file , $fname) = openFile($typeFile, 'ETU' , $etape);
 		if ($file) {
-			Dao->dao->updateCohorte($etape->{'etap'}, $fname);
+			Dao->dao->updateCohorte($etape->code, $fname);
 			$haveFiles->setFile($file, 'ETU');
 		}
 	}

@@ -2,16 +2,17 @@ use strict;
 use utf8;
 use Text::CSV; 
 use open qw( :encoding(utf8) :std );
-use MyLogger;
+
 use Dao;
 use Data::Dumper;
+use MyLogger;  #use Filter::sh "tee " . __FILE__ . ".pl";
 
 package HaveFiles;
 
 sub getFile {
 	my $self = shift;
 	my $type = shift;
-	my $files = $self->{files};
+	my $files = files! ;
 	my $file = $$files{$type};
 	return $file;
 }
@@ -20,16 +21,21 @@ sub setFile {
 	my $self = shift;
 	my $file = shift;
 	my $type = shift;
-	my $files = $self->{files};
+	my $files = files! ;
 	
 	$$files{$type} = $file;
 }
 
-
-
-
 package Etape;
 use base qw(HaveFiles);
+
+PARAM! code;
+PARAM! univId;
+PARAM! lib;
+PARAM! site;
+PARAM! cohorte;
+PARAM! formation;
+PARAM! files;
 
 my %codeEtap2etap;
 
@@ -66,19 +72,17 @@ sub new {
 	}
 	if ($formation) {
 		
-		$self = {
-			UNIVID => $univ,
-			etap => $codeEtap,
-			lib => $libEtap,
-			site => $site,
-			cohorte => $cohorte,
-			formation => $formation,
-			files => {}
-		};
+		$self = bless {}, $class;
+		
+		univId! = $univ;
+		code! = $codeEtap;
+		lib! = $libEtap;
+		site! =  $site;
+		cohorte! = $cohorte;
+		formation! = $formation;
+		files! = {};
 
-		bless $self, $class;
-
-		$formation->etapes($self);
+		$formation->addEtapes($self);
 
 		byCode($codeEtap,$self);
 			
@@ -87,7 +91,7 @@ sub new {
 	return 0;
 }
 
-PARAM! univId;
+
 
 sub create {
 	# Attention on peut créer plusieurs etap on renvoie donc le nombre d'étap créés
@@ -149,28 +153,12 @@ sub create {
 	}
 }
 
-sub site {
-	my $self = shift;
-	return $self->{site};
-}
-sub lib {
-	my $self = shift;
-	return $self->{lib};
-}
-sub cohorte {
-	my  $self = shift;
-	return $self->{cohorte}
-}
-sub formation {
-	my  $self = shift;
-	return $self->{formation}
-}
 
 sub diffEtapFormation {
 	my  $self = shift;
 	my  $autre = shift;
-	if ($self->{etap} eq $autre->{etap}) {
-		if ($self->formation->formationCode eq $autre->formation->formationCode) {
+	if ( code! eq $autre->code) {
+		if ( formation!->formationCode eq $autre->formation->formationCode) {
 			return 0;
 		}
 		return 1;
@@ -185,6 +173,65 @@ use Data::Dumper;
 my %code2Formation;
 
 my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0, always_quote => 1 });
+
+PARAM! formationCode;
+PARAM! formationLabel;
+PARAM! code;
+PARAM! site;
+PARAM! label;
+PARAM! etapes;
+PARAM! files;
+
+sub new {
+	my ($class, $univId, $code , $label, $site) = @_;
+	
+	my $formation = byCle($site, $code);
+
+	if ($formation) {
+		if ($label && $formation->label ne $label) {
+				WARN! "formation ($site, $code) avec plusieurs label: $label ", $formation->label;
+			}
+		return ($formation, 0);
+	}
+	unless ($label) {
+		WARN! "formation $code sans label";
+		FATAL! "$univId, $code , $label, $site";
+		return 0
+	}
+	
+	my $self  = bless {} , $class;
+	code! = $code;
+	label!  = $label;
+	etapes! = [];
+	site! = $site;
+	files! = {};
+	formationCode! = $univId . '_' . $site. '_' . $code;
+	formationLabel! = $univId . '_' . $site. ' - ' . $label;
+
+	byCle($site, $code, $self);
+	return ($self, 1);
+}
+
+
+
+sub create {
+	my ($class, $univ, $code , $label, $site) = @_;
+	my $formation;
+	my $isNew = 0;
+	if ($code =~ m/\S/) {
+
+		($formation, $isNew) = new Formation($univ, $code , $label, $site);
+		
+	} else {
+		WARN! ("Erreur codeForamation $code : $label");
+		return 0;
+	}
+	
+	Dao->dao->addFormation($code, $site, $label) if $isNew;
+
+	return $formation;
+}
+
 
 # ATTENTION code donne une et une seule formation , mais une formation peut avoir plusieurs etapes.
 
@@ -272,7 +319,7 @@ sub writeFile {
 
 	foreach my $formation  (values %code2Formation) {
 		my @info = ($formation->formationCode, $formation->formationLabel);
-		Dao->dao->updateFormation($formation->code(), $formation->site(), @info);
+		Dao->dao->updateFormation($formation->code, $formation->site, @info);
 		$csv->print($file, \@info );
 		print $file "\n";
 	}
@@ -280,66 +327,10 @@ sub writeFile {
 	return $fileName;
 }
 
-sub new {
-	my ($class, $univId, $code , $label, $site) = @_;
-	
-	my $formation = byCle($site, $code);
-
-	if ($formation) {
-		if ($label && $formation->label ne $label) {
-				WARN! "formation ($site, $code) avec plusieurs label: $label ", $formation->label;
-			}
-		return ($formation, 0);
-	}
-	unless ($label) {
-		WARN! "formation $formation sans label";
-		FATAL! "$univId, $code , $label, $site";
-		return 0
-	}
-	
-	$formation = {
-		CODE => $code,
-		LABEL => $label,
-		etapes => [],
-		SITE => $site,
-		files => {},
-		FORMATIONCODE => $univId . '_' . $site. '_' . $code,
-		FORMATIONLABEL => $univId . '_' . $site. ' - ' . $label,
-	};
-
-	bless $formation, $class;
-	byCle($site, $code, $formation);
-	return ($formation, 1);
-}
-
-PARAM! formationCode;
-PARAM! formationLabel;
-PARAM! code;
-PARAM! site;
-PARAM! label;
-
-sub create {
-	my ($class, $univ, $code , $label, $site) = @_;
-	my $formation;
-	my $isNew = 0;
-	if ($code =~ m/\S/) {
-
-		($formation, $isNew) = new Formation($univ, $code , $label, $site);
-		
-	} else {
-		WARN! ("Erreur codeForamation $code : $label");
-		return 0;
-	}
-	
-	Dao->dao->addFormation($code, $site, $label) if $isNew;
-
-	return $formation;
-}
-
-sub etapes {
+sub addEtapes {
 	my $self = shift;
 	if (@_ > 0) {
-		push @{$self->{etapes}}, @_;
+		push @{etapes!}, @_;
 	}
 }
 
