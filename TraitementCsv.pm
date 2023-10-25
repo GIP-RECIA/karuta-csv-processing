@@ -117,7 +117,7 @@ sub traitementSTAFF {
 	my $file = getFileSTAFF('Personne');
 	if ($file) {
 		unless ($personne->inFile($file) ) {
-			$csv->say($file, $personne->info());
+			$csv->say($file, $personne->info);
 		}
 		$file = getFileSTAFF('Formation');
 		if ($file) {
@@ -144,7 +144,7 @@ sub printInformationFileETU {
 	my $file  = getFileETU($etape);
 	if ($file) {
 		unless ($personne->inFile($file) ) {
-			$csv->say($file, $personne->info());
+			$csv->say($file, $personne->info);
 		}
 	}
 }
@@ -371,7 +371,7 @@ my $etuCourant;
 
 sub getEtu {
 	my $idEtu = shift;
-	unless ($etuCourant && $etuCourant->{id} eq $idEtu) {
+	unless ($etuCourant && $etuCourant->id eq $idEtu) {
 		$etuCourant = Dao->dao->getPersonne($idEtu, 'ETU');
 		FATAL! "etudiant introuvable " unless $etuCourant;
 	}

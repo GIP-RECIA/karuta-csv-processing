@@ -1,23 +1,28 @@
 use strict;
 use utf8;
-use MyLogger;
 use Dao;
+use MyLogger;
+
 #########
 #
 #
 package Personne;
+
+PARAM! info;
+PARAM! id;
+PARAM! nom;
+PARAM! prenom;
+PARAM! univ;
 
 sub new {
 	my $class = shift;
 	my $id = shift;
 	my @info = @_;
 	if (testInfo($id, @info)) {
-		my $self = {
-			id => $id,
-			info => \@info,
-			compteurs => {}
-		};
-		return bless $self, $class;
+		my $self = bless {compteurs => {}}, $class;
+		info! =  \@info;
+		id! = $id;
+		return $self;
 	}
 	return 0;
 }
@@ -68,10 +73,6 @@ sub codesEtape {
 	return $self->{codesEtape};
 }
 
-sub info {
-	my $self = shift;
-	return $self->{info};
-}
 
 sub type {
 	return 0;
@@ -157,9 +158,9 @@ sub new {
 	my $matricule = shift;
 	my $self = Personne::new($class, $eppn, $nom, $prenom, $courriel, $matricule, $eppn);
 	if ($self) {
-		$self->{univ} = $univ;
-		$self->{NOM} = $nom;
-		$self->{PRENOM} = $prenom;
+		univ! = $univ;
+		nom! = $nom;
+		prenom! = $prenom;
 		return  $self;
 	}
 	return 0;
@@ -169,8 +170,7 @@ sub type {
 	return 'ETU';
 }
 
-PARAM! nom;
-PARAM! prenom;
+
 
 ###############
 #
@@ -228,10 +228,12 @@ sub new {
 	my $nom = shift;
 	my $prenom = shift;
 	my $courriel = shift;
-	my $self = new Personne($eppn, $nom, $prenom, $eppn, $courriel);
+	my $self = Personne::new($class, $eppn, $nom, $prenom, $eppn, $courriel);
 	if ($self) {
-		$self->{univ} = $univ;
-		return bless $self, $class;
+		univ! = $univ;
+		nom! = $nom;
+		prenom! = $prenom;
+		return $self;
 	}
 	return 0;
 }
@@ -254,10 +256,12 @@ sub new {
 	my $nom = shift;
 	my $prenom = shift;
 	my $courriel = shift;
-	my $self = new Personne($eppn, $nom, $prenom, $courriel);
+	my $self = Personne::new($class, $eppn, $nom, $prenom, $courriel);
 
 	if ($self) {
-		return bless $self, $class;
+		nom! = $nom;
+		prenom! = $prenom;
+		return  $self;
 	}
 }
 sub type {

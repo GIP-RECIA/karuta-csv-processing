@@ -222,7 +222,7 @@ sub getPersonne {
 	my @tuple = $sth->fetchrow_array;
 	if ($status == 'ETU') {
 		$personne = new Etudiant(@tuple);
-#		if ($personne->{id} eq '22204658t@univ-tours.fr') {DEBUG! Dumper($personne), Dumper(@tuple);}
+#		if ($personne->id eq '22204658t@univ-tours.fr') {DEBUG! Dumper($personne), Dumper(@tuple);}
 		
 	} elsif ($status == 'STAFF' ) {
 		$personne = new Staff(@tuple);
