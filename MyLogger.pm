@@ -3,11 +3,13 @@ use IO::Select;
 use Symbol 'gensym';
 
 # 
-my $version="4.3";
+my $version="4.4";
 
 package MyLogger;
 use Filter::Simple;
 
+{
+	my $paramIdx = '';
 FILTER {
 	s/FATAL(\d?)!/MyLogger::fatal 'FATAL: die at ', !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
 	s/ERROR(\d?)!/MyLogger::is(1) and MyLogger::erreur 'ERROR: ', !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
@@ -17,9 +19,12 @@ FILTER {
 	s/TRACE!/MyLogger::is(5) and MyLogger::trace/g;
 	s/SYSTEM(\d?)!/MyLogger::traceSystem '$1',/g;
 	s/LOG!/MyLogger::file && MyLogger::logger /g;
-	s/PARAM!\s*(\w+)/sub $1 {return MyLogger::param(shift, uc('$1'), shift);}/g;
+	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {return MyLogger::param(shift, '$paramIdx', shift);}/g;
+	s/(\w+)!(\s*\=\s*)(.+?)(?=\;)/\$self->$1($3)/g;
+	s/(\w+)!(?!\s*\()/\$self->$1()/g;
+	s/(\w+)!(?=\s*\()/\$self->$1/g;
 };
-
+}
 my $level;
 my $file;
 my $mod;
@@ -232,4 +237,6 @@ sub param {
 	}
 	return $self->{$param};
 }
+
+
 1;
