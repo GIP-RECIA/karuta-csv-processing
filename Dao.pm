@@ -18,6 +18,7 @@ PARAM! univ;
 PARAM! version;
 PARAM! db;
 PARAM! dbFile;
+PARAM! file;
 
 sub dao {
 	if ($dao_default) {
@@ -364,7 +365,8 @@ sub addPersonneEtap {
 	
 	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?, ?)/;
 	my $sth = $dbh->prepare($statement);
-	$sth ->execute($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre) or ERROR! $dbh->errstr ," : ", $dbh->err;
+	$sth->execute($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre)
+		or ERROR! $dbh->errstr ," : ", $dbh->err and  DEBUG! " values \n", Dumper($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre) ;
 }
 
 

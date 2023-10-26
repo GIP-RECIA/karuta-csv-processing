@@ -20,6 +20,7 @@ FILTER {
 	s/SYSTEM(\d?)!/MyLogger::traceSystem '$1',/g;
 	s/LOG!/MyLogger::file && MyLogger::logger /g;
 	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {return MyLogger::param(shift, '$paramIdx', shift);}/g;
+	s/PARAM(\d+)!(\w+)/sub $2 {my (\$self, \$val) = \@_; if (\$val) {\$self->[$1] = $val } return \$self->[$1]; }/g;
 	s/(\w+)!(\s*\=\s*)(.+?)(?=\;)/\$self->$1($3)/g;
 	s/(\w+)!(?!\s*\()/\$self->$1()/g;
 	s/(\w+)!(?=\s*\()/\$self->$1/g;
@@ -59,10 +60,6 @@ sub is {
 	my $levelMin = shift;
 	return $levelMin <= $level;
 }
-
-
-
-
 
 sub trace {
 	if ($file ) {

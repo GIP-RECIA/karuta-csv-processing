@@ -35,10 +35,10 @@ sub new {
 	sepChar! = ',';
 
 	if ($id eq "orleans") {
-		filtreEtap! =
+		filtreEtap! ( 
 			sub {
 				return map({ s/^(\S{3})\S/$1I/; $_; }  @_);
-			} ;
+			} );
 	}
 	
 	$UNIVS{$id} = $self;

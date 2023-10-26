@@ -123,12 +123,16 @@ sub traitementSTAFF {
 		if ($file) {
 			foreach my $codeEtap (@{$personne->codesEtape()}) {
 				my $etape = Etape::byCode($codeEtap);
-				my @info = @{$personne->info};
-				my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->code;
-				unless ($personne->compteur($formationLabel)) {
-					@info[3]= $formationLabel;
-					$csv->print($file, \@info);
-					print $file  "\n";
+				if ($etape) {
+					my @info = @{$personne->info};
+					my $formationLabel = $univ->id . "_". $etape->site . "_". $etape->formation->code;
+					unless ($personne->compteur($formationLabel)) {
+						@info[3]= $formationLabel;
+						$csv->print($file, \@info);
+						print $file  "\n";
+					}
+				} else {
+					WARN! "Satff avec étape inconnue : ", $personne->id, ", $codeEtap";  
 				}
 			}
 		}
