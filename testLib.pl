@@ -1,0 +1,16 @@
+use Config::Properties;
+use Data::Dumper;
+use DBD::SQLite;
+use DBI;
+use File::Copy qw(copy);
+use Filter::Simple;
+use FindBin;                    
+use IO::File;
+use IO::Select;
+use IPC::Open2;
+use IPC::Open3;
+use open qw( :encoding(utf8) :std );
+use strict;
+use Symbol 'gensym';
+use Text::CSV; 
+use utf8;
