@@ -14,6 +14,11 @@ use Data::Dumper;
 #use vars      @EXPORT;
 my $dao_default;
 
+PARAM! univ;
+PARAM! version;
+PARAM! db;
+PARAM! dbFile;
+
 sub dao {
 	if ($dao_default) {
 		return $dao_default;
@@ -143,21 +148,19 @@ sub new {
 		$statement = q/insert into univs values ( ?, ?)/;
 		my $sth = $dbh->prepare($statement);
 		$sth ->execute($univId, $jour) or FATAL! $dbh->errstr;
-		my $self = {
-			DB => $dbh,
-			file => $dbFile,
-			VERSION => $jour,
-			UNIV => $univ
-		};
-		$dao_default = bless $self, $class;
+		my $self = bless {}, $class;
+		db! = $dbh;
+		file! = $dbFile;
+		version! = $jour;
+		univ! = $univ;
+
+		$dao_default = $self;
 		return $dao_default;
 	}
 	ERROR! "connetion failed : $dbFile;";
 	return 0;
 }
-PARAM! univ;
-PARAM! version;
-PARAM! db;
+
 
 # fixe la version précedante pour les diffs , vérifie qu'elle existe.
 sub lastVersion {
