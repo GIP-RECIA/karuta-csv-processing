@@ -201,11 +201,12 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			# pour la comparaison nouvelle formule
 			my $comp = new Compare($univ, $dao, $annee, $outputRep);
 			#
-			
+			my $lastVersion;
 			if ($lastPath) {
 				unless ($lastPath =~ /(\d{8})/) {FATAL! "lastPath sans version $lastPath";}
-				$comp->date1($1);
-				$dao->lastVersion($1);
+				$lastVersion=$1;
+				$comp->date1($lastVersion);
+				$dao->lastVersion($lastVersion);
 				DEBUG! "compareCohorte";
 				$comp->compareCohorte;
 				$comp->compareStaff;
@@ -214,9 +215,19 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				$comp->initCohorte;
 
 			}
-			my $zipName = lc($relativePath).".$version.zip";
+			
+				
+			
+			my $zipName;
+			if ($lastVersion) {
+				$zipName = lc($relativePath).".$version.diff.$lastVersion.zip";
+			} else {
+				$zipName = lc($relativePath).".$version.zip";
+			}
 
-			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${relativePath}${diffSuffix} ${relativePath}.log");
+			$outputRep =~ s/$workingDir\///;
+			
+			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${outputRep} ${relativePath}${diffSuffix} ${relativePath}.log");
 
 			#on memorise le new path
 			$dataProps->changeProperty($univ->id(),$newPath);
