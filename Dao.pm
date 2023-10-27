@@ -3,7 +3,7 @@ use utf8;
 use DBI;
 
 use MyLogger;
-use personne;
+use Personne;
 use Formation;
 
 package Dao;

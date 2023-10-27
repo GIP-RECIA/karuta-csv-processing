@@ -5,7 +5,7 @@ use open qw( :encoding(utf8) :std );
 use IO::File;
 
 use Formation;
-use personne;
+use Personne;
 use MyLogger;
 
 
