@@ -8,7 +8,7 @@ use lib $FindBin::Bin;
 use MyLogger;
 use Config::Properties;
 use univ;
-use download;
+use Download;
 use Formation;
 use TraitementCsv;
 use DiffCsvHeap;
