@@ -19,8 +19,9 @@ FILTER {
 	s/TRACE!/MyLogger::is(5) and MyLogger::trace/g;
 	s/SYSTEM(\d?)!/MyLogger::traceSystem '$1',/g;
 	s/LOG!/MyLogger::file && MyLogger::logger /g;
-	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {return MyLogger::param(shift, '$paramIdx', shift);}/g;
-	s/PARAM(\d+)!(\w+)/sub $2 {my (\$self, \$val) = \@_; if (\$val) {\$self->[$1] = $val } return \$self->[$1]; }/g;
+#	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {return MyLogger::param(shift, '$paramIdx', shift);}/g;
+	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->{$paramIdx} = \$val } else {return \$self->{$paramIdx}} }; /g;
+	s/PARAM(\d+)!\s*(\w+)/sub $2 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->[$1] = \$val } else {return \$self->[$1]} }/g;
 	s/(\w+)!(\s*\=\s*)(.+?)(?=\;)/\$self->$1($3)/g;
 	s/(\w+)!(?!\s*\()/\$self->$1()/g;
 	s/(\w+)!(?=\s*\()/\$self->$1/g;
