@@ -168,7 +168,7 @@ sub openFile {
 	if ($type) {
 		
 		my $fileName = sprintf("%s_%s_%s_%s_%s.csv", $univ->id , $type, $typeFile, $annee, $dateFile);
-
+		$fileName =~ s/\s/_/g;
 
 		my $file = $fileName2file{$fileName};
 		if ($file) {
@@ -248,7 +248,7 @@ sub getFileAddEtapETU {
 	my $etapeAdd = shift;
 
 	my $fileName = sprintf("ajouter_%s_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeAdd->lib, $annee, $dateFile);
-	
+	$fileName =~ s/\s/_/g;
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
@@ -279,6 +279,7 @@ sub getFileDelEtapETU {
 
 	
 	my $fileName = sprintf("retirer_ETU_%s_%s_%s_%s_%s.csv", $etapeOrg->cohorte, $etapeOrg->formation->code, $etapeDel->lib, $annee, $dateFile);
+	$fileName =~ s/\s/_/g;
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
@@ -306,6 +307,7 @@ sub getFileModifEtapETU {
 	my $etapeNew = shift;
 
 	my $fileName = sprintf("changer_ETU_%s__%s_%s_%s.csv", $etapeOld->cohorte, $etapeNew->cohorte, $annee, $dateFile);
+	$fileName =~ s/\s/_/g;
 	
 	my $file = $fileName2file{$fileName};
 	if ($file) {
@@ -325,6 +327,7 @@ sub printDelEtapSTAFF {
 	my $etapeDel = shift;
 
 	my $fileName = sprintf("retirer_STAFF_FORMATION_%s_%s.csv", $annee, $dateFile);
+	$fileName =~ s/\s/_/g;
 	my $file = $fileName2file{$fileName};
 	unless ($file) {
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
@@ -339,6 +342,7 @@ sub printDelEtapSTAFF {
 sub getFileDelETU {
 	my $etapeOld = shift;
 	my $fileName = sprintf("supprimer_ETU_%s_%s_%s.csv", $etapeOld->cohorte, $annee, $dateFile);
+	$fileName =~ s/\s/_/g;
 	my $file = $fileName2file{$fileName};
 	if ($file) {
 		return $file;
@@ -361,6 +365,7 @@ sub printDelETU {
 sub printDelSTAFF {
 	my $idPersonne = shift;
 	my $fileName = sprintf("supprimer_STAFF_%s_%s.csv", $annee, $dateFile);
+	$fileName =~ s/\s/_/g;
 	my $file = $fileName2file{$fileName};
 	unless ($file) {
 		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
