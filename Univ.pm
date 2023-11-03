@@ -1,6 +1,6 @@
 use MyLogger;
 #use Filter::sh "tee " . __FILE__ . ".pl";
-package Univ;
+package! Univ;
 
 
 PARAM! id;
@@ -18,13 +18,12 @@ my %UNIVS;
 
 
 sub new {
-	my ($class, $id, $ftpRep, $path, $filePrefix, $zipFilePrefix) = @_;
+	my $self = NEW!;
+	my ($id, $ftpRep, $path, $filePrefix, $zipFilePrefix) = @_;
 
 	unless ($zipFilePrefix) {
 		$zipFilePrefix = $filePrefix;
 	}
-	
-	my $self = bless {}, $class;
 	
 	id! = $id;
 	ftpRep! = $ftpRep;
