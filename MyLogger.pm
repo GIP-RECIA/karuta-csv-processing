@@ -3,36 +3,79 @@ use IO::Select;
 use Symbol 'gensym';
 
 # 
-my $version="4.4";
+my $version="5.0";
 
 package MyLogger;
 use Filter::Simple;
 
-{
-	my $paramIdx = '';
-FILTER {
-	s/FATAL(\d?)!/MyLogger::fatal 'FATAL: die at ', !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
-	s/ERROR(\d?)!/MyLogger::is(1) and MyLogger::erreur 'ERROR: ', !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
-	s/WARN(\d?)!/MyLogger::is(2) and MyLogger::erreur 'WARN: ',  !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
-	s/INFO(\d?)!/MyLogger::is(3) and MyLogger::info !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
-	s/DEBUG(\d?)!/MyLogger::is(4) and MyLogger::debug !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
-	s/TRACE!/MyLogger::is(5) and MyLogger::trace/g;
-	s/SYSTEM(\d?)!/MyLogger::traceSystem '$1',/g;
-	s/LOG!/MyLogger::file && MyLogger::logger /g;
-#	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {return MyLogger::param(shift, '$paramIdx', shift);}/g;
-	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->{$paramIdx} = \$val } else {return \$self->{$paramIdx}} }; /g;
-	s/PARAM(\d+)!\s*(\w+)/sub $2 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->[$1] = \$val } else {return \$self->[$1]} }/g;
-	s/(\w+)!(\s*\=\s*)(.+?)(?=\;)/\$self->$1($3)/g;
-	s/(\w+)!(?!\s*\()/\$self->$1()/g;
-	s/(\w+)!(?=\s*\()/\$self->$1/g;
-};
+
+my $isDebug;
+
+sub import {
+	$isDebug = $_[1];
 }
+
+
+FILTER_ONLY (
+	all => sub { 
+			if ($isDebug eq 'TRACE') {
+				s/\#TRACE!/MyLogger::trace/g;
+				$isDebug = 'DEBUG';
+			}
+			if ($isDebug eq 'DEBUG') {
+				s/\#DEBUG(\d?)!/MyLogger::debug !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
+			}
+		},
+	code_no_comments => sub{
+		s/FATAL(\d?)!/MyLogger::fatal 'FATAL: die at ', !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
+		s/ERROR(\d?)!/MyLogger::is(1) and MyLogger::erreur 'ERROR: ', !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
+		s/WARN(\d?)!/MyLogger::is(2) and MyLogger::erreur 'WARN: ',  !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
+		s/INFO(\d?)!/MyLogger::is(3) and MyLogger::info !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
+		s/DEBUG(\d?)!/MyLogger::is(4) and MyLogger::debug !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
+		s/TRACE!/MyLogger::is(5) and MyLogger::trace/g;
+		s/SYSTEM(\d?)!/MyLogger::traceSystem '$1',/g;
+		s/LOG!/MyLogger::file && MyLogger::logger /g;
+	#	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {return MyLogger::param(shift, '$paramIdx', shift);}/g;
+
+		my $out;
+		my $nbParam = -1;
+		my $isArray = 0;
+		
+		for (split /(?<=\n)/) {
+			if (s/^(\s*)package(\!?)/$1package/) {
+				$nbParam = -1;
+				$isArray =$2;
+			}
+			if ($isArray) {
+			#	s/(?<=my\s)\s*NEW!\s*(?=;)/\$self = bless \[\], \$class/;
+				s/(?<=(\s|=))NEW!\s*(?=;)/bless \[\], shift/;
+				s/(?<=(\s|=))NEW!\s*(?=,)/bless \[\]/;
+				s/PARAM!\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->[$nbParam] = \$val } else {return \$self->[$nbParam]} }/g;
+			} else {
+			#	s/(?<=my\s)\s*NEW!\s*(?=;)/\$self = bless {}, \$class/;
+				s/(?<=(\s|=))NEW!\s*(?=;)/bless {}, shift/;
+				s/(?<=(\s|=))NEW!\s*(?=,)/bless {}/;
+				s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->{$paramIdx} = \$val } else {return \$self->{$paramIdx}} }/g;
+			}
+			
+	#	my $in = $_;
+			unless (/(NEW!|PARAM!)/) {
+				s/(\w+)!(\s*\=\s*)(.+?)(?=\;)/\$self->$1($3)/g;
+				s/(\w+)!(?!\s*\()/\$self->$1()/g;
+				s/(\w+)!(?=\s*\()/\$self->$1/g;
+			}
+			$out .= $_ ;
+		}
+		$_ = $out;
+	}
+);
+
 my $level;
 my $file;
 my $mod;
-# si mod = 0 : si on a un fichier  on ne sort sur STDOUT que les WARN ERROR et FATAL si pas de fichier on sort aussi INFO
+# si mod = 0 : si on a un fichier  on ne sort sur STDERR que les WARN ERROR et FATAL si pas de fichier on sort aussi INFO
 # si mod = 1 : et on a un fichier on sort sur STDOUT les INFO aussi 
-# si mod = 2 : on sort tout sur STDOUT 
+# si mod = 2 : on sort tout sur STDOUT ou STDERR
 
 sub file {
 	unless (shift) {
@@ -61,6 +104,10 @@ sub is {
 	my $levelMin = shift;
 	return $levelMin <= $level;
 }
+
+
+
+
 
 sub trace {
 	if ($file ) {
@@ -225,16 +272,16 @@ sub traceSystem {
 	close $COM;
 }
 
-sub param {
-	my $self = shift;
-	my $param = shift;
-	my $value = shift;
-
- 	if ($value) {
-		$self->{$param} = $value;
-	}
-	return $self->{$param};
-}
+#sub param {
+#	my $self = shift;
+#	my $param = shift;
+#	my $value = shift;
+#
+#	if (defined $value) {
+#		$self->{$param} = $value;
+#	}
+#	return $self->{$param};
+#}
 
 
 1;
