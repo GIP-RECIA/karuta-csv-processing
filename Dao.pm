@@ -138,10 +138,12 @@ sub new {
 #			q/create table if not exists cohorte (
 #				univ char(10),
 #				version char(10),
+#				id varchar(10),
 #				fileName varchar(256),
 #				formationCode varchar(256),
 #				cohorteCode varchar(256),
-#				primary key (univ, version,  cohorteCode) on conflict ignore,
+#				primary key (univ, version, id) on conflict ignore,
+#				unique (univ, version, cohorteCode),
 #				foreign key (univ, version, formationCode) references formations
 #			)/;
 #		$dbh->do($statement) or die $dbh->errstr;

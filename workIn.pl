@@ -5,7 +5,7 @@ use open qw( :encoding(utf8) :std );
 use File::Copy qw(copy);
 use FindBin;                    
 use lib $FindBin::Bin;
-use MyLogger;
+use MyLogger 'DEBUG';
 use Config::Properties;
 use Univ;
 use Download;
@@ -132,6 +132,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 		$lastPath .= $diffSuffix;
 	} else {
 	}
+	#DEBUG! "lastPath = $lastPath";
 	
 	if ($newPath =~ /^${workingDir}\/(.+(\d{8}))$/) {
 		my $dao = new Dao($dbFile, $univ, $2);
@@ -207,11 +208,11 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				$lastVersion=$1;
 				$comp->date1($lastVersion);
 				$dao->lastVersion($lastVersion);
-				DEBUG! "compareCohorte";
+				#DEBUG! "compareCohorte";
 				$comp->compareCohorte;
 				$comp->compareStaff;
 			} else {
-				DEBUG! "initCohorte";
+				#DEBUG! "initCohorte";
 				$comp->initCohorte;
 
 			}
@@ -219,6 +220,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				
 			
 			my $zipName;
+			
 			if ($lastVersion) {
 				$zipName = lc($relativePath).".$version.diff.$lastVersion.zip";
 			} else {

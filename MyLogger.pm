@@ -32,7 +32,7 @@ FILTER_ONLY (
 		s/WARN(\d?)!/MyLogger::is(2) and MyLogger::erreur 'WARN: ',  !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
 		s/INFO(\d?)!/MyLogger::is(3) and MyLogger::info !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
 		s/DEBUG(\d?)!/MyLogger::is(4) and MyLogger::debug !'$1' ? (__FILE__, __LINE__) : ((caller($1-1))[1,2]) ,/g;
-		s/TRACE!/MyLogger::is(5) and MyLogger::trace/g;
+		s/TRACE!/MyLogger::is(5) and MyLogger::trace /g;
 		s/SYSTEM(\d?)!/MyLogger::traceSystem '$1',/g;
 		s/LOG!/MyLogger::file && MyLogger::logger /g;
 	#	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {return MyLogger::param(shift, '$paramIdx', shift);}/g;
@@ -48,12 +48,12 @@ FILTER_ONLY (
 			}
 			if ($isArray) {
 			#	s/(?<=my\s)\s*NEW!\s*(?=;)/\$self = bless \[\], \$class/;
-				s/(?<=(\s|=))NEW!\s*(?=;)/bless \[\], shift/;
+				s/(?<=(\s|=))NEW!\s*(?=;)/bless \[\], shift()/;
 				s/(?<=(\s|=))NEW!\s*(?=,)/bless \[\]/;
 				s/PARAM!\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->[$nbParam] = \$val } else {return \$self->[$nbParam]} }/g;
 			} else {
 			#	s/(?<=my\s)\s*NEW!\s*(?=;)/\$self = bless {}, \$class/;
-				s/(?<=(\s|=))NEW!\s*(?=;)/bless {}, shift/;
+				s/(?<=(\s|=))NEW!\s*(?=;)/bless {}, shift()/;
 				s/(?<=(\s|=))NEW!\s*(?=,)/bless {}/;
 				s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->{$paramIdx} = \$val } else {return \$self->{$paramIdx}} }/g;
 			}

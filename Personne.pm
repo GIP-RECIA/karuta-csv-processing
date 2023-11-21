@@ -2,11 +2,12 @@ use strict;
 use utf8;
 use Dao;
 use MyLogger;
+#use Filter::sh "tee " . __FILE__ . ".pl";
 
 #########
 #
 #
-package Personne;
+package! Personne;
 
 PARAM! info;
 PARAM! id;
@@ -14,12 +15,17 @@ PARAM! nom;
 PARAM! prenom;
 PARAM! univ;
 
+use Hash::Util::FieldHash;
+
+Hash::Util::FieldHash::fieldhash my %Compteurs;
+Hash::Util::FieldHash::fieldhash my %CodeEtapes;
+
 sub new {
-	my $class = shift;
+	my $self = NEW!;
 	my $id = shift;
 	my @info = @_;
 	if (testInfo($id, @info)) {
-		my $self = bless {compteurs => {}}, $class;
+		$Compteurs{$self} = {};
 		info! =  \@info;
 		id! = $id;
 		return $self;
@@ -29,7 +35,7 @@ sub new {
 
 sub compteur {
 	my ($self, $key) = @_;
-	return $self->{compteurs}->{$key}++;
+	return $Compteurs{$self}->{$key}++;
 }
 sub inFile {
 	return &compteur;
@@ -64,13 +70,14 @@ sub setCodesEtape {
 		 } 
 	}
 
-	$$self{codesEtape} = \@codesEtape;
+#	$$self{codesEtape} = \@codesEtape;
+	$CodeEtapes{$self} = \@codesEtape;
 	return @codesEtape;
 }
 
 sub codesEtape {
-	my $self = shift;
-	return $self->{codesEtape};
+#	return $self->{codesEtape};
+	return $CodeEtapes{shift()}
 }
 
 

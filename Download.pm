@@ -1,6 +1,6 @@
 use strict;
 use MyLogger;
-
+#use Filter::sh "tee " . __FILE__ . ".pl";
 =begin
 
 recuperation de fichier du ftp et dézipage
@@ -130,8 +130,8 @@ sub ftpGet {
 
 	print $FTPout "get $file $localRep \n\n";
 	while (<$FTPin>) {
-		last if /^$ftpPrompt$/;
-		TRACE!  $_;
+		last if (/^$ftpPrompt$/);
+		TRACE! $_ ;
 	}
 }
 
@@ -141,8 +141,8 @@ sub deleteFtpFile {
 	if ($file) {
 		print $FTPout "rm $ftpRep/$file\n\n";
 		while (<$FTPin>) {
-			last if /^$ftpPrompt$/;
-			TRACE!  $_;
+			last if (/^$ftpPrompt$/); #
+			TRACE! $_;
 		}
 	}
 }
