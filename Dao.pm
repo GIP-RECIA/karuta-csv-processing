@@ -368,7 +368,7 @@ sub addPersonneEtap {
 	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?, ?)/;
 	my $sth = $dbh->prepare($statement);
 	$sth->execute($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre)
-		or ERROR! $dbh->errstr ," : ", $dbh->err and  DEBUG! " values \n", Dumper($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre) ;
+		or FATAL! $dbh->errstr ," : ", $dbh->err and  DEBUG! " values \n", Dumper($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre) ;
 }
 
 
@@ -442,7 +442,8 @@ sub diffPersonneEtap {
 			and e2.codeEtape = pe1.codeEtape
 			and e2.codeFormation = e1.codeFormation
 			and e2.univ = ?1
-			and e2.version = ?4) /;
+			and e2.version = ?4)
+		order by pe1.idPersonne/;
 
 
 	my $sth = $dbh->prepare($statement) or FATAL! "$statement\n",  $dbh->errstr ," : ", $dbh->err;

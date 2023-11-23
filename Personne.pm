@@ -1,6 +1,7 @@
 use strict;
 use utf8;
 use Dao;
+use Formation;
 use MyLogger;
 #use Filter::sh "tee " . __FILE__ . ".pl";
 
@@ -69,6 +70,8 @@ sub setCodesEtape {
 			 @codesEtape = &$filtre(@codesEtape);
 		 } 
 	}
+	# on supprime le codeEtap inexistant 
+	@codesEtape = grep(Etape::byCode($_), @codesEtape);
 
 #	$$self{codesEtape} = \@codesEtape;
 	$CodeEtapes{$self} = \@codesEtape;
@@ -79,7 +82,6 @@ sub codesEtape {
 #	return $self->{codesEtape};
 	return $CodeEtapes{shift()}
 }
-
 
 sub type {
 	return 0;
@@ -146,6 +148,7 @@ sub create {
 
 	if ($self) {
 		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, $matricule);
+
 		my $nbEtap;
 		foreach my $code ($self->setCodesEtape($univ, @_)) {
 			Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);

@@ -132,7 +132,7 @@ sub traitementSTAFF {
 						print $file  "\n";
 					}
 				} else {
-					WARN! "Satff avec étape inconnue : ", $personne->id, ", $codeEtap";  
+					WARN! "Staff avec étape inconnue : ", $personne->id, ", $codeEtap";  
 				}
 			}
 		}

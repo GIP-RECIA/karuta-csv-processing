@@ -11,10 +11,16 @@ PARAM! prefix;
 PARAM! dateFile;
 PARAM! sepChar;
 PARAM! filtreEtap;
+PARAM! testEtap;
 PARAM! lastPath;
 
 my %UNIVS;
 
+# normalise les codes etapes d'orleans
+# return true ssi son entré a été modifié 
+sub orleansEtapEquiv {
+	return $_[0] =~ s/^(\w{3})[^I]/$1I/;
+}
 
 
 sub new {
@@ -36,9 +42,14 @@ sub new {
 	if ($id eq "orleans") {
 		filtreEtap! ( 
 			sub {
-				return map({ s/^(\S{3})\S/$1I/; $_; }  @_);
+				return map({ orleansEtapEquiv($_); $_; }  @_);
 			} );
-	}
+		testEtap! (
+			sub {
+				return !orleansEtapEquiv($_[0]);
+			}
+		)
+	} 
 	
 	$UNIVS{$id} = $self;
 

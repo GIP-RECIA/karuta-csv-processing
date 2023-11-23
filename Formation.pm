@@ -4,6 +4,7 @@ use Text::CSV;
 use open qw( :encoding(utf8) :std );
 
 use Dao;
+use Univ;
 use Data::Dumper;
 use MyLogger;  #use Filter::sh "tee " . __FILE__ . ".pl";
 
@@ -93,16 +94,17 @@ sub new {
 
 
 
+
 sub create {
-	# Attention on peut créer plusieurs etap on renvoie donc le nombre d'étap créés
+	# on peut ne pas creer l'etape (filtre par univ)
 	# on creer aussi les formations correspondantes aux etapes.
 	# my ($class, $codeEtap , $libEtap, $libCourt, $site) = @_;
 
-	my ($class, $univ, $codesEtaps, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site) = @_;
+	my ($class, $univ, $codeEtape, $libEtap, $codeSISE, $typeDiplome, $intituleDiplome, $site) = @_;
 	my $cohorte;
 
 	unless ($site) {
-		ERROR! "Etape ($codesEtaps) sans site\n";
+		ERROR! "Etape ($codeEtape) sans site\n";
 		foreach my $elem (@_) {
 		}
 		return 0;
@@ -124,27 +126,28 @@ sub create {
 	
 	$cohorte = $univ . '_'. $site . "_" . $cohorte;
 	#$cohorte =  $site . "_" . $cohorte;
+
+	
 	
 	my $self;
 	
 	if ($codeFormation =~ m/\w+/) {
-		
 		my $formation = create Formation($univ, $codeFormation, $label, $site);
 		
 		if ($formation) {
-			my $nbEtap = 0;
-			foreach my $codeEtap (split('@',$codesEtaps)) {
-				$self = byCode($codeEtap);
+			my $testEtap = Univ->getById($univ)->testEtap;
+			
+			if (!$testEtap || &$testEtap($codeEtape)) {
+				$self = byCode($codeEtape);
 				unless ($self) {
-					$self = new Etape ($univ, $codeEtap,  $libEtap,  $site, $cohorte, $codeFormation, $label, $formation);
+					$self = new Etape ($univ, $codeEtape,  $libEtap,  $site, $cohorte, $codeFormation, $label, $formation);
 					if ($self) {
-						Dao->dao->addEtape($codeEtap, $libEtap, $codeFormation, $site, $cohorte);
+						Dao->dao->addEtape($codeEtape, $libEtap, $codeFormation, $site, $cohorte);
 					}
+					return 1 ;
 				}
-
-				$nbEtap++;
+				
 			}
-			return $nbEtap;
 		}
 		return 0;
 	} else {
@@ -278,10 +281,10 @@ sub readFile {
 		s/(;|\s)+$//;
 		if ($csv->parse($_) ){
 			my @fields = $csv->fields();
-			unless (create Etape($univ->id, @fields)){
+			unless (create Etape($univ->id, @fields)){ #ERRROR
 				WARN! "formation ligne $nbline : create object error !";
 				foreach my $elem (@fields) {
-					INFO! $elem;
+					DEBUG! $elem;
 				}
 				print LOG "formation $nbline rejet : $_\n";
 			}
