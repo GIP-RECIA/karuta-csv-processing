@@ -19,6 +19,7 @@ PARAM! version;
 PARAM! db;
 PARAM! dbFile;
 PARAM! file;
+PARAM! LASTVERSION;
 
 sub dao {
 	if ($dao_default) {
@@ -166,18 +167,31 @@ sub new {
 
 
 # fixe la version précedante pour les diffs , vérifie qu'elle existe.
+# si n'est pas fixé recupère la dernière.
 sub lastVersion {
 	my $self = shift;
 	my $oldV = shift;
 	unless ($oldV) {
-		return  $self->{LASTVERSION};
+		$oldV = $self->LASTVERSION;
+		unless ($oldV) {
+			my $dbh = $self->db;
+			my $statement = q/select max(version) from univs where univ = ? and version < ?/;
+			my $sth = $dbh->prepare($statement);
+			$sth ->execute($self->univ->id, $self->version) or FATAL! $dbh->errstr;
+			if (($oldV) = $sth->fetchrow_array()) {
+				$self->LASTVERSION = $oldV;
+			} else {
+				$oldV = 0;
+			}
+		}
+		return $oldV;
 	}
 	my $dbh = $self->db;
 	my $statement = q/select * from univs where univ = ? and version = ?/;
 	my $sth = $dbh->prepare($statement);
 	$sth ->execute($self->univ->id, $oldV) or FATAL! $dbh->errstr;
 	if ($sth->fetchrow_array()) {
-		$self->{LASTVERSION} = $oldV;
+		$self->LASTVERSION = $oldV;
 	} else {
 		$oldV = 0;
 	}
