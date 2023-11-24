@@ -32,6 +32,21 @@ sub dao {
 sub new {
 	my $class = shift;
 	my $dbFile = shift;
+	my $self = bless {}, $class;
+
+	my $dbh;
+	$dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","", {PrintError => 0, sqlite_unicode => 1 }) or FATAL!  $dbh->errstr;
+	$dbh->do("PRAGMA foreign_keys = ON");
+
+	my $self = bless {}, $class;
+	db! = $dbh;
+	file! = $dbFile;
+	return $dao_default = $self;
+}
+
+sub create {
+	my $class = shift;
+	my $dbFile = shift;
 	my $univ = shift;
 	my $jour = shift;
 
@@ -53,9 +68,8 @@ sub new {
 		$dao_default->db->disconnect();
 		$dao_default = 0;
 	}
-	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","", {PrintError => 0, sqlite_unicode => 1 });
-	$dbh->do("PRAGMA foreign_keys = ON");
-	
+	my $self= $class->new($dbFile);
+	my $dbh = db!;
 	if ($dbh) {
 
 		my $statement =
@@ -152,9 +166,6 @@ sub new {
 		$statement = q/insert into univs values ( ?, ?)/;
 		my $sth = $dbh->prepare($statement);
 		$sth ->execute($univId, $jour) or FATAL! $dbh->errstr;
-		my $self = bless {}, $class;
-		db! = $dbh;
-		file! = $dbFile;
 		version! = $jour;
 		univ! = $univ;
 

@@ -31,7 +31,7 @@ my $univ = new Univ('orleans', 'noFtp', 'testOrleans/', 'orleans');
 sub testDao {
 	print "debut test dao \n";
 
-	my $dao = new Dao("test.db", $univ, "20230919");
+	my $dao = Dao->create("test.db", $univ, "20230919");
 
 	WARN! 'lastVersion = ', $dao->lastVersion();
 	$dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '123');
@@ -40,7 +40,7 @@ sub testDao {
 	$dao->addFormation('codeF1', 'site1', 'formation11');
 	$dao->addEtape('etap1', 'libetap1', 'codeF1', 'site1');
 	
-	 $dao = new Dao("test.db", $univ, "20231010");
+	 $dao = Dao->create("test.db", $univ, "20231010");
 	 $dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '123');
 	$dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '1234');
 

@@ -114,7 +114,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 	#DEBUG! "lastPath = $lastPath";
 	
 	if ($newPath =~ /^(${workingDir}\/)(.+)(\d{8})$/) {
-		my $dao = new Dao($dbFile, $univ, $3);
+		my $dao = Dao->create($dbFile, $univ, $3);
 		my $prefix = "$1$2";
 		my $relativePath="$2$3";
 		

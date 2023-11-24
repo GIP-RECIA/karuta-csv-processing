@@ -28,7 +28,7 @@ my $u = new Univ('orleans', 'noFtp', 'testOrleans/', 'orleans');
 #DiffCsv::sort ('tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv', 3, 1, 3);
 
 #my $dao = new Dao('testOrleans/karuta.db', 'orleans', '20230630');
-my $dao = new Dao('testOrleans/karuta.db', $u, '20230630');
+my $dao = Dao->create('testOrleans/karuta.db', $u, '20230630');
 $dao->lastVersion('20230322');
 
 
