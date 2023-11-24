@@ -52,18 +52,6 @@ if ($logFile) {
 my $ftpAddr = $properties-> getProperty('ftp.addr') or FATAL!  "ftp.addr propertie not found" ;
 my $listUniv= $properties-> getProperty('univ.list') or FATAL!  "univ.list propertie not found" ;
 my $annee= $properties-> getProperty('annee.scolaire') or FATAL!  "annee.scolaire propertie not found" ;
-my $dataFile = $properties-> getProperty('data.file', $workingDir. "/karuta.data");
-
-DEBUG! "datafile = $dataFile";
-
-
-my $dataProps = new Config::Properties();
-#lecture du fichier data s'il existe
-if (-f $dataFile) {
-	open my $data, $dataFile or FATAL! "error lecture $dataFile: $!";
-	$dataProps->load($data);
-	close $data;
-}
 
 my $modeTest = 0;
 
@@ -80,8 +68,6 @@ foreach my $univ (split(" ", $listUniv) ){
 		$modeTest = 1;
 		$u->path($newPathTest);
 		$u->lastPath($properties->getProperty("${univ}.test.lastPath"));
-	} else {
-		$u->lastPath($dataProps->getProperty($univ));
 	}
 }
 
@@ -110,9 +96,6 @@ unless ($modeTest) { # si on est en test pas de download
 	Download::closeFtp();
 }
 
-
-
-
 =begin
  	Traitement principal
 	pour chaque univ parse les fichiers FORMATION , ETU et STAFF
@@ -128,15 +111,35 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 	
 	my $lastPath = $univ->lastPath();
 
-	if ($lastPath) {
-		$lastPath .= $diffSuffix;
-	} else {
-	}
 	#DEBUG! "lastPath = $lastPath";
 	
-	if ($newPath =~ /^${workingDir}\/(.+(\d{8}))$/) {
-		my $dao = new Dao($dbFile, $univ, $2);
-		my $relativePath=$1;
+	if ($newPath =~ /^(${workingDir}\/)(.+)(\d{8})$/) {
+		my $dao = new Dao($dbFile, $univ, $3);
+		my $prefix = "$1$2";
+		my $relativePath="$2$3";
+		
+		my $lastVersion;
+		
+		if ($lastPath =~ /(\d{8})$/) {
+			$lastVersion = $dao->lastVersion($1);
+			$lastPath .= $diffSuffix ;
+			
+		} else {
+			
+			unless ($modeTest) {
+				$lastVersion = $dao->lastVersion();
+				
+				if ($lastVersion) {
+					$lastPath = $prefix . $lastVersion;
+					$univ->lastPath($lastPath);
+					$lastPath .= $diffSuffix ;
+				}
+				
+			}
+		}
+		DEBUG! "modeTest=$modeTest, lastPath = $lastPath, lastVersion=$lastVersion",  ;
+		
+
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
 		my $tmpRep = "${newPath}_tmp/";
 
@@ -202,12 +205,10 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			# pour la comparaison nouvelle formule
 			my $comp = new Compare($univ, $dao, $annee, $outputRep);
 			#
-			my $lastVersion;
-			if ($lastPath) {
-				unless ($lastPath =~ /(\d{8})/) {FATAL! "lastPath sans version $lastPath";}
-				$lastVersion=$1;
+
+			if ($lastVersion) {
+
 				$comp->date1($lastVersion);
-				$dao->lastVersion($lastVersion);
 				#DEBUG! "compareCohorte";
 				$comp->compareCohorte;
 				$comp->compareStaff;
@@ -231,17 +232,11 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			
 			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${outputRep} ${relativePath}${diffSuffix} ${relativePath}.log");
 
-			#on memorise le new path
-			$dataProps->changeProperty($univ->id(),$newPath);
 		}
 	} else {
 		ERROR! $univ->id(), " KO; $workingDir";
 	}
 }
-
-# on ecrit le dataFile
-open my $data, ">$dataFile" or FATAL! "error ecriture $dataFile: $!";
-$dataProps->save($data);
 
 
 sub compareSortedFile {

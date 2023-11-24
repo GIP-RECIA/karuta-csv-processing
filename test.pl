@@ -26,24 +26,34 @@ SYSTEM!("ls -l");
 #SYSTEM!("rm -v Test/Orleans_20220107*");
 SYSTEM!("ls -l Test");
 
-
+my $univ = new Univ('orleans', 'noFtp', 'testOrleans/', 'orleans');
 
 sub testDao {
 	print "debut test dao \n";
 
-	my $dao = new Dao("test.db", "tours", "20230919");
+	my $dao = new Dao("test.db", $univ, "20230919");
 
-
-	&getDao()->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '123');
+	WARN! 'lastVersion = ', $dao->lastVersion();
+	$dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '123');
 	$dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '1234');
 
 	$dao->addFormation('codeF1', 'site1', 'formation11');
 	$dao->addEtape('etap1', 'libetap1', 'codeF1', 'site1');
+	
+	 $dao = new Dao("test.db", $univ, "20231010");
+	 $dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '123');
+	$dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '1234');
+
+	$dao->addFormation('codeF1', 'site1', 'formation11');
+	$dao->addEtape('etap1', 'libetap1', 'codeF1', 'site1');
+	WARN! 'lastVersion = ', $dao->lastVersion();
 }
+
+&testDao();
 
 sub testUniv {
 	print "Test univ\n";
-	my $univ = new Univ('orleans', 'noFtp', 'testOrleans/', 'orleans');
+	
 	print Dumper($univ);
 	my $testEtap = Univ->getById('orleans')->testEtap;
 	if ($testEtap) {
@@ -91,5 +101,3 @@ sub testUniv {
 		ERROR! "pas de filtreEtap pour tours!";
 	}
 }
-
-testUniv;

@@ -50,7 +50,7 @@ sub new {
 	FATAL! "Dao sans jour définit" unless $jour;
 	
 	if ($dao_default) {
-		$dao_default->db->close;
+		$dao_default->db->disconnect();
 		$dao_default = 0;
 	}
 	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","", {PrintError => 0, sqlite_unicode => 1 });
@@ -179,7 +179,7 @@ sub lastVersion {
 			my $sth = $dbh->prepare($statement);
 			$sth ->execute($self->univ->id, $self->version) or FATAL! $dbh->errstr;
 			if (($oldV) = $sth->fetchrow_array()) {
-				$self->LASTVERSION = $oldV;
+				$self->LASTVERSION($oldV);
 			} else {
 				$oldV = 0;
 			}
@@ -191,7 +191,7 @@ sub lastVersion {
 	my $sth = $dbh->prepare($statement);
 	$sth ->execute($self->univ->id, $oldV) or FATAL! $dbh->errstr;
 	if ($sth->fetchrow_array()) {
-		$self->LASTVERSION = $oldV;
+		$self->LASTVERSION($oldV);
 	} else {
 		$oldV = 0;
 	}
@@ -258,8 +258,7 @@ sub addFormation {
 	my $dbh = $self->db;
 	
 	my $statement = q/insert into formations values (?, ?, ?, ?, ?, null, null)/;
-	my $sth = $dbh->prepare($statement);
-
+	my $sth = $dbh->prepare($statement) or FATAL! $dbh->errstr," : ", $dbh->err;
 	
 	my $res = $sth->execute($self->univ->id, $self->version, $code, $site, $label);
 	if ($sth->err) {
