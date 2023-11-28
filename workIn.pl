@@ -5,7 +5,7 @@ use open qw( :encoding(utf8) :std );
 use File::Copy qw(copy);
 use FindBin;                    
 use lib $FindBin::Bin;
-use MyLogger 'DEBUG';
+use MyLogger ;#'DEBUG';
 use Config::Properties;
 use Univ;
 use Download;

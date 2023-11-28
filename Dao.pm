@@ -2,9 +2,10 @@ use strict;
 use utf8;
 use DBI;
 
-use MyLogger;
 use Personne;
 use Formation;
+use MyLogger ; #'DEBUG';
+#use Filter::sh "tee " . __FILE__ . ".pl";
 
 package Dao;
 use Data::Dumper;
@@ -489,5 +490,40 @@ sub allPersonneEtap {
 	return execDiffPersonEtap($dbh, $sth, $self->univ->id, $status, $self->version);
 }
 
+######### pour le netoyage de la base
+
+sub getVersionUniv {
+	my ($self, $univId) = @_;
+	my $dbh = $self->db;
+
+	my $query;
+	if ($univId) {
+		$query = q/select univ, version from univs where univ = ? order by version/;
+	} else {
+		$query = q/select univ, version from univs order by univ, version/;
+	}
+	my $sth = $dbh->prepare($query) or FATAL! "$query\n",  $dbh->errstr ," : ", $dbh->err;
+	$univId ? $sth ->execute($univId) : $sth ->execute() or FATAL! "$query\n",  $dbh->errstr ," : ", $dbh->err;
+
+	return ($sth->fetchall_arrayref);
+}
+
+
+sub deleteAllVersion {
+	my $self = shift;
+	FATAL! ("deleteAllVersion pas assez de parametre " ) if (@_ < 2)  ;
+
+	my $dbh = $self->db;
+
+	$dbh->begin_work;
+	for my $table (qw/personneEtape etapes formations  personnes univs/) {
+		$dbh->do("delete from $table where univ = ? and version = ?", undef, @_) or do {
+			$dbh->rollback;
+			FATAL! "delete $table ", @_,  $dbh->errstr ," : ", $dbh->err;
+		}
+	}
+
+	$dbh->commit;
+}
 
 1;

@@ -21,12 +21,13 @@ use open qw( :encoding(utf8) :std );
 use FindBin;                    
 use lib $FindBin::Bin;
 use Pod::Usage qw(pod2usage);
-use MyLogger 'DEBUG';
+use MyLogger ;#'DEBUG';
 
 use Univ;
 
 use Dao;
-
+use Data::Dumper;
+MyLogger::level(5,2);
 my $dbFile = "karuta.db";
 my $univId;
 my $version;
@@ -38,3 +39,29 @@ unless (@ARGV && GetOptions ( "f=s" => \$dbFile, "u=s" => \$univId, "v=s" => \$v
 }
 
 my $dao = new Dao($dbFile);
+
+if ($univId) {
+	if ($version) {
+		print "On supprime les données de $univId du $version (O/N): ";
+		my $choix = <STDIN>;
+		chomp $choix;
+		if ($choix eq 'O') {
+			$dao->deleteAllVersion($univId, $version);
+		}
+
+	}
+}
+unless ($version) {
+	print "liste des versions par établissement\n";
+	foreach my $tuple (@{$dao->getVersionUniv($univId)} ){
+		print "\t",$$tuple[0], "\t", $$tuple[1], "\n";
+	}
+	
+}
+
+
+
+
+
+
+#print Dumper($dao->getVersionUniv($univId));
