@@ -10,33 +10,36 @@
 
 =head1 SYNOPSIS
 
-	cleanDB.pl  [-f karuta.db.file] [-u univId] [-v versionNumber] 
+	cleanDB.pl  karuta.db.file [univId] [versionNumber] 
+
+=head1 DESCRIPTION
+
+	Supprime, aprés confirmation, les données de karuta.db.file corespondantes à l'univId et versionNumber.
+	Si pas de versionNumber supprime, après confirmation, toutes les données de l'univId.
+	Si pas de confirmation affiche les versionNumbers existant pour l'unviId.
+	Si pas d'univId affiche toutes les versionNumbers de tous les univId de la base.
 
 =cut
 
 use strict;
 use utf8;
-use Getopt::Long;
+#use Getopt::Long;
 use open qw( :encoding(utf8) :std );
 use FindBin;                    
 use lib $FindBin::Bin;
 use Pod::Usage qw(pod2usage);
-use MyLogger ;#'DEBUG';
-
-use Univ;
-
+#use MyLogger ;#'DEBUG';
 use Dao;
-use Data::Dumper;
-MyLogger::level(5,2);
-my $dbFile = "karuta.db";
-my $univId;
-my $version;
 
-unless (@ARGV && GetOptions ( "f=s" => \$dbFile, "u=s" => \$univId, "v=s" => \$version)) {
+unless (@ARGV) {
 	my $myself = $FindBin::Bin . "/" . $FindBin::Script ;
 	#$ENV{'MANPAGER'}='cat';
-	pod2usage( -message =>"ERROR:	manque d'arguments", -verbose => 1, -exitval => 1 , -input => $myself, -noperldoc => 1 );
+	pod2usage( -message =>"ERROR:	manque d'arguments", -verbose => 2, -exitval => 1 , -input => $myself, -noperldoc => 1 );
 }
+
+my $dbFile = shift;
+my $univId = shift;
+my $version = shift;
 
 my $dao = new Dao($dbFile);
 
@@ -48,7 +51,14 @@ if ($univId) {
 		if ($choix eq 'O') {
 			$dao->deleteAllVersion($univId, $version);
 		}
-
+	} else {
+		print "On supprime toutes les données de $univId  (O/N): ";
+		my $choix = <STDIN>;
+		chomp $choix;
+		if ($choix eq 'O') {
+			$dao->deleteAllUniv($univId);
+		}
+		exit;
 	}
 }
 unless ($version) {
@@ -58,10 +68,3 @@ unless ($version) {
 	}
 	
 }
-
-
-
-
-
-
-#print Dumper($dao->getVersionUniv($univId));

@@ -509,21 +509,31 @@ sub getVersionUniv {
 }
 
 
-sub deleteAllVersion {
-	my $self = shift;
-	FATAL! ("deleteAllVersion pas assez de parametre " ) if (@_ < 2)  ;
-
-	my $dbh = $self->db;
+sub exeAllQuery {
+	my $dbh = shift()->db;
+	my $queryFormat = shift;
 
 	$dbh->begin_work;
 	for my $table (qw/personneEtape etapes formations  personnes univs/) {
-		$dbh->do("delete from $table where univ = ? and version = ?", undef, @_) or do {
+		my $query = sprintf($queryFormat, $table);
+		$dbh->do($query, undef, @_) or do {
 			$dbh->rollback;
-			FATAL! "delete $table ", @_,  $dbh->errstr ," : ", $dbh->err;
+			FATAL! $query, @_,  $dbh->errstr ," : ", $dbh->err;
 		}
 	}
-
 	$dbh->commit;
+}
+
+sub deleteAllUniv {
+	my $self = shift;
+	my $univId = shift;
+	FATAL! ("deleteAllUniv manque l'univ " ) unless ($univId)  ;
+	$self->exeAllQuery(q/delete from %s where univ = ?/, $univId);
+}
+sub deleteAllVersion {
+	my $self = shift;
+	FATAL! ("deleteAllVersion pas assez de parametre " ) if (@_ < 2)  ;
+	$self->exeAllQuery(q/delete from %s where univ = ? and version = ?/, @_);
 }
 
 1;
