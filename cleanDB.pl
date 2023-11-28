@@ -28,7 +28,7 @@ use open qw( :encoding(utf8) :std );
 use FindBin;                    
 use lib $FindBin::Bin;
 use Pod::Usage qw(pod2usage);
-#use MyLogger ;#'DEBUG';
+use MyLogger ;#'DEBUG';
 use Dao;
 
 unless (@ARGV) {
@@ -36,6 +36,8 @@ unless (@ARGV) {
 	#$ENV{'MANPAGER'}='cat';
 	pod2usage( -message =>"ERROR:	manque d'arguments", -verbose => 2, -exitval => 1 , -input => $myself, -noperldoc => 1 );
 }
+
+MyLogger::level(3,1);
 
 my $dbFile = shift;
 my $univId = shift;
@@ -50,6 +52,7 @@ if ($univId) {
 		chomp $choix;
 		if ($choix eq 'O') {
 			$dao->deleteAllVersion($univId, $version);
+			
 		}
 	} else {
 		print "On supprime toutes les données de $univId  (O/N): ";
@@ -66,5 +69,4 @@ unless ($version) {
 	foreach my $tuple (@{$dao->getVersionUniv($univId)} ){
 		print "\t",$$tuple[0], "\t", $$tuple[1], "\n";
 	}
-	
 }
