@@ -15,6 +15,8 @@ PARAM! id;
 PARAM! nom;
 PARAM! prenom;
 PARAM! univ;
+PARAM! courriel;
+PARAM! matricule;
 
 use Hash::Util::FieldHash;
 
@@ -171,6 +173,8 @@ sub new {
 		univ! = $univ;
 		nom! = $nom;
 		prenom! = $prenom;
+		courriel! = $courriel;
+		matricule! = $matricule;
 		return  $self;
 	}
 	return 0;
@@ -243,6 +247,7 @@ sub new {
 		univ! = $univ;
 		nom! = $nom;
 		prenom! = $prenom;
+		courriel! = $courriel;
 		return $self;
 	}
 	return 0;

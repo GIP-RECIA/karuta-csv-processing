@@ -3,7 +3,7 @@ use IO::Select;
 use Symbol 'gensym';
 
 # 
-my $version="5.0";
+my $version="5.1";
 
 package MyLogger;
 use Filter::Simple;
@@ -12,9 +12,8 @@ use Filter::Simple;
 my $isDebug;
 
 sub import {
-	$isDebug = $_[1];
+	$isDebug = $_[1] ? $_[1] : 0;
 }
-
 
 FILTER_ONLY (
 	all => sub { 
@@ -73,21 +72,36 @@ FILTER_ONLY (
 my $level;
 my $file;
 my $mod;
+my $MyLoggerFile;
 # si mod = 0 : si on a un fichier  on ne sort sur STDERR que les WARN ERROR et FATAL si pas de fichier on sort aussi INFO
-# si mod = 1 : et on a un fichier on sort sur STDOUT les INFO aussi 
-# si mod = 2 : on sort tout sur STDOUT ou STDERR
+# si mod = 1 : et on a un fichier on sort sur STDERR aussi les INFO  
+# si mod = 2 : on sort tout sur STDERR
 
+
+# sans parametre  (MyLogger::file) renvoie le descripteur de fichier de log courant ou null
+# avec 1 param (MyLogger->file()) ferme le fichier de log 
+# sinon (MyLogger->file(filename, autoflush) ) fixe le fichier de log et le statut (autofluch des logs)
 sub file {
 	unless (shift) {
-		return $file;
+		return $MyLoggerFile;
 	};
-	if ($file) {
-		close MyLoggerFile;
+	my ($filename, $autoflush) = @_;
+
+	if ($MyLoggerFile) {
+		close $MyLoggerFile;
 	}
-	$file = shift;
-	$file =~ s/^\>//;
-	open (MyLoggerFile, ">$file" ) or die $file . " $!" ;
+	if ($filename) {
+		$filename =~ s/^\>//;
+		open ($MyLoggerFile, ">$filename" ) or die $filename . " $!" ;
+		if ($autoflush) {
+			my $old_fh = select($MyLoggerFile);
+			$| = 1;
+			select($old_fh);
 }
+	}
+	$file = $filename;
+}
+
 
 
 sub level {
@@ -105,22 +119,17 @@ sub is {
 	return $levelMin <= $level;
 }
 
-
-
-
-
 sub trace {
 	if ($file ) {
-		print MyLoggerFile @_;
+		print $MyLoggerFile @_;
 	};
 	if ($mod > 1) {
-		print @_;
+		print STDERR @_;
 	}
 }
 
-
 sub logger {
-	print MyLoggerFile dateHeure(), @_, "\n";
+	print $MyLoggerFile dateHeure(), @_, "\n";
 }
 
 sub debug {
@@ -130,7 +139,7 @@ sub debug {
 	}
 	
 	if ($mod > 1) {
-		print ' DEBUG: ', @_, "\n";
+		print STDERR ' DEBUG: ', @_, "\n";
 	}
 	
 }
@@ -141,10 +150,10 @@ sub info {
 	if ($file) {
 		logger 'INFO: ', $fileName, @_;
 		if ($mod > 0) {
-			print '  INFO: ', @_,"\n";
+			print STDERR '  INFO: ', @_,"\n";
 		}
 	} else {
-		print '  INFO: ', $fileName, @_, "\n";
+		print STDERR '  INFO: ', $fileName, @_, "\n";
 	}
 }
 
@@ -167,8 +176,8 @@ sub fatal {
 			erreur "\t" , $file, $line, $sub;
 		}
 	}
-	close MyLoggerFile;
-	exit 1;
+	file();
+	die "\n";
 }
 
 sub dateHeure {
@@ -199,7 +208,6 @@ sub traceSystem {
 	my $ERR = Symbol::gensym();
 	my $select = new IO::Select;
 
-
 	my $pid;
 	eval {
 	  $pid = IPC::Open3::open3(undef, $COM, $ERR, $commande) or fatal ("FATAL: ", $fileName, $line, "$commande : die: ", $! );
@@ -217,13 +225,13 @@ sub traceSystem {
 	my $printOut = sub {
 		local $_ = shift;
 		if ($level >=  4) { trace("\t", $_); }
-			if ($OUT) {
-				if ($outIsCode) {
-					&$OUT;
-				} else {
-					push @$OUT, $_;
-				}
+		if ($OUT) {
+			if ($outIsCode) {
+				&$OUT;
+			} else {
+				push @$OUT, $_;
 			}
+		}
 	};
 
 	my $printErr = sub {

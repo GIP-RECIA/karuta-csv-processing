@@ -4,7 +4,7 @@ use DBI;
 
 use Personne;
 use Formation;
-use MyLogger ; #'DEBUG';
+use MyLogger 'DEBUG';
 #use Filter::sh "tee " . __FILE__ . ".pl";
 
 package Dao;
@@ -21,6 +21,7 @@ PARAM! db;
 PARAM! dbFile;
 PARAM! file;
 PARAM! LASTVERSION;
+PARAM! sth;
 
 sub dao {
 	if ($dao_default) {
@@ -31,15 +32,13 @@ sub dao {
 }
 
 sub new {
-	my $class = shift;
+	my $self = NEW!;
 	my $dbFile = shift;
-	my $self = bless {}, $class;
 
 	my $dbh;
 	$dbh = DBI->connect("dbi:SQLite:dbname=$dbFile","","", {PrintError => 0, sqlite_unicode => 1 }) or FATAL!  $dbh->errstr;
 	$dbh->do("PRAGMA foreign_keys = ON");
 
-	my $self = bless {}, $class;
 	db! = $dbh;
 	file! = $dbFile;
 	return $dao_default = $self;
@@ -191,10 +190,9 @@ sub lastVersion {
 			my $sth = $dbh->prepare($statement);
 			$sth ->execute($self->univ->id, $self->version) or FATAL! $dbh->errstr;
 			if (($oldV) = $sth->fetchrow_array()) {
-				$self->LASTVERSION($oldV);
-			} else {
-				$oldV = 0;
-			}
+				return $self->LASTVERSION($oldV);
+			} 
+			return $self->LASTVERSION('');
 		}
 		return $oldV;
 	}
@@ -203,12 +201,12 @@ sub lastVersion {
 	my $sth = $dbh->prepare($statement);
 	$sth ->execute($self->univ->id, $oldV) or FATAL! $dbh->errstr;
 	if ($sth->fetchrow_array()) {
-		$self->LASTVERSION($oldV);
-	} else {
-		$oldV = 0;
-	}
+		return $self->LASTVERSION($oldV);
+	} 
+	return $self->LASTVERSION('');
 }
 
+=begin
 
 sub addPerson {
 	my $self = shift;
@@ -224,20 +222,51 @@ sub addPerson {
 	my $sth = $dbh->prepare($statement);
 	$sth->execute($self->univ->id, $self->version, $eppn, $status) or FATAL! $dbh->errstr;
 	my @t = $sth->fetchrow_array();
-	
+
 	unless (@t) {
 		$statement = q/insert into personnes values (?, ?, ?, ?, ?, ?, ?, ?)/;
 		$sth = $dbh->prepare($statement);
 		$sth ->execute($self->univ->id, $self->version, $eppn, $nom , $prenom, $mail, $matricule, $status) or FATAL! $dbh->errstr;
 	} else {
-		
 		if ($nom ne $t[3] ||  $prenom ne $t[4] || $mail ne $t[5] || $matricule ne $t[6]) {
-			ERROR! "(", $self->univ->id,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status) != (", join(", " ,@t), ")" ;  
+			ERROR! "(", $self->univ->id,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status) != (", join(", " ,@t), ")" ;
 		}
+		return 1;
 	}
+	return 1;
 };
 
-	
+=cut
+
+sub addPerson {
+	my $self = shift;
+	my $status = shift;
+	my $eppn = shift;
+	my $nom = shift;
+	my $prenom = shift;
+	my $mail = shift;
+	my $matricule = shift;
+	my $dbh = $self->db;
+	my $statement = q/insert into personnes values (?, ?, ?, ?, ?, ?, ?, ?)/;
+	my $sth = $dbh->prepare($statement);
+	$sth->execute($self->univ->id, $self->version, $eppn, $nom , $prenom, $mail, $matricule, $status);
+	if ($sth->err) {
+		if ($sth->err == 19) {
+			$statement = q/select * from personnes where univ = ? and version = ? and idPersonne = ? and status = ?/;
+			my $sth = $dbh->prepare($statement);
+			$sth->execute($self->univ->id, $self->version, $eppn, $status) or FATAL! $dbh->errstr, " ", $dbh->err;
+			my @t = $sth->fetchrow_array();
+			if ($nom ne $t[3] ||  $prenom ne $t[4] || $mail ne $t[5] || $matricule ne $t[6]) {
+				ERROR! "(", $self->univ->id,", ", $self->version,", $eppn, $nom , $prenom, $mail, $matricule, $status) != (", join(", " ,@t), ")" ;
+			}
+		} else {
+			FATAL! $dbh->errstr, " ", $sth->err;
+		}
+		return 0;
+	}
+	return 1;
+}
+
 sub getPersonne {
 	my $self = shift;
 	my $idPersonne = shift;
@@ -252,16 +281,15 @@ sub getPersonne {
 
 	my $personne;
 	my @tuple = $sth->fetchrow_array;
-	if ($status == 'ETU') {
-		$personne = new Etudiant(@tuple);
+	if ($status eq 'ETU') {
+		($personne = new Etudiant(@tuple)) or FATAL! "getPersonne ETU $idPersonne: $!";
 #		if ($personne->id eq '22204658t@univ-tours.fr') {DEBUG! Dumper($personne), Dumper(@tuple);}
 		
-	} elsif ($status == 'STAFF' ) {
+	} elsif ($status eq 'STAFF' ) {
 		$personne = new Staff(@tuple);
 	}
 	return $personne;
 }
-
 
 sub addFormation {
 	my $self = shift;
@@ -271,21 +299,24 @@ sub addFormation {
 	
 	my $statement = q/insert into formations values (?, ?, ?, ?, ?, null, null)/;
 	my $sth = $dbh->prepare($statement) or FATAL! $dbh->errstr," : ", $dbh->err;
-	
-	my $res = $sth->execute($self->univ->id, $self->version, $code, $site, $label);
+
+	$sth->execute($self->univ->id, $self->version, $code, $site, $label);
 	if ($sth->err) {
+		DEBUG! "sth->err = ", $sth->err;
 		if ($sth->err == 19) {
 			$statement = q/select label from formations where univ = ? and version = ? and code = ? and site = ?/;
 			$sth = $dbh->prepare($statement);
 			$sth->execute($self->univ->id, $self->version, $code, $site) or FATAL! $dbh->errstr," : ", $dbh->err;
 			my @t = $sth->fetchrow_array();
 			if ($t[0] ne $label) {
-				ERROR! "formation : $code; avec différent labels :", $label, ":", $t[0] ,":"; 
+				ERROR! "formation : $code; avec différent labels :", $label, ":", $t[0] ,":";
 			} 
 		} else {
 			ERROR! $sth->errstr ," : ", $sth->err;
 		}
-	} 
+		return 0;
+	}
+	return 1;
 }
 
 sub updateFormation {
@@ -333,12 +364,14 @@ sub addEtape {
 			$sth->execute($self->univ->id, $self->version, $codeEtape ) or FATAL! $dbh->errstr," : ", $dbh->err;
 			my @t = $sth->fetchrow_array();
 			if ($t[0] ne $libEtape) {
-				ERROR! "etape : $codeEtape; non unique; libélés :", $libEtape, ":", $t[0] ,":"; 
+				ERROR! "etape : $codeEtape; non unique; libélés :", $libEtape, ":", $t[0] ,":";
 			}
 		} else {
 			ERROR! $dbh->errstr ," : ", $dbh->err;
 		}
+		return 0;
 	};
+	return 1;
 }
 
 
@@ -393,7 +426,8 @@ sub addPersonneEtap {
 	my $statement = q/insert into personneEtape values (?, ?, ?, ?, ?, ?)/;
 	my $sth = $dbh->prepare($statement);
 	$sth->execute($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre)
-		or FATAL! $dbh->errstr ," : ", $dbh->err and  DEBUG! " values \n", Dumper($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre) ;
+		or (DEBUG! " values \n", Dumper($self->univ->id, $self->version, $idPersonne, $codeEtape, $status, $ordre)
+		and FATAL! $dbh->errstr ," : ", $dbh->err );
 }
 
 
@@ -421,7 +455,6 @@ sub getEtapeEtu{
 		return $self->createEtap($version, @t);
 	}
 	FATAL! "etape introuvable ($idPersonne, $rang, $version)";
-	
 }
 
 
