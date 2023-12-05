@@ -234,7 +234,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 
 		}
 	} else {
-		ERROR! $univ->id(), " KO; $workingDir";
+		ERROR! $univ->id(), " KO; newPath=$newPath;  workingDir=$workingDir";
 	}
 }
 
