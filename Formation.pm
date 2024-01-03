@@ -6,7 +6,7 @@ use open qw( :encoding(utf8) :std );
 use Dao;
 use Univ;
 use Data::Dumper;
-use MyLogger;  #use Filter::sh "tee " . __FILE__ . ".pl";
+use MyLogger ; #'DEBUG';  #use Filter::sh "tee " . __FILE__ . ".pl";
 
 package HaveFiles;
 
@@ -148,6 +148,9 @@ sub create {
 				}
 				
 			}
+			#DEBUG! "codeFormation rejeté par testEtap ";
+		} else {
+			#DEBUG! "create Formation return 0";
 		}
 		return 0;
 	} else {
@@ -282,10 +285,7 @@ sub readFile {
 		if ($csv->parse($_) ){
 			my @fields = $csv->fields();
 			unless (create Etape($univ->id, @fields)){ #ERRROR
-				WARN! "formation ligne $nbline : create object error !";
-				foreach my $elem (@fields) {
-					DEBUG! $elem;
-				}
+				WARN! "formation ligne $nbline : étape rejetée";
 				print LOG "formation $nbline rejet : $_\n";
 			}
 		} else {
