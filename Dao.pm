@@ -4,7 +4,7 @@ use DBI;
 
 use Personne;
 use Formation;
-use MyLogger 'DEBUG';
+use MyLogger ;#'DEBUG';
 #use Filter::sh "tee " . __FILE__ . ".pl";
 
 package Dao;
