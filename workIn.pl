@@ -30,7 +30,7 @@ unless ($workingDir) {
 
 if ($workingDir =~ /(kapc\.\d\.\d.\d)/) {
 	if ($1 ne $version) {
-		FATAL! "Repertoire de travail de la mauvaise version : $1 != $version \n";
+		§FATAL "Repertoire de travail de la mauvaise version : $1 != $version \n";
 	}
 }
 
@@ -39,27 +39,27 @@ MyLogger->file("$workingDir/karuta.log");
 my $configFile = "$workingDir/karuta.properties";
 my $dbFile =  "$workingDir/karuta.db";
 
-INFO! "Lecture des properties";
-my $properties = new Config::Properties( file => $configFile) or FATAL! "Properties $configFile : $!";
+§INFO "Lecture des properties";
+my $properties = new Config::Properties( file => $configFile) or §FATAL "Properties $configFile : $!";
 
 my $logFile = $properties->getProperty('log.file');
 
 if ($logFile) {
-	INFO! "new logger file : ", $logFile;
+	§INFO "new logger file : ", $logFile;
 	MyLogger::file $logFile;
 }
 
-my $ftpAddr = $properties-> getProperty('ftp.addr') or FATAL!  "ftp.addr propertie not found" ;
-my $listUniv= $properties-> getProperty('univ.list') or FATAL!  "univ.list propertie not found" ;
-my $annee= $properties-> getProperty('annee.scolaire') or FATAL!  "annee.scolaire propertie not found" ;
+my $ftpAddr = $properties-> getProperty('ftp.addr') or §FATAL  "ftp.addr propertie not found" ;
+my $listUniv= $properties-> getProperty('univ.list') or §FATAL  "univ.list propertie not found" ;
+my $annee= $properties-> getProperty('annee.scolaire') or §FATAL  "annee.scolaire propertie not found" ;
 
 my $modeTest = 0;
 
 foreach my $univ (split(" ", $listUniv) ){
-	INFO! "Univ a traiter: $univ" ;
+	§INFO "Univ a traiter: $univ" ;
 
-	my $ftpRep = $properties-> getProperty("${univ}.ftp.rep") or  FATAL!  "${univ}.ftp.rep propertie not found" ;
-	my $filePrefix = $properties-> getProperty("${univ}.file.prefix") or FATAL!  "${univ}.file.prefix propertie not found" ;
+	my $ftpRep = $properties-> getProperty("${univ}.ftp.rep") or  §FATAL  "${univ}.ftp.rep propertie not found" ;
+	my $filePrefix = $properties-> getProperty("${univ}.file.prefix") or §FATAL  "${univ}.file.prefix propertie not found" ;
 	my $newPathTest = $properties-> getProperty("${univ}.test.newPath");
 
 	my $u = new Univ($univ, $ftpRep, $workingDir, $filePrefix);
@@ -88,7 +88,7 @@ unless ($modeTest) { # si on est en test pas de download
 			$univ->path($newPath);
 		} else {
 			# on vide le path pour indiqué qu'il n'y a pas de nouveau fichier
-			INFO! "Pas de nouveau fichier sur le sftp";
+			§INFO "Pas de nouveau fichier sur le sftp";
 			$univ->path("");
 		}
 	}
@@ -107,11 +107,11 @@ my %allNewPrefixFile;
 TRAITEMENT: foreach my $univ (Univ::all) {
 	my $newPath = $univ->path();
 	
-	INFO! "newPath=$newPath", ": workinDir=${workingDir}:";
+	§INFO "newPath=$newPath", ": workinDir=${workingDir}:";
 	
 	my $lastPath = $univ->lastPath();
 
-	#DEBUG! "lastPath = $lastPath";
+	#§DEBUG "lastPath = $lastPath";
 	
 	if ($newPath =~ /^(${workingDir}\/)(.+)(\d{8})$/) {
 		my $dao = Dao->create($dbFile, $univ, $3);
@@ -137,7 +137,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				
 			}
 		}
-		DEBUG! "modeTest=$modeTest, lastPath = $lastPath, lastVersion=$lastVersion",  ;
+		§DEBUG "modeTest=$modeTest, lastPath = $lastPath, lastVersion=$lastVersion",  ;
 		
 
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
@@ -165,7 +165,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			my $prefixFile;
 
 			DiffCsv::trieFile($newFormationFile, $tmpRep, $diffRep, 1 );
-			copy $diffRep . $newFormationFile, $outputRep or FATAL! "Copy failed: $!";
+			copy $diffRep . $newFormationFile, $outputRep or §FATAL "Copy failed: $!";
 			
 			if ($lastPath) {
 				compareSortedFile($newFormationFile, $diffRep, $lastPath,  1) or next TRAITEMENT;
@@ -181,7 +181,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 		#	TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $outputRep);
 			for (TraitementCsv::parseFile('STAFF', $univ ,  $dateFile, $annee, $tmpRep)) {
 				DiffCsv::trieFile($_, $tmpRep, $diffRep, 3, 2);
-				copy $diffRep . $_, $outputRep or FATAL! "Copy failed: $!";
+				copy $diffRep . $_, $outputRep or §FATAL "Copy failed: $!";
 				if ($lastPath) {
 					compareSortedFile($_, $diffRep, $lastPath,  3, 2) or next TRAITEMENT;
 				}
@@ -194,7 +194,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 					my $oldFile = $_;
 					if (s/_\d{8}.csv$//) {
 						unless ($allNewPrefixFile{$_}) {
-		#					INFO!  "nouveau fichier inexistant ! l'ancien étant : $oldFile\n";
+		#					§INFO  "nouveau fichier inexistant ! l'ancien étant : $oldFile\n";
 							my $newFile = $oldFile;
 							$newFile =~ s/.csv$/.supp.csv/;
 							copy $lastPath . $oldFile, $diffRep . $newFile;
@@ -209,11 +209,11 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 			if ($lastVersion) {
 
 				$comp->date1($lastVersion);
-				#DEBUG! "compareCohorte";
+				#§DEBUG "compareCohorte";
 				$comp->compareCohorte;
 				$comp->compareStaff;
 			} else {
-				#DEBUG! "initCohorte";
+				#§DEBUG "initCohorte";
 				$comp->initCohorte;
 
 			}
@@ -230,11 +230,11 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 
 			$outputRep =~ s/$workingDir\///;
 			
-			SYSTEM! ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${outputRep} ${relativePath}${diffSuffix} ${relativePath}.log");
+			§SYSTEM ("cd $workingDir; /usr/bin/zip -qq -r ${zipName} ${relativePath} ${outputRep} ${relativePath}${diffSuffix} ${relativePath}.log");
 
 		}
 	} else {
-		ERROR! $univ->id(), " KO; newPath=$newPath;  workingDir=$workingDir";
+		§ERROR $univ->id(), " KO; newPath=$newPath;  workingDir=$workingDir";
 	}
 }
 
@@ -247,13 +247,13 @@ sub compareSortedFile {
 	my @cle = @_;
 
 	unless ($lastRep =~ /(_\d{8})/ ) {
-		ERROR! "Comparaison impossible: Ancien repertoire non daté: $lastRep";
+		§ERROR "Comparaison impossible: Ancien repertoire non daté: $lastRep";
 		return 0;
 	}
 	my $lastDate = $1;
 	my $prefixFile = $fileName;
 	unless ($prefixFile =~ s/_\d{8}.csv$//) {
-		ERROR! "Comparaison impossible: Mauvais format de fichier: $fileName";
+		§ERROR "Comparaison impossible: Mauvais format de fichier: $fileName";
 		return 0;
 	};
 
@@ -268,7 +268,7 @@ sub compareSortedFile {
 		DiffCsv::openAndCompareFile($oldFile, $newFile, $addFile, $suppFile, $diffFile, $enteteSize, @cle);
 	} else {
 		# l'ancien fichier n'existe pas => le nouveau n'est qu'ajouts;
-#		INFO! "Comparaison ($fileName): Ancien fichier inexistant: $oldFile";
+#		§INFO "Comparaison ($fileName): Ancien fichier inexistant: $oldFile";
 
 		copy $newFile, $addFile;
 	}
@@ -290,7 +290,7 @@ sub findInfoFile {
 			return ($file, $1, $2);
 		}
 	}
-	ERROR!  "fichier des formations non trouvé dans :$rep\n";
+	§ERROR  "fichier des formations non trouvé dans :$rep\n";
 	closedir REP;
 	return 0;
 }

@@ -39,10 +39,10 @@ sub initRepZip {
 	
 	opendir (REP, $repZip);
 
-	INFO! "Rep local = $repZip, filtre prefix: $zipPrefix\n";
+	§INFO "Rep local = $repZip, filtre prefix: $zipPrefix\n";
 
 	foreach my $file (readdir(REP) ) {
-		TRACE! ">\t$file ...\n";
+		§TRACE ">\t$file ...\n";
 	#	if ($file =~ /${zipPrefix}_\d{8}.zip/) { #TODO le test est inutile 
 			&filtreFile(\%lastZipByPrefix, \%lastDateByPrefix, $file, $zipPrefix);
 	#	}
@@ -52,10 +52,10 @@ sub initRepZip {
 	# lit le repertoire  ftp:
 	my $nbFtpFile = 0;
 	
-	INFO! "Rep ftp $ftpRep filtre prefix: $zipPrefix\n";
+	§INFO "Rep ftp $ftpRep filtre prefix: $zipPrefix\n";
 
 	foreach my $file (ftpRead($ftpRep, $zipPrefix)) {
-		TRACE! "test:\t$file ...\n";
+		§TRACE "test:\t$file ...\n";
 		if (&filtreFile(\%newZipByPrefix, \%lastDateByPrefix, $file, $zipPrefix)) {
 			if ($nbFtpFile++ > 31) {
 				deleteFtpFile($ftpRep, $file);
@@ -67,10 +67,10 @@ sub initRepZip {
 		ftpGet("$ftpRep/$file", $repZip);
 		if ($file =~ /(univ-)?(.+).zip/) {
 			my $newRep = "$repZip/".$2;
-			INFO! "mkdir $newRep \n";
-			mkdir ("$newRep") || FATAL!  $!;
-			INFO! "unzip -qq -d  $newRep $repZip/$file \n";
-			SYSTEM! ("unzip -qq -d  $newRep $repZip/$file" ) ;
+			§INFO "mkdir $newRep \n";
+			mkdir ("$newRep") || §FATAL  $!;
+			§INFO "unzip -qq -d  $newRep $repZip/$file \n";
+			§SYSTEM ("unzip -qq -d  $newRep $repZip/$file" ) ;
 			return $newRep;
 		}
 	}
@@ -80,7 +80,7 @@ sub initRepZip {
 sub filtreFile {
 	my ($lastZipByPrefix, $lastDateByPrefix, $file, $prefixe) = @_;
 	if ($file =~ /^(${prefixe}_)(\d{8})\.zip$/) {
-		TRACE! "\t\tok:\t", $1 , "\t$2" ,"\n";
+		§TRACE "\t\tok:\t", $1 , "\t$2" ,"\n";
 		my $prefix = $1;
 		my $date = $2;
 		my $lastDate = $$lastDateByPrefix{$prefix};
@@ -102,9 +102,9 @@ sub openFtp {
 	chop $ftpPrompt;
 
 	if ($ftpPrompt) {
-		INFO! "connection FTP ok";
+		§INFO "connection FTP ok";
 	} else {
-		FATAL! "connection FTP Ko";
+		§FATAL "connection FTP Ko";
 	}
 	print $FTPout "pwd\n";
 
@@ -131,7 +131,7 @@ sub ftpGet {
 	print $FTPout "get $file $localRep \n\n";
 	while (<$FTPin>) {
 		last if (/^$ftpPrompt$/);
-		TRACE! $_ ;
+		§TRACE $_ ;
 	}
 }
 
@@ -142,7 +142,7 @@ sub deleteFtpFile {
 		print $FTPout "rm $ftpRep/$file\n\n";
 		while (<$FTPin>) {
 			last if (/^$ftpPrompt$/); #
-			TRACE! $_;
+			§TRACE $_;
 		}
 	}
 }
@@ -162,7 +162,7 @@ sub ftpRead {
 	while (<$FTPin>) {
 		last if /^$ftpPrompt$/;
 		if (/((\w|[.-])+.zip)/) {
-			TRACE! "ftp: $1\n";
+			§TRACE "ftp: $1\n";
 			push @fileList, $1;
 		} 
 	}

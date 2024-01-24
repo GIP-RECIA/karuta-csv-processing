@@ -37,12 +37,12 @@ sub new {
 
 # on cherche les ETU qui ont changés de cohorte (étap)
 
-PARAM! dao;
-PARAM! univ;
-PARAM! date1;
-PARAM! date2;
-PARAM! annee;
-PARAM! tmp;
+§PARAM dao;
+§PARAM univ;
+§PARAM date1;
+§PARAM date2;
+§PARAM annee;
+§PARAM tmp;
 
 my $self;
 
@@ -191,7 +191,7 @@ sub initCohorte {
 	TraitementCsv::init('ETU', $self->univ, $self->date2, $self->annee, $self->tmp);
 	my $new = $self->dao->allPersonneEtap('ETU');
 	while (my ($idPersonne, $newEtapes ) = each %$new ) {
-	#	FATAL! Dumper($newEtapes)  if ($idPersonne eq '22204658t@univ-tours.fr') ;
+	#	§FATAL Dumper($newEtapes)  if ($idPersonne eq '22204658t@univ-tours.fr') ;
 		addEtu($idPersonne, @$newEtapes);
 	}
 }

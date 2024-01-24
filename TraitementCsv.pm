@@ -47,7 +47,7 @@ sub parseFile {
 	my $fileNameLog = "${path}.log";
 
 	 #$csv->sep_char($univ->sepChar());
-	open (CSV, "<$path/$fileName") || FATAL!  "$path/$fileName  " . $!;
+	open (CSV, "<$path/$fileName") || §FATAL  "$path/$fileName  " . $!;
 	open (LOG, ">>$fileNameLog");
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
@@ -83,7 +83,7 @@ sub parseFile {
 				print LOG "$fileName rejet : $_\n";
 			}
 		} else {
-		 WARN! "csv no parse line : ",  $fileName,"(",$nbligne,") : $_\n";
+		 §WARN "csv no parse line : ",  $fileName,"(",$nbligne,") : $_\n";
 		}
 	}
 	foreach my $file (values %fileName2file) {
@@ -103,7 +103,7 @@ sub traitementETU {
 		if ($etape) {
 			printInformationFileETU($etape, $personne);
 		} else {
-			WARN! ("pas d'etape pour ce codeEtap : $codeEtap !");
+			§WARN ("pas d'etape pour ce codeEtap : $codeEtap !");
 			print LOG "codeEtape erreur: $codeEtap !\n";
 			$nberr++;
 		}
@@ -132,7 +132,7 @@ sub traitementSTAFF {
 						print $file  "\n";
 					}
 				} else {
-					WARN! "Staff avec étape inconnue : ", $personne->id, ", $codeEtap";  
+					§WARN "Staff avec étape inconnue : ", $personne->id, ", $codeEtap";  
 				}
 			}
 		}
@@ -178,7 +178,7 @@ sub openFile {
 		}
 
 
-		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+		open ($file , ">$tmp/$fileName") || §FATAL  "$tmp/$fileName " . $!;
 
 		
 		foreach my $entete (Personne->getEntete($type, $univ->id, $annee, $etape, $typeFile)) {
@@ -253,7 +253,7 @@ sub getFileAddEtapETU {
 	if ($file) {
 		return $file;
 	}
-	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+	open ($file , ">$tmp/$fileName") || §FATAL  "$tmp/$fileName " . $!;
 	$csv->say($file, ['model_code','formationOriginale_code', 'cohorteOriginale', 'formationSupplementaire_code']);
 	$csv->say($file, ['kapc/8etudiants.batch-ajouter-etudiants-formation-supplementaire', $etapeOrg->formation->code, $etapeOrg->cohorte, $etapeAdd->formation->formationCode]);
 	$csv->say($file, ['loginEtudiant']);
@@ -284,7 +284,7 @@ sub getFileDelEtapETU {
 	if ($file) {
 		return $file;
 	}
-	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+	open ($file , ">$tmp/$fileName") || §FATAL  "$tmp/$fileName " . $!;
 	$csv->say($file, ['model_code','formationOriginale_code', 'cohorteOriginale', 'formationSupplementaire_code']);
 	$csv->say($file, ['kapc/8etudiants.batch-retirer-etudiants-formation-supplementaire', $etapeOrg->formation->formationCode, $etapeOrg->cohorte, $etapeDel->formation->formationCode]);
 	$csv->say($file, ['loginEtudiant']);
@@ -313,7 +313,7 @@ sub getFileModifEtapETU {
 	if ($file) {
 		return $file;
 	}
-	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+	open ($file , ">$tmp/$fileName") || §FATAL  "$tmp/$fileName " . $!;
 	$csv->say($file, ['model_code','ancienneFormation_code', 'ancienneCohorte', 'nouvelleFormation_code','nouvelleFormation_label','nouvelleCohorte']);
 	$csv->say($file, ['kapc/8etudiants.batch-changer-formation-etudiants', $etapeOld->formation->formationCode, $etapeOld->cohorte, $etapeNew->formation->formationCode, $etapeNew->formation->formationLabel, $etapeNew->cohorte]);
 	$csv->say($file, ['nomFamilleEtudiant','prenomEtudiant','loginEtudiant']);
@@ -330,7 +330,7 @@ sub printDelEtapSTAFF {
 	$fileName =~ s/\s/_/g;
 	my $file = $fileName2file{$fileName};
 	unless ($file) {
-		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+		open ($file , ">$tmp/$fileName") || §FATAL  "$tmp/$fileName " . $!;
 		$csv->say($file, ['model_code','']);
 		$csv->say($file, ['kapc/7enseignants.batch-retirer-enseignants-formations', '']);
 		$csv->say($file, ['loginEnseignant', 'formation_code']);
@@ -347,7 +347,7 @@ sub getFileDelETU {
 	if ($file) {
 		return $file;
 	}
-	open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+	open ($file , ">$tmp/$fileName") || §FATAL  "$tmp/$fileName " . $!;
 	$csv->say($file, ['model_code','formation_code','cohorte']);
 	$csv->say($file, ['kapc/8etudiants.batch-supprimer-etudiants', $etapeOld->formation->formationCode, $etapeOld->cohorte ]);
 	$csv->say($file, [ 'loginEtudiant' ]);
@@ -368,7 +368,7 @@ sub printDelSTAFF {
 	$fileName =~ s/\s/_/g;
 	my $file = $fileName2file{$fileName};
 	unless ($file) {
-		open ($file , ">$tmp/$fileName") || FATAL!  "$tmp/$fileName " . $!;
+		open ($file , ">$tmp/$fileName") || §FATAL  "$tmp/$fileName " . $!;
 		$csv->say($file, ['model_code','Suppression enseignants']);
 		$csv->say($file, ['kapc/7enseignants.batch-supprimer-enseignants', '' ]);
 		$csv->say($file, [ 'loginEnseignant' ]);
@@ -382,7 +382,7 @@ sub getEtu {
 	my $idEtu = shift;
 	unless ($etuCourant && $etuCourant->id eq $idEtu) {
 		$etuCourant = Dao->dao->getPersonne($idEtu, 'ETU');
-		FATAL! "etudiant introuvable " unless $etuCourant;
+		§FATAL "etudiant introuvable " unless $etuCourant;
 	}
 	return $etuCourant;
 }

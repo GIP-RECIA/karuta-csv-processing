@@ -13,7 +13,7 @@ package HaveFiles;
 sub getFile {
 	my $self = shift;
 	my $type = shift;
-	my $files = files! ;
+	my $files = §files ;
 	my $file = $$files{$type};
 	return $file;
 }
@@ -22,7 +22,7 @@ sub setFile {
 	my $self = shift;
 	my $file = shift;
 	my $type = shift;
-	my $files = files! ;
+	my $files = §files ;
 	
 	$$files{$type} = $file;
 }
@@ -30,13 +30,13 @@ sub setFile {
 package Etape;
 use base qw(HaveFiles);
 
-PARAM! code;
-PARAM! univId;
-PARAM! lib;
-PARAM! site;
-PARAM! cohorte;
-PARAM! formation;
-PARAM! files;
+§PARAM code;
+§PARAM univId;
+§PARAM lib;
+§PARAM site;
+§PARAM cohorte;
+§PARAM formation;
+§PARAM files;
 
 my %codeEtap2etap;
 
@@ -75,13 +75,13 @@ sub new {
 		
 		$self = bless {}, $class;
 		
-		univId! = $univ;
-		code! = $codeEtap;
-		lib! = $libEtap;
-		site! =  $site;
-		cohorte! = $cohorte;
-		formation! = $formation;
-		files! = {};
+		§univId = $univ;
+		§code = $codeEtap;
+		§lib = $libEtap;
+		§site =  $site;
+		§cohorte = $cohorte;
+		§formation = $formation;
+		§files = {};
 
 		$formation->addEtapes($self);
 
@@ -104,7 +104,7 @@ sub create {
 	my $cohorte;
 
 	unless ($site) {
-		ERROR! "Etape ($codeEtape) sans site\n";
+		§ERROR "Etape ($codeEtape) sans site\n";
 		foreach my $elem (@_) {
 		}
 		return 0;
@@ -148,13 +148,13 @@ sub create {
 				}
 				
 			}
-			#DEBUG! "codeFormation rejeté par testEtap ";
+			#§DEBUG "codeFormation rejeté par testEtap ";
 		} else {
-			#DEBUG! "create Formation return 0";
+			#§DEBUG "create Formation return 0";
 		}
 		return 0;
 	} else {
-		ERROR! " codeCormation ", $codeFormation;
+		§ERROR " codeCormation ", $codeFormation;
 		return 0;
 	}
 }
@@ -163,8 +163,8 @@ sub create {
 sub diffEtapFormation {
 	my  $self = shift;
 	my  $autre = shift;
-	if ( code! eq $autre->code) {
-		if ( formation!->formationCode eq $autre->formation->formationCode) {
+	if ( §code eq $autre->code) {
+		if ( §formation->formationCode eq $autre->formation->formationCode) {
 			return 0;
 		}
 		return 1;
@@ -180,13 +180,13 @@ my %code2Formation;
 
 my $csv = Text::CSV->new({ sep_char => ',', binary    => 1, auto_diag => 0, always_quote => 1 });
 
-PARAM! formationCode;
-PARAM! formationLabel;
-PARAM! code;
-PARAM! site;
-PARAM! label;
-PARAM! etapes;
-PARAM! files;
+§PARAM formationCode;
+§PARAM formationLabel;
+§PARAM code;
+§PARAM site;
+§PARAM label;
+§PARAM etapes;
+§PARAM files;
 
 sub new {
 	my ($class, $univId, $code , $label, $site) = @_;
@@ -195,24 +195,24 @@ sub new {
 
 	if ($formation) {
 		if ($label && $formation->label ne $label) {
-				WARN! "formation ($site, $code) avec plusieurs label: $label ", $formation->label;
+				§WARN "formation ($site, $code) avec plusieurs label: $label ", $formation->label;
 			}
 		return ($formation, 0);
 	}
 	unless ($label) {
-		WARN! "formation $code sans label";
-		FATAL! "$univId, $code , $label, $site";
+		§WARN "formation $code sans label";
+		§FATAL "$univId, $code , $label, $site";
 		return 0
 	}
 	
 	my $self  = bless {} , $class;
-	code! = $code;
-	label!  = $label;
-	etapes! = [];
-	site! = $site;
-	files! = {};
-	formationCode! = $univId . '_' . $site. '_' . $code;
-	formationLabel! = $univId . '_' . $site. ' - ' . $label;
+	§code = $code;
+	§label  = $label;
+	§etapes = [];
+	§site = $site;
+	§files = {};
+	§formationCode = $univId . '_' . $site. '_' . $code;
+	§formationLabel = $univId . '_' . $site. ' - ' . $label;
 
 	byCle($site, $code, $self);
 	return ($self, 1);
@@ -229,7 +229,7 @@ sub create {
 		($formation, $isNew) = new Formation($univ, $code , $label, $site);
 		
 	} else {
-		WARN! ("Erreur codeForamation $code : $label");
+		§WARN ("Erreur codeForamation $code : $label");
 		return 0;
 	}
 	
@@ -270,12 +270,12 @@ sub readFile {
 	
 	my $fileNameLog = "${path}.log";
 
-	open (FORMATION, "<$path/$fileName") || FATAL!  "$path/$fileName " . $! . "\n";
+	open (FORMATION, "<$path/$fileName") || §FATAL  "$path/$fileName " . $! . "\n";
 	binmode(FORMATION, ":encoding(utf8)");
 
 	<FORMATION>; # 1er ligne : nom de colonne
 
-	open (LOG, ">>$fileNameLog") || FATAL!  "$fileNameLog " . $!;
+	open (LOG, ">>$fileNameLog") || §FATAL  "$fileNameLog " . $!;
 	
 	my $nbline = 1;
 	while (<FORMATION>) {
@@ -285,11 +285,11 @@ sub readFile {
 		if ($csv->parse($_) ){
 			my @fields = $csv->fields();
 			unless (create Etape($univ->id, @fields)){ #ERRROR
-				WARN! "formation ligne $nbline : étape rejetée";
+				§WARN "formation ligne $nbline : étape rejetée";
 				print LOG "formation $nbline rejet : $_\n";
 			}
 		} else {
-			WARN! "formation ligne  $nbline could not be parsed: $_";
+			§WARN "formation ligne  $nbline could not be parsed: $_";
 			$csv->error_diag ();
 			print LOG "formation ($nbline) rejet : $_\n";
 		} 
@@ -310,12 +310,12 @@ sub writeFile {
 	
 	my $fullFileName = $tmp . $fileName;
 
-	INFO! "write $fullFileName";
+	§INFO "write $fullFileName";
 	
 	unless ( -d $tmp) {
 		mkdir $tmp, 0775;
 	}
-	open ($file , "> $fullFileName") || FATAL!  "$fullFileName " . $!;
+	open ($file , "> $fullFileName") || §FATAL  "$fullFileName " . $!;
 	
 	$csv->print($file, ['formation_code', 'formation_label']);
 	print $file "\n";
@@ -333,7 +333,7 @@ sub writeFile {
 sub addEtapes {
 	my $self = shift;
 	if (@_ > 0) {
-		push @{etapes!}, @_;
+		push @{§etapes}, @_;
 	}
 }
 

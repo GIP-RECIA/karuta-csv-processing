@@ -8,15 +8,15 @@ use MyLogger;
 #########
 #
 #
-package! Personne;
+§package Personne;
 
-PARAM! info;
-PARAM! id;
-PARAM! nom;
-PARAM! prenom;
-PARAM! univ;
-PARAM! courriel;
-PARAM! matricule;
+§PARAM info;
+§PARAM id;
+§PARAM nom;
+§PARAM prenom;
+§PARAM univ;
+§PARAM courriel;
+§PARAM matricule;
 
 use Hash::Util::FieldHash;
 
@@ -24,13 +24,13 @@ Hash::Util::FieldHash::fieldhash my %Compteurs;
 Hash::Util::FieldHash::fieldhash my %CodeEtapes;
 
 sub new {
-	my $self = NEW!;
+	my $self = §NEW;
 	my $id = shift;
 	my @info = @_;
 	if (testInfo($id, @info)) {
 		$Compteurs{$self} = {};
-		info! =  \@info;
-		id! = $id;
+		§info =  \@info;
+		§id = $id;
 		return $self;
 	}
 	return 0;
@@ -170,11 +170,11 @@ sub new {
 	my $matricule = shift;
 	my $self = Personne::new($class, $eppn, $nom, $prenom, $courriel, $matricule, $eppn);
 	if ($self) {
-		univ! = $univ;
-		nom! = $nom;
-		prenom! = $prenom;
-		courriel! = $courriel;
-		matricule! = $matricule;
+		§univ = $univ;
+		§nom = $nom;
+		§prenom = $prenom;
+		§courriel = $courriel;
+		§matricule = $matricule;
 		return  $self;
 	}
 	return 0;
@@ -244,10 +244,10 @@ sub new {
 	my $courriel = shift;
 	my $self = Personne::new($class, $eppn, $nom, $prenom, $eppn, $courriel);
 	if ($self) {
-		univ! = $univ;
-		nom! = $nom;
-		prenom! = $prenom;
-		courriel! = $courriel;
+		§univ = $univ;
+		§nom = $nom;
+		§prenom = $prenom;
+		§courriel = $courriel;
 		return $self;
 	}
 	return 0;
@@ -274,8 +274,8 @@ sub new {
 	my $self = Personne::new($class, $eppn, $nom, $prenom, $courriel);
 
 	if ($self) {
-		nom! = $nom;
-		prenom! = $prenom;
+		§nom = $nom;
+		§prenom = $prenom;
 		return  $self;
 	}
 }

@@ -18,9 +18,9 @@ MyLogger::level(2 , 0);
 
 my $pathRep = 'Test';
 
-#SYSTEM!("ls -l");
-#SYSTEM!("rm -v Test/Orleans_20220107*");
-#SYSTEM!("ls -l Test");
+#§SYSTEM("ls -l");
+#§SYSTEM("rm -v Test/Orleans_20220107*");
+#§SYSTEM("ls -l Test");
 
 my $univ = new Univ('orleans', 'noFtp', 'testOrleans/', 'orleans');
 ok($univ, 'new Univ');
@@ -113,7 +113,7 @@ sub testUniv {
 		print $etap, "\n";
 		print &$testEtap($etap) ? 'TRUE' : 'FALSE' , " $etap\n";
 	} else {
-		ERROR! "pas de testEtap!";
+		§ERROR "pas de §testEtap";
 	}
 
 	my $filtreEtap = Univ->getById('orleans')->filtreEtap;
@@ -124,7 +124,7 @@ sub testUniv {
 		print "apres: ";
 		print Dumper(&$filtreEtap(@etap));
 	} else {
-		ERROR! "pas de filtreEtap!";
+		§ERROR "pas de §filtreEtap";
 	}
 
 	$univ = new Univ('tours', 'noFtp', 'testTours/', 'tours');
@@ -138,7 +138,7 @@ sub testUniv {
 		print $etap, "\n";
 		print &$testEtap($etap) ? 'TRUE' : 'FALSE' , " $etap\n";
 	} else {
-		ERROR! "pas de testEtap pour tours!";
+		§ERROR "pas de testEtap pour §tours";
 	}
 	if ($filtreEtap) {
 		print "test filtreEtap\navant: ";
@@ -147,7 +147,7 @@ sub testUniv {
 		print "apres: ";
 		print Dumper(&$filtreEtap(@etap));
 	} else {
-		ERROR! "pas de filtreEtap pour tours!";
+		§ERROR "pas de filtreEtap pour §tours";
 	}
 }
 
@@ -158,23 +158,23 @@ sub testGlobal {
 	my $repOrg = $repTest . '/Org';
 	my $repNew = $repTest . '/New';
 	if (-d $repNew) {
-		SYSTEM! "rm -r $repNew";
+		§SYSTEM "rm -r $repNew";
 	}
 	
-	SYSTEM! "cp -R $repOrg $repNew";
-	SYSTEM! "rm -R $repNew/*_*_*";
-	SYSTEM! "cp $repTest/karuta.properties $repNew";
+	§SYSTEM "cp -R $repOrg $repNew";
+	§SYSTEM "rm -R $repNew/*_*_*";
+	§SYSTEM "cp $repTest/karuta.properties $repNew";
 
-	SYSTEM! "./workIn.pl $repNew";
+	§SYSTEM "./workIn.pl $repNew";
 	
 	mkdir "$repNew/orleans_20230322_trie";
 	mkdir "$repNew/Tours_20231005_trie";
 
 	chdir $repNew . "/Tours_20231005_kapc.1.3.5";
-	SYSTEM! 'for i in *; do  sort $i > ../Tours_20231005_trie/$i ; done';
+	§SYSTEM 'for i in *; do  sort $i > ../Tours_20231005_trie/$i ; done';
 	
 	chdir "$repAbs/$repNew/orleans_20230322_kapc.1.3.5";
-	SYSTEM! 'for i in *; do sort $i > ../orleans_20230322_trie/$i ; done';
+	§SYSTEM 'for i in *; do sort $i > ../orleans_20230322_trie/$i ; done';
 
 	chdir "$repAbs/$repTest";
 	system 'diff Org/orleans_20230322_trie/ New/orleans_20230322_trie/ > diff.test';
@@ -183,8 +183,8 @@ sub testGlobal {
 	ok (-z 'diff.test', 'Tours_20231005');
 
 	chdir "$repAbs/$repTest";
-	open PIN, "karuta.properties" or FATAL! "$!";
-	open POUT, ">New/karuta.properties" or FATAL! "$!";
+	open PIN, "karuta.properties" or §FATAL "$!";
+	open POUT, ">New/karuta.properties" or §FATAL "$!";
 	while (<PIN>) {
 		next if /^\w+\.test\.newPath/;
 		s/^\#(\w+\.test\.newPath)/$1/;
@@ -194,13 +194,13 @@ sub testGlobal {
 	close POUT;
 
 	chdir "$repAbs";
-	SYSTEM! "./workIn.pl $repNew";
+	§SYSTEM "./workIn.pl $repNew";
 	
 	chdir $repNew . "/Tours_20231120_kapc.1.3.5";
-	SYSTEM! 'for i in *; do  sort $i > ../Tours_20231120_trie/$i ; done';
+	§SYSTEM 'for i in *; do  sort $i > ../Tours_20231120_trie/$i ; done';
 	
 	chdir "$repAbs/$repNew/orleans_20231024_kapc.1.3.5";
-	SYSTEM! 'for i in *; do sort $i > ../orleans_20231024_trie/$i ; done';
+	§SYSTEM 'for i in *; do sort $i > ../orleans_20231024_trie/$i ; done';
 	chdir "$repAbs/$repTest";
 	system 'diff Org/orleans_20231024_trie/ New/orleans_20231024_trie/ > diff.test';
 	ok (-z 'diff.test', 'orleans_20231024');

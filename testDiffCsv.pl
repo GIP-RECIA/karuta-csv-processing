@@ -35,8 +35,8 @@ $dao->lastVersion('20230322');
 
 my ($new, $old) = $dao->diffPersonneEtap('ETU');
 
-DEBUG! "nouveau  ", Dumper($new);
-DEBUG! "partie " , Dumper($old); 
+§DEBUG "nouveau  ", Dumper($new);
+§DEBUG "partie " , Dumper($old); 
 
 my $tmpRep = 'testOrleans/dircompare';
 unless ( -d $tmpRep) {

@@ -1,20 +1,22 @@
-use MyLogger;
+use MyLogger 'DEBUG';
 #use Filter::sh "tee " . __FILE__ . ".pl";
-package! Univ;
+§package Univ;
 
-
-PARAM! id;
-PARAM! ftpRep;
-PARAM! path;
-PARAM! zipPrefix;
-PARAM! prefix;
-PARAM! dateFile;
-PARAM! sepChar;
-PARAM! filtreEtap;
-PARAM! testEtap;
-PARAM! lastPath;
+§PARAM id;
+§PARAM ftpRep;
+§PARAM path;
+§PARAM zipPrefix;
+§PARAM prefix;
+§PARAM dateFile;
+§PARAM sepChar;
+§PARAM filtreEtap;
+§PARAM testEtap;
+§PARAM lastPath;
+§PARAM listFormationOk;
 
 my %UNIVS;
+
+
 
 # normalise les codes etapes d'orleans
 # return true ssi son entré a été modifié 
@@ -24,29 +26,38 @@ sub orleansEtapEquiv {
 
 
 sub new {
-	my $self = NEW!;
+	my $self = §NEW;
 	my ($id, $ftpRep, $path, $filePrefix, $zipFilePrefix) = @_;
 
 	unless ($zipFilePrefix) {
 		$zipFilePrefix = $filePrefix;
 	}
 	
-	id! = $id;
-	ftpRep! = $ftpRep;
-	path! = $path;
-	zipPrefix! = $zipFilePrefix;
-	prefix! = $filePrefix;
-	dateFile! = '00000000';
-	sepChar! = ',';
+	§id = $id;
+	§ftpRep = $ftpRep;
+	§path = $path;
+	§zipPrefix = $zipFilePrefix;
+	§prefix = $filePrefix;
+	§dateFile = '00000000';
+	§sepChar = ',';
+	§listFormationOk = {};
 
 	if ($id eq "orleans") {
-		filtreEtap! ( 
+		my $fileFormationOk = "$path/$id".'FormationList';
+		open FORMATION , $fileFormationOk or §FATAL $fileFormationOk, $!;
+		while (<FORMATION>) {
+			chop ;
+			orleansEtapEquiv($_);
+			§listFormationOk()->{$_}=1;
+			#§DEBUG "add formtion $_";
+		}
+		§filtreEtap ( 
 			sub {
-				return map({ orleansEtapEquiv($_); $_; }  @_);
+				return map({ §listFormationOk()->{$_} ? $_ : ()}  @_);
 			} );
-		testEtap! (
+		§testEtap (
 			sub {
-				return !orleansEtapEquiv($_[0]);
+				return §listFormationOk()->{$_[0]};
 			}
 		)
 	} 

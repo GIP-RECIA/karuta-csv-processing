@@ -159,7 +159,7 @@ sub depileHeap {
 
 sub trieFile {
 	my ($fileName, $origine, $destination, $nbFileHeader, @cle) = @_;
-#	DEBUG! "trieFile $fileName";
+#	§DEBUG "trieFile $fileName";
 	my $heap ;
 	my $nbCle = @cle;
 	my @colNoKey ;
@@ -176,10 +176,10 @@ sub trieFile {
 	@colNoKey = colNoKey($lastHeader, @cle);
 	($heap, $cout) = createHeap($in,  @cle, @colNoKey);
 
-#	INFO! "cout lecture = $cout";
+#	§INFO "cout lecture = $cout";
 
 	$cout += depileHeap($heap, $out, @cle, @colNoKey);
-#	INFO! "cout total= $cout";
+#	§INFO "cout total= $cout";
 	$in->close;
 	$out->close;
 }
@@ -278,7 +278,7 @@ sub open {
 		file => 0,
 	};
 	my $desc;
-	open ($desc, $fileName) || FATAL! "read $fileName : $!";
+	open ($desc, $fileName) || §FATAL "read $fileName : $!";
 	$self->{'file'} = $desc;
 	my $line = <$desc>;
 	if ($line) {
@@ -325,7 +325,7 @@ sub open {
 		file => 0,
 	};
 	my $desc;
-	open ($desc, ">$fileName") || FATAL! "write $fileName : $!";
+	open ($desc, ">$fileName") || §FATAL "write $fileName : $!";
 	$self->{file} = $desc;
 	return bless $self, $class;
 }

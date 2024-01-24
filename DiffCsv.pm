@@ -30,7 +30,7 @@ sub sort {
 	if (@cleeTab) {
 		my @colAutre = ();
 		if ($lastEntete) {
-			INFO! $lastEntete;
+			§INFO $lastEntete;
 			@colAutre = &colNoKey($lastEntete, @cleeTab);
 		}
 		$trier = sub {sort {&compareLigne($a, $b, @cleeTab, @colAutre)} @data};
@@ -142,7 +142,7 @@ sub open {
 		file => 0,
 	};
 	my $desc;
-	open ($desc, $fileName) || FATAL! "read $fileName : $!";
+	open ($desc, $fileName) || §FATAL "read $fileName : $!";
 	$self->{file} = $desc;
 	$self->{line} = <$desc>;
 	return bless $self, $class;
@@ -173,7 +173,7 @@ sub open {
 		file => 0,
 	};
 	my $desc;
-	open ($desc, ">$fileName") || FATAL! "write $fileName : $!";
+	open ($desc, ">$fileName") || §FATAL "write $fileName : $!";
 	$self->{file} = $desc;
 	return bless $self, $class;
 }
