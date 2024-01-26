@@ -49,6 +49,8 @@ sub new {
 			#§DEBUG $fileFormationOk, " existe !"; 
 			while (<$FORMATION>) {
 				chop ;
+				next if /^\s*(#.*)?$/;
+				
 				orleansEtapEquiv($_);
 				§listFormationOk()->{$_}=1;
 				#§DEBUG "add formtion $_";
