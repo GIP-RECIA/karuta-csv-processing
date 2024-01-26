@@ -132,12 +132,12 @@ sub create {
 	my $self;
 	
 	if ($codeFormation =~ m/\w+/) {
-		my $formation = create Formation($univ, $codeFormation, $label, $site);
-		
-		if ($formation) {
-			my $testEtap = Univ->getById($univ)->testEtap;
+		my $testEtap = Univ->getById($univ)->testEtap;
+
+		if (!$testEtap || &$testEtap($codeEtape)) {
+			my $formation = create Formation($univ, $codeFormation, $label, $site);
 			
-			if (!$testEtap || &$testEtap($codeEtape)) {
+			if ($formation) {
 				$self = byCode($codeEtape);
 				unless ($self) {
 					$self = new Etape ($univ, $codeEtape,  $libEtap,  $site, $cohorte, $codeFormation, $label, $formation);
@@ -146,17 +146,16 @@ sub create {
 					}
 					return 1 ;
 				}
-				
+			} else {
+				#§DEBUG "create Formation return 0";
 			}
-			#§DEBUG "codeFormation rejeté par testEtap ";
 		} else {
-			#§DEBUG "create Formation return 0";
+			#§DEBUG "codeFormation rejeté par testEtap ";
 		}
-		return 0;
 	} else {
 		§ERROR " codeCormation ", $codeFormation;
-		return 0;
 	}
+	return 0;
 }
 
 

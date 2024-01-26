@@ -2,7 +2,7 @@ use strict;
 use utf8;
 use Dao;
 use Formation;
-use MyLogger;
+use MyLogger ;# 'DEBUG';
 #use Filter::sh "tee " . __FILE__ . ".pl";
 
 #########
@@ -24,7 +24,7 @@ Hash::Util::FieldHash::fieldhash my %Compteurs;
 Hash::Util::FieldHash::fieldhash my %CodeEtapes;
 
 sub new {
-	my $self = §NEW;
+	my §NEW;
 	my $id = shift;
 	my @info = @_;
 	if (testInfo($id, @info)) {
@@ -149,13 +149,20 @@ sub create {
 	my $self = new ($class , $univ ,$eppn, $nom ,$prenom , $courriel , $matricule); 
 
 	if ($self) {
-		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, $matricule);
+		# on cree en base la personne que si il a des code étape, apres filtrage
+		
+		my @codeEtapesFiltres = $self->setCodesEtape($univ, @_);
+		if (@codeEtapesFiltres) {
+			
+			Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, $matricule);
 
-		my $nbEtap;
-		foreach my $code ($self->setCodesEtape($univ, @_)) {
-			Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
+			my $nbEtap;
+			foreach my $code (@codeEtapesFiltres) {
+				Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
+			}
+			return $self;
 		}
-		return $self;
+		#§DEBUG 'pas de code etape apres  filtrage ', @_;
 	}
 	return 0;
 }
@@ -225,12 +232,17 @@ sub create {
 	my $self = new ($class,  $univ, $eppn, $nom, $prenom, $courriel);
 	
 	if ($self) {
-		Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, "");
-		my $nbEtap;
-		foreach my $code ($self->setCodesEtape($univ, @_)) {
-			Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
+		# on cree en base la personne que si il a des codes étapes, apres filtrage
+		my @codeEtapesFiltres = $self->setCodesEtape($univ, @_);
+		
+		if (@codeEtapesFiltres) {
+			Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, "");
+			my $nbEtap;
+			foreach my $code (@codeEtapesFiltres) {
+				Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
+			}
+			return $self;
 		}
-		return $self;
 	}
 	return 0;
 }

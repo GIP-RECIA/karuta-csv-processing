@@ -1,4 +1,4 @@
-use MyLogger 'DEBUG';
+use MyLogger ; #'DEBUG';
 #use Filter::sh "tee " . __FILE__ . ".pl";
 §package Univ;
 
@@ -45,7 +45,8 @@ sub new {
 	if ($id eq "orleans") {
 		my $fileFormationOk = "$path/$id".'FormationList';
 		open my $FORMATION , $fileFormationOk or §WARN $fileFormationOk,": ", $! ;
-		if ($Formation) {
+		if ($FORMATION) {
+			#§DEBUG $fileFormationOk, " existe !"; 
 			while (<$FORMATION>) {
 				chop ;
 				orleansEtapEquiv($_);
@@ -54,15 +55,17 @@ sub new {
 			}
 			§filtreEtap ( 
 				sub {
-					return map({ §listFormationOk()->{$_} ? $_ : ()}  @_);
+					return map({ orleansEtapEquiv($_); §listFormationOk()->{$_} ? $_ : ()}  @_);
 				} );
 			§testEtap (
 				sub {
+					orleansEtapEquiv($_[0]);
 					return §listFormationOk()->{$_[0]};
 				}
 			);
 			close($FORMATION);
 		} else {
+			#§DEBUG $fileFormationOk, " n'existe pas !"; 
 			§filtreEtap ( 
 			sub {
 				return map({ orleansEtapEquiv($_); $_; }  @_);

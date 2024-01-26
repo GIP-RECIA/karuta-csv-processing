@@ -45,13 +45,13 @@ FILTER {
 				$isArray =$2;
 			}
 			if ($isArray) {
-			#	s/(?<=my\s)\s*NEW!\s*(?=;)/\$self = bless \[\], \$class/;
+				s/(?<=my\s)\s*§NEW\s*(?=;)/\$self = bless \[\], shift()/;
 				s/(?<=(\s|=))§NEW\s*(?=;)/bless \[\], shift()/;
 				s/(?<=(\s|=))§NEW\s*(?=,)/bless \[\]/;
 			#	s/§PARAM\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->[$nbParam] = \$val } else {return \$self->[$nbParam]} }/g;
 				s/§PARAM\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) { if (ref(\$val) && \$val == \$self) {return \\(\$self->[$nbParam])} else {\$self->[$nbParam] = \$val }} else {return \$self->[$nbParam]} }/g;
 			} else {
-			#	s/(?<=my\s)\s*NEW!\s*(?=;)/\$self = bless {}, \$class/;
+				s/(?<=my\s)\s*§NEW\s*(?=;)/\$self = bless {}, shift()/;
 				s/(?<=(\s|=))§NEW\s*(?=;)/bless {}, shift()/;
 				s/(?<=(\s|=))§NEW\s*(?=,)/bless {}/;
 			#	s/§PARAM\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->{$paramIdx} = \$val } else {return \$self->{$paramIdx}} }/g;
