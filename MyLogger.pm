@@ -4,7 +4,7 @@ use IO::Select;
 use Symbol 'gensym';
 
 # 
-my $version="6.2";
+my $version="6.3";
 
 package MyLogger;
 use Filter::Simple;
@@ -33,7 +33,7 @@ FILTER {
 		s/§TRACE/MyLogger::is(5) and MyLogger::trace /g;
 		s/§SYSTEM(\d?)/MyLogger::traceSystem '$1',/g;
 		s/§LOG/MyLogger::file && MyLogger::logger /g;
-	#	s/PARAM!\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {return MyLogger::param(shift, '$paramIdx', shift);}/g;
+	
 
 		my $out;
 		my $nbParam = -1;
@@ -48,7 +48,6 @@ FILTER {
 				s/(?<=my\s)\s*§NEW\s*(?=;)/\$self = bless \[\], shift()/;
 				s/(?<=(\s|=))§NEW\s*(?=;)/bless \[\], shift()/;
 				s/(?<=(\s|=))§NEW\s*(?=,)/bless \[\]/;
-			#	s/§PARAM\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->[$nbParam] = \$val } else {return \$self->[$nbParam]} }/g;
 				s/§PARAM\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) { if (ref(\$val) && \$val == \$self) {return \\(\$self->[$nbParam])} else {\$self->[$nbParam] = \$val }} else {return \$self->[$nbParam]} }/g;
 			} else {
 				s/(?<=my\s)\s*§NEW\s*(?=;)/\$self = bless {}, shift()/;
@@ -114,6 +113,7 @@ sub file {
 
 
 sub level {
+	my $class = shift;
 	if (@_) {
 		$level = shift;
 		if (@_) {

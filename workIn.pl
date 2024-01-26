@@ -15,7 +15,7 @@ use DiffCsvHeap;
 use Dao;
 use Compare;
 
-MyLogger::level(5, 2);
+MyLogger->level(5, 2);
 
 my $version = 'kapc.1.3.5';
 

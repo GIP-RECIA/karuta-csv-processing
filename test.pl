@@ -14,7 +14,7 @@ use MyLogger;
 
 
 #MyLogger->file('> test.log');
-MyLogger::level(2 , 0);
+MyLogger->level(2 , 0);
 
 my $pathRep = 'Test';
 

@@ -12,7 +12,7 @@ use DiffCsvHeap;
 use Dao;
 use Univ;
 use Compare;
-MyLogger::level(4, 2);
+MyLogger->level(4, 2);
 my $name1 = 'tours_ETU_IUT TOURS_BUT_Tech_de_co_prc_SME_2A_2022_20221012.csv';
 
 #my $csv1 = DiffCsvReader->open($name1 . '.csv');

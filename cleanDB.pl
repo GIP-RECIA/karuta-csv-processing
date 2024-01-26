@@ -37,7 +37,7 @@ unless (@ARGV) {
 	pod2usage( -message =>"ERROR:	manque d'arguments", -verbose => 2, -exitval => 1 , -input => $myself, -noperldoc => 1 );
 }
 
-MyLogger::level(3,1);
+MyLogger->level(3,1);
 
 my $dbFile = shift;
 my $univId = shift;
