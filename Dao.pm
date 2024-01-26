@@ -32,7 +32,7 @@ sub dao {
 }
 
 sub new {
-	my $self = §NEW;
+	my §NEW;
 	my $dbFile = shift;
 
 	my $dbh;

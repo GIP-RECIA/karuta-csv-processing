@@ -26,7 +26,7 @@ sub orleansEtapEquiv {
 
 
 sub new {
-	my $self = §NEW;
+	my §NEW;
 	my ($id, $ftpRep, $path, $filePrefix, $zipFilePrefix) = @_;
 
 	unless ($zipFilePrefix) {

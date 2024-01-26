@@ -4,7 +4,7 @@ use IO::Select;
 use Symbol 'gensym';
 
 # 
-my $version="6.1";
+my $version="6.2";
 
 package MyLogger;
 use Filter::Simple;
