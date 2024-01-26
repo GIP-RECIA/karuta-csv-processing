@@ -195,6 +195,10 @@ sub testGlobal {
 
 	chdir "$repAbs";
 	§SYSTEM "./workIn.pl $repNew";
+
+	mkdir "$repNew/orleans_20231024_trie";
+	mkdir "$repNew/Tours_20231120_trie";
+
 	
 	chdir $repNew . "/Tours_20231120_kapc.1.3.5";
 	§SYSTEM 'for i in *; do  sort $i > ../Tours_20231120_trie/$i ; done';
