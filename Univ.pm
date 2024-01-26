@@ -44,22 +44,34 @@ sub new {
 
 	if ($id eq "orleans") {
 		my $fileFormationOk = "$path/$id".'FormationList';
-		open FORMATION , $fileFormationOk or §FATAL $fileFormationOk, $!;
-		while (<FORMATION>) {
-			chop ;
-			orleansEtapEquiv($_);
-			§listFormationOk()->{$_}=1;
-			#§DEBUG "add formtion $_";
-		}
-		§filtreEtap ( 
-			sub {
-				return map({ §listFormationOk()->{$_} ? $_ : ()}  @_);
-			} );
-		§testEtap (
-			sub {
-				return §listFormationOk()->{$_[0]};
+		open my $FORMATION , $fileFormationOk or §WARN $fileFormationOk,": ", $! ;
+		if ($Formation) {
+			while (<$FORMATION>) {
+				chop ;
+				orleansEtapEquiv($_);
+				§listFormationOk()->{$_}=1;
+				#§DEBUG "add formtion $_";
 			}
-		)
+			§filtreEtap ( 
+				sub {
+					return map({ §listFormationOk()->{$_} ? $_ : ()}  @_);
+				} );
+			§testEtap (
+				sub {
+					return §listFormationOk()->{$_[0]};
+				}
+			);
+			close($FORMATION);
+		} else {
+			§filtreEtap ( 
+			sub {
+				return map({ orleansEtapEquiv($_); $_; }  @_);
+			} );
+			§testEtap (
+				sub {
+					return !orleansEtapEquiv($_[0]);
+			});
+		}
 	} 
 	
 	$UNIVS{$id} = $self;
