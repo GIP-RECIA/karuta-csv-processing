@@ -4,7 +4,7 @@ use IO::Select;
 use Symbol 'gensym';
 
 # 
-my $version="6.0";
+my $version="6.1";
 
 package MyLogger;
 use Filter::Simple;
@@ -48,19 +48,23 @@ FILTER {
 			#	s/(?<=my\s)\s*NEW!\s*(?=;)/\$self = bless \[\], \$class/;
 				s/(?<=(\s|=))§NEW\s*(?=;)/bless \[\], shift()/;
 				s/(?<=(\s|=))§NEW\s*(?=,)/bless \[\]/;
-				s/§PARAM\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->[$nbParam] = \$val } else {return \$self->[$nbParam]} }/g;
+			#	s/§PARAM\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->[$nbParam] = \$val } else {return \$self->[$nbParam]} }/g;
+				s/§PARAM\s*(\w+)(?{ $nbParam++;})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) { if (ref(\$val) && \$val == \$self) {return \\(\$self->[$nbParam])} else {\$self->[$nbParam] = \$val }} else {return \$self->[$nbParam]} }/g;
 			} else {
 			#	s/(?<=my\s)\s*NEW!\s*(?=;)/\$self = bless {}, \$class/;
 				s/(?<=(\s|=))§NEW\s*(?=;)/bless {}, shift()/;
 				s/(?<=(\s|=))§NEW\s*(?=,)/bless {}/;
-				s/§PARAM\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->{$paramIdx} = \$val } else {return \$self->{$paramIdx}} }/g;
+			#	s/§PARAM\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) {\$self->{$paramIdx} = \$val } else {return \$self->{$paramIdx}} }/g;
+				s/§PARAM\s*(\w+)(?{ $paramIdx=uc($1);})/sub $1 {my (\$self, \$val) = \@_; if (defined \$val) { if (ref(\$val) && \$val == \$self) {return \\(\$self->{$paramIdx})} else {\$self->{$paramIdx} = \$val }} else {return \$self->{$paramIdx}} }/g;
 			}
-			
+
 	#	my $in = $_;
 			unless (/(§NEW|§PARAM)/) {
-				s/§(\w+)(\s*\=\s*)(.+?)(?=\;)/\$self->$1($3)/g;
+			#	s/§(\w+)(\s*\=\s*)(.+?)(?=\;)/\$self->$1($3)/g;
+				s/§(\w+)(?=(\s*\=))/\${\$self->$1(\$self)}/g;
 				s/§(\w+)(?=\s*\()/\$self->$1/g;
 				s/§(\w+)\b(?!\s*\()/\$self->$1\(\)/g;
+				s/(?<=(\W))§(?=(\W))/\$self/g;
 			}
 			$out .= $_ ;
 		}
