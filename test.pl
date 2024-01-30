@@ -62,6 +62,7 @@ sub testDao {
 
 	ok(!$@ && $test, "addEtape $@");
 
+	$dao->close();
 	$dao = Dao->create($testDb, $univ, "20231010");
 	ok($dao, "create new dao");
 	$dao->addPerson('ETU', 'eppn1', 'Cunafo', 'Didier', 'didier.cunafo', '1234');
@@ -97,7 +98,7 @@ sub testDao {
 	ok($dao->lastVersion("20231010"), 'init last version 20231010');
 	ok($dao->lastVersion() eq '20231010', 'lire last version 20231010');
 	ok(!$dao->lastVersion("20231011"), 'init last version 20231011');
-
+	$dao->close();
 }
 
 sub testUniv {

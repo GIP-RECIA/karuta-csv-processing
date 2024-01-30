@@ -28,7 +28,24 @@ sub dao {
 		return $dao_default;
 	}
 	§ERROR "Dao non instancié";
-	return 0;
+	return undef;
+}
+
+sub close {
+	my § = shift;
+	if (ref $self eq 'Dao') {
+		if ($dao_default == $self) {
+			$dao_default = undef;
+		}
+	} elsif ($dao_default) {
+		§ = $dao_default;
+		$dao_default = undef;
+	} else {
+		§WARN1 "close undef Dao ";
+		return ;
+	}
+	§db()->disconnect();
+	§db = undef;
 }
 
 sub new {
@@ -63,11 +80,9 @@ sub create {
 	}
 
 	§FATAL "Dao sans jour définit" unless $jour;
-	
-	if ($dao_default) {
-		$dao_default->db->disconnect();
-		$dao_default = 0;
-	}
+
+	Dao->close();
+
 	my $self= $class->new($dbFile);
 	my $dbh = §db;
 	if ($dbh) {
@@ -289,6 +304,26 @@ sub getPersonne {
 		$personne = new Staff(@tuple);
 	}
 	return $personne;
+}
+
+{
+	my $preparedStatement;
+
+	sub isNewPersonne {
+		my § = shift;
+		my $idPersonne = shift;
+		my $status = shift;
+		my $version = §lastVersion;
+
+		my $dbh = §db;
+		unless ($preparedStatement) {
+			$preparedStatement = $dbh->prepare(
+				q/select idPersonne from personnes where univ = ? and version = ? and idPersonne = ? and status = ? limit 1/
+			);
+		}
+		$preparedStatement->execute(§univ->id, $version, $idPersonne, $status) or §ERROR $dbh->errstr ," : ", $dbh->err;
+		return  0 == $preparedStatement->fetchrow_array;
+	}
 }
 
 sub addFormation {

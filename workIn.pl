@@ -46,7 +46,7 @@ my $logFile = $properties->getProperty('log.file');
 
 if ($logFile) {
 	§INFO "new logger file : ", $logFile;
-	MyLogger::file $logFile;
+	MyLogger->file($logFile);
 }
 
 my $ftpAddr = $properties-> getProperty('ftp.addr') or §FATAL  "ftp.addr propertie not found" ;
@@ -137,7 +137,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 				
 			}
 		}
-		§DEBUG "modeTest=$modeTest, lastPath = $lastPath, lastVersion=$lastVersion",  ;
+		#§DEBUG "modeTest=$modeTest, lastPath = $lastPath, lastVersion=$lastVersion",  ;
 		
 
 		my ($formationFile, $prefixFile, $dateFile) = findInfoFile($newPath);
@@ -238,6 +238,7 @@ TRAITEMENT: foreach my $univ (Univ::all) {
 	}
 }
 
+Dao->close();
 
 sub compareSortedFile {
 	my $fileName = shift;

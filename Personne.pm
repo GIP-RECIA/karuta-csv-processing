@@ -150,9 +150,10 @@ sub create {
 
 	if ($self) {
 		# on cree en base la personne que si il a des code étape, apres filtrage
+		# si la personne existe déjà on la remet pour cette version:
 		
 		my @codeEtapesFiltres = $self->setCodesEtape($univ, @_);
-		if (@codeEtapesFiltres) {
+		if (@codeEtapesFiltres || ! Dao->dao->isNewPersonne($eppn, type())) {
 			
 			Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, $matricule);
 
@@ -161,7 +162,7 @@ sub create {
 				Dao->dao->addPersonneEtap($eppn, $code, type(), ++$nbEtap);
 			}
 			return $self;
-		}
+		} 
 		#§DEBUG 'pas de code etape apres  filtrage ', @_;
 	}
 	return 0;
@@ -233,9 +234,10 @@ sub create {
 	
 	if ($self) {
 		# on cree en base la personne que si il a des codes étapes, apres filtrage
+		# ou qu'il existe déjà
 		my @codeEtapesFiltres = $self->setCodesEtape($univ, @_);
 		
-		if (@codeEtapesFiltres) {
+		if (@codeEtapesFiltres || ! Dao->dao->isNewPersonne($eppn, type())) {
 			Dao->dao->addPerson(type(), $eppn, $nom, $prenom, $courriel, "");
 			my $nbEtap;
 			foreach my $code (@codeEtapesFiltres) {
