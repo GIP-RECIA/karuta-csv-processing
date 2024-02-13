@@ -193,7 +193,9 @@ sub mailEtu2sql {
 			if ($oldMail) {
 				$isNew = 0;
 				if ($oldMail ne $mail) {
-					print SQLMAIL qq/update credential set email="$mail" where eppn="$eppn";/, "\n";
+					print SQLMAIL qq/update credential set email="$mail" , login="$mail" where eppn="$eppn";/, "\n";
+					print SQLMAIL qq/update node set code = replace(code, "$oldMail", "$mail") where code like "%$oldMail%";/, "\n";
+					print SQLMAIL qq/update resource_table set content = replace(content, "$oldMail", "$mail") where content like "%$oldMail%";/, "\n";
 				}
 			}
 		}
