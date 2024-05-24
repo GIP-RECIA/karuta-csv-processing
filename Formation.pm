@@ -284,7 +284,7 @@ sub readFile {
 		if ($csv->parse($_) ){
 			my @fields = $csv->fields();
 			unless (create Etape($univ->id, @fields)){ #ERRROR
-				§WARN "formation ligne $nbline : étape rejetée";
+				§WARN "formation ligne $nbline : étape rejetée ", $fields[0] ;
 				print LOG "formation $nbline rejet : $_\n";
 			}
 		} else {

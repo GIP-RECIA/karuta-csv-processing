@@ -34,7 +34,6 @@ sub new {
 	return bless $self, $class;
 }
 
-
 # on cherche les ETU qui ont changés de cohorte (étap)
 
 §PARAM dao;
@@ -84,7 +83,6 @@ sub compareEtapEtu {
 	my $principaleNew = $self->dao->getEtapeEtu($id);
 	my $principaleOld = $self->dao->getEtapeEtu($id, 1, $self->date2);
 
-
 	#la  nouvelles étape principale
 	my $newE = $$news[0];
 	my $oldE = $$olds[0];
@@ -131,14 +129,15 @@ sub addEtaps {
 	}
 }
 
-
 sub addEtu {
 	my $id = shift;
 	my $etapeCod = shift;
 	my $personne = $self->dao->getPersonne($id, 'ETU');
 
 	my $etape = $self->dao->getEtape($etapeCod);
-	
+	unless ($etape) {
+		§FATAL "personne $id: pas d'etape pour le code $etapeCod";
+	}
 	TraitementCsv::printInformationFileETU($etape, $personne);
 	if (@_) {
 		addEtaps($id, $etape, @_);
@@ -161,8 +160,6 @@ sub delEtu {
 	TraitementCsv::printDelETU($id, $etap1);
 }
 
-
-
 sub compareCohorte {
 	$self = shift;
 	TraitementCsv::init('ETU', $self->univ, $self->date2, $self->annee, $self->tmp);
@@ -176,7 +173,11 @@ sub compareCohorte {
 			compareEtapEtu($idPersonne, $oldEtapes, $newEtapes);
 			delete $$old{$idPersonne};
 		} else {
-			addEtu($idPersonne, @$newEtapes);
+			if ($$newEtapes[0]) {
+				addEtu($idPersonne, @$newEtapes);
+			} else {
+				addEtaps($idPersonne, @_);
+			}
 		}
 	}
 	while (my ($idPersonne, $oldEtapes ) = each %$old ) {
@@ -213,8 +214,7 @@ sub compareStaff {
 	}
 }
 
-
+1;
 
 #22200947t@univ-tours.fr T01TB2MRC => T01TB2MMV
 #21703031t@univ-tours.fr B30BB3DES ajouté
-1;
