@@ -61,8 +61,7 @@ sub new {
 				} );
 			§testEtap (
 				sub {
-					orleansEtapEquiv($_[0]);
-					return §listFormationOk()->{$_[0]};
+					return !orleansEtapEquiv($_[0]) && §listFormationOk()->{$_[0]};
 				}
 			);
 			close($FORMATION);
