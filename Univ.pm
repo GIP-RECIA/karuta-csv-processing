@@ -46,7 +46,7 @@ sub new {
 		my $fileFormationOk = "$path/$id".'FormationList';
 		open my $FORMATION , $fileFormationOk or §WARN $fileFormationOk,": ", $! ;
 		if ($FORMATION) {
-			#§DEBUG $fileFormationOk, " existe !"; 
+			§DEBUG $fileFormationOk, " existe !"; 
 			while (<$FORMATION>) {
 				chop ;
 				next if /^\s*(#.*)?$/;
@@ -66,7 +66,7 @@ sub new {
 			);
 			close($FORMATION);
 		} else {
-			#§DEBUG $fileFormationOk, " n'existe pas !"; 
+			§DEBUG $fileFormationOk, " n'existe pas !"; 
 			§filtreEtap ( 
 			sub {
 				return map({ orleansEtapEquiv($_); $_; }  @_);
