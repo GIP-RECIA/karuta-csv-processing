@@ -70,10 +70,12 @@ sub parseFile {
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
 			my $person;
+			# on fait un trim sur toutes les colonnes
+			my @fields = map {s/^\s+|\s+$//g; $_;} $csv->fields();
 			if ($isEtu) {
-				$person = create Etudiant($univ, $csv->fields());
+				$person = create Etudiant($univ, @fields);
 			} else {
-				$person = create Staff($univ, $csv->fields());
+				$person = create Staff($univ, @fields);
 			}
 			if ($person) {
 				if (&$traitement($person)) {

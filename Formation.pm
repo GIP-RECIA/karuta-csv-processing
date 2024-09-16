@@ -282,7 +282,8 @@ sub readFile {
 		s/\"\;\"/\"\,\"/g; #on force les ,
 		s/(;|\s)+$//;
 		if ($csv->parse($_) ){
-			my @fields = $csv->fields();
+			# on fait un trim sur toutes les colonnes
+			my @fields = map {s/^\s+|\s+$//g; $_;} $csv->fields();
 			unless (create Etape($univ->id, @fields)){ #ERRROR
 				§WARN "formation ligne $nbline : étape rejetée ", $fields[0] ;
 				print LOG "formation $nbline rejet : $_\n";
