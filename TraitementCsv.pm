@@ -71,10 +71,12 @@ sub parseFile {
 		if ($csv->parse($_) ){
 			# "eppn";"nomFamilleEtudiant";"prenomEtudiant";"courrielEtudiant";"matriculeEtudiant";"codesEtape"...
 			my $person;
+			# on fait un trim sur toutes les colonnes
+			my @fields = map {s/^\s+|\s+$//g; $_;} $csv->fields();
 			if ($isEtu) {
-				$person = new Etudiant($univ, $csv->fields());
+				$person = new Etudiant($univ, @fields);
 			} else {
-				$person = new Staff($univ, $csv->fields());
+				$person = new Staff($univ, @fields);
 			}
 			if ($person) {
 				if (&$traitement($person)) {

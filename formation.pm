@@ -182,7 +182,8 @@ sub readFile {
 		s/\"\;\"/\"\,\"/g; #on force les ,
 		s/(;|\s)+$//;
 		if ($csv->parse($_) ){
-			my @fields = $csv->fields();
+			# on fait un trim sur toutes les colonnes
+			my @fields = map {s/^\s+|\s+$//g; $_;} $csv->fields();
 			unless (new Etape(@fields)){
 				WARN! "formation ligne $nbline : create object error !";
 				foreach my $elem (@fields) {
