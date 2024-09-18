@@ -172,9 +172,11 @@ sub mailEtu2sql {
 		%oldMailETU=();
 		open OLDMAIL, $oldMailFile or FATAL! "open $oldMailFile : $!";
 		while (<OLDMAIL>) {
-			my ($eppn, $mail) = split;
-			if ($eppn) {
-				$oldMailETU{$eppn} = $mail;
+			chop;
+			if (/^(\S{36})\s+(.+)$/ {
+				$oldMailETU{$1} = $2;
+			} else {
+				WARN! "old mail non reconnu : $_";
 			}
 		}
 		close OLDMAIL;
