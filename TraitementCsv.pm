@@ -173,7 +173,7 @@ sub mailEtu2sql {
 		open OLDMAIL, $oldMailFile or FATAL! "open $oldMailFile : $!";
 		while (<OLDMAIL>) {
 			chop;
-			if (/^(\S{36})\s+(.+)$/ {
+			if (/^(\S{36})\s+(.+)$/) {
 				$oldMailETU{$1} = $2;
 			} else {
 				WARN! "old mail non reconnu : $_";

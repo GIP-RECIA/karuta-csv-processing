@@ -21,7 +21,7 @@ sub new {
 	if ($id eq "orleans") {
 		$self->{filtreEtap} =
 			sub {
-				return map({ s/^(\S{3})\S/\1I/; $_; }  @_);
+				return map({ s/^(\S{3})\S/$1I/; $_; }  @_);
 			} ;
 	}
 	

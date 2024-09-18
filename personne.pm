@@ -47,7 +47,7 @@ sub setCodesEtape {
 	my $filtre = $univ->{filtreEtap};
 
 	if (@_ > 1 ) {
-		@codesEtape = map ({s/\s*(\S+)\s*/\1/; $_} @_);
+		@codesEtape = map ({s/\s*(\S+)\s*/$1/; $_} @_);
 		if ($filtre) {
 			DEBUG! " : ", @codesEtape;
 			@codesEtape = &$filtre(@codesEtape);
