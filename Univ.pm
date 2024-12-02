@@ -69,12 +69,14 @@ sub new {
 					return map({ my $code = §listFormationOk()->{$_}; $code ? $code : ()}  @_);
 				} );
 			§testEtap (
-				sub { #renvoi true si il a modification du code etape 
+				sub { #renvoi true si l'etape est ok et pas reecrite 
 					my $code = §listFormationOk()->{$_[0]};
-					 if ($_[0] eq $code ) {
-						 return 0;
-					 }
-					$_[0] = $code;
+					unless ($code) {return 0; }
+					if ($code ne $_[0]) {
+						#§DEBUG "code devient $code";
+						$_[0] = $code;
+						return 0;
+					}
 					return 1;
 				}
 			);

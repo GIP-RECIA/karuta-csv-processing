@@ -133,7 +133,7 @@ sub create {
 	
 	if ($codeFormation =~ m/\w+/) {
 		my $testEtap = Univ->getById($univ)->testEtap;
-
+		#§DEBUG "create formation de  code etape : $codeEtape";
 		if (!$testEtap || &$testEtap($codeEtape)) {
 			my $formation = create Formation($univ, $codeFormation, $label, $site);
 			
@@ -147,10 +147,10 @@ sub create {
 					return 1 ;
 				}
 			} else {
-				#§DEBUG "create Formation return 0";
+				#§DEBUG "create Formation return 0 : codeFormation";
 			}
 		} else {
-			#§DEBUG "codeFormation rejeté par testEtap ";
+			#§DEBUG "codeEtap rejeté ou reecrit en $codeEtape ";
 		}
 	} else {
 		§ERROR " codeCormation ", $codeFormation;
