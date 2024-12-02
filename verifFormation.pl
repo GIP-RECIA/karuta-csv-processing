@@ -26,8 +26,8 @@ while (<COD>) {
 print "Codes manquants :\n";
 while (<FORM>) {
 	if (/^\"(......)\"\,/) {
-		if (exists $allFormationInList{$_}) {
-			$allFormationInList{$_}=1;
+		if (exists $allFormationInList{$1}) {
+			$allFormationInList{$1}=1;
 		} else {
 			print $_, "\n";
 		}
