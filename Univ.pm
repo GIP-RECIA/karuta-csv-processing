@@ -25,6 +25,7 @@ sub orleansEtapEquiv {
 }
 
 
+
 sub new {
 	my §NEW;
 	my ($id, $ftpRep, $path, $filePrefix, $zipFilePrefix) = @_;
@@ -40,28 +41,36 @@ sub new {
 	§prefix = $filePrefix;
 	§dateFile = '00000000';
 	§sepChar = ',';
-	§listFormationOk = {};
+	§listFormationOk;
 
+	%allFormationInList;
 	if ($id eq "orleans") {
 		my $fileFormationOk = "$path/$id".'FormationList';
 		open my $FORMATION , $fileFormationOk or §WARN $fileFormationOk,": ", $! ;
 		if ($FORMATION) {
+			%allFormationInList;
 			§DEBUG $fileFormationOk, " existe !"; 
 			while (<$FORMATION>) {
 				chop ;
 				next if /^\s*(#.*)?$/;
-				
-				orleansEtapEquiv($_);
-				§listFormationOk()->{$_}=1;
-				#§DEBUG "add formtion $_";
+				$allFormationInList{$_}=0;
 			}
+			for (keys %allFormationInList ){
+				my $code = $_;
+				if ( orleansEtapEquiv($code) && exists $allFormationInList{$code}) {
+					$allFormationInList{$_} = $code;
+				} else {
+					$allFormationInList{$_} = $_;
+				}
+			}
+			§listFormationOk = \%allFormationInList;
 			§filtreEtap ( 
 				sub {
-					return map({ orleansEtapEquiv($_); §listFormationOk()->{$_} ? $_ : ()}  @_);
+					return map({ my $code = §listFormationOk()->{$_}; $code ? $code : ()}  @_);
 				} );
 			§testEtap (
 				sub {
-					return !orleansEtapEquiv($_[0]) && §listFormationOk()->{$_[0]};
+					return $_[0] eq §listFormationOk()->{$_[0]};
 				}
 			);
 			close($FORMATION);
