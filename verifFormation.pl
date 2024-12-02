@@ -6,7 +6,9 @@ use open qw( :encoding(utf8) :std );
 =pod
 	Synopsie : verifFormation.pl fichierCodeEtape formation.csv
 	
-	script  pour orleans pour verifier le fichierCodeEtape des code etape que l'on garde pour être sure que l'on a une ligne dans formation.csv 
+	script  pour orleans pour verifier le fichierCodeEtape des code etape que l'on garde pour être sure que l'on a une ligne dans formation.csv
+	reecrit un nouveau fichier de code etape en supprimant les doublons et les code n'étant pas dans le fichier des formations,
+	tout en gardant l'ordre et les commentaires de l'ancien fichier.
 
 =cut
 my $codeFile = shift;
