@@ -41,3 +41,21 @@ while (my ($k, $v) =  each %allFormationInList) {
 		print $k,  "\n";
 	}
 }
+
+close COD;
+
+open COD, "$codeFile" or die "$codeFile $!";
+
+open NEW, "> ${codeFile}.new " or die "${codeFile}.new $!";
+while (<COD>) {
+	if (/^\s*(#.*)?$/ || $allFormationInList{$_}) {
+		print NEW $_;
+		next;
+	}
+	chop;
+	if ($allFormationInList{$_}) {
+		print NEW $_."\n";
+		$allFormationInList{$_}=0;
+		next;
+	}
+}
