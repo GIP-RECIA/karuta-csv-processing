@@ -6,6 +6,7 @@
 ##### Orléans:
 
 	- 07/01/2025: ajout code étape DUTMSE. => orleans_20250106.kapc.1.3.5.diff.20241112.zip
+	- 14/11/2025: => orleans_20251114.kapc.1.3.5.diff.20250106.zip
 
 
 ##### IH2EF
@@ -19,5 +20,11 @@
 ###### Tour
 	07/05/2025 => tours_20250505.kapc.1.3.5.diff.20241105.zip => en erreur 
 	13/05/2025 => tours_20250509.kapc.1.3.5.diff.20241105.zip
-
 	05/06/2025 => tours_20250602.kapc.1.3.5.diff.20250509.zip
+
+
+#### 2026
+##### Tour
+
+	05/01:2026 => tours_20251219.kapc.1.3.5.diff.20250602.zip
+	
